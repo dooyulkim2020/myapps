@@ -1,0 +1,793 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#8A3B5C"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="건강관리"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style></head><body>
+<title>우리 가족 건강관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: MY 미니앱 기본 체계 v1 — 폭 560 한 줄, 상단 고정 바(제목·가±), 카드 목록, 하단 고정 탭 4개 (한눈에·검진·추이·가족) */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#8A3B5C; --accent-soft:#F6E8EE; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC; --bad:#A23B2A; --bad-soft:#FBE9E5;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#E3A3BC; --accent-soft:#3A2230; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#E3A3BC; --accent-soft:#3A2230; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+.tb-home{flex:none;display:grid;place-items:center;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--accent)}
+.tb-home[hidden]{display:none}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted)}
+
+/* 요약 */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.kpi .big{font:600 28px/1.25 var(--body);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .big small{font-size:16px;font-weight:500;color:var(--muted);margin-left:2px}
+.kpi .sub{font-size:14px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bar{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.bar .trk{height:10px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bar .fil{height:100%;border-radius:99px;background:var(--accent)}
+.bar b{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* 카드 목록 */
+.list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;color:inherit;min-width:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+.card:active{background:var(--accent-soft)}
+.card.off{opacity:.62}
+.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font:700 18px/1 var(--display);flex:none}
+.mono.sm{width:32px;height:32px;border-radius:9px;font-size:14px}
+.card .nm{font-weight:600;font-size:17.5px;line-height:1.35;overflow-wrap:anywhere}
+.card .ds{font-size:14px;color:var(--muted);line-height:1.5}
+.card .mt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .amt small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.pinfo{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;font-size:14px;line-height:1.45}
+.pi{display:grid;grid-template-columns:64px 1fr;gap:8px}
+.pi .k{color:var(--muted);font-size:13px;padding-top:1px}
+.pi .v{min-width:0;overflow-wrap:anywhere}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tagx.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tagx.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.tagx.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.empty{margin-top:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.empty .btn{margin-top:10px}
+
+/* 상자 */
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ol li::marker{color:var(--accent);font-weight:600}
+.note{margin-top:8px;font-size:14px;padding:8px 10px;border-radius:8px}
+.note.tip{background:var(--accent-soft)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.meta2{font-size:13.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.pick.busy{opacity:.5;pointer-events:none}
+.btn.danger{background:var(--surface);border-color:var(--bad);color:var(--bad);font-weight:600}
+.sact.three{grid-template-columns:1fr 1fr 2fr}
+.toast .undo{margin-left:10px;min-height:34px;padding:2px 12px;border-radius:8px;border:1px solid var(--surface);background:transparent;color:var(--surface);font-weight:600;cursor:pointer}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.frow>.fld{flex:1 1 140px}
+.vstack{display:flex;flex-direction:column;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:72px;resize:vertical}
+.fld .ck{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;color:var(--ink)}
+.fld .ck input{width:22px;height:22px;min-height:0}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+
+/* 보장 표 */
+.mx{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mxw{overflow-x:auto;margin-inline:-14px;padding-inline:14px}
+.mx th,.mx td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.mx th:first-child,.mx td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.mx thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.mx td.no{color:var(--bad);font-weight:600}
+.mx td.yes{font-weight:600}
+
+/* 일정 */
+.ev{display:grid;grid-template-columns:58px 1fr;gap:10px;padding-block:9px;border-top:1px solid var(--line);align-items:center}
+.ev:first-child{border-top:0}
+.ev .dd{text-align:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px;padding:4px 0;font-variant-numeric:tabular-nums}
+.ev .dd.soon{background:var(--warn-soft);color:var(--warn)}
+.ev b{font-weight:600;font-size:15px;display:block}
+.ev small{font-size:13px;color:var(--muted)}
+
+/* 보험 분석 */
+.rvrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font:inherit;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.rvrow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.rvrow b{font-weight:600;font-size:17px}
+.rvrow small{display:block;font-size:13px;color:var(--muted)}
+.up{color:var(--ok);font-size:13px;font-weight:600}.down{color:var(--bad);font-size:13px;font-weight:600}
+.score{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.score .big{font:600 34px/1.1 var(--body);font-variant-numeric:tabular-nums}
+.score .big small{font-size:16px;color:var(--muted);font-weight:500}
+.gl{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.gl li::marker{color:var(--accent);font-weight:700}
+.gl b{display:block;font-weight:600}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+/* 보장 입력 줄 */
+.cov{border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;grid-template-columns:1fr 112px 40px;gap:6px;background:var(--surface)}
+.cov .full{grid-column:1/-1}
+.cov select,.cov input{font-size:16px;padding:6px 8px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box;min-width:0}
+.cov .x{width:40px;height:42px;border-radius:8px}
+.files{display:flex;flex-direction:column;gap:6px}
+.fvpage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:8px}
+.file{display:flex;align-items:center;gap:8px;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:6px 8px 6px 12px;background:var(--surface);font-size:14px}
+.file a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;min-height:34px;display:flex;align-items:center}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display);min-width:0;overflow-wrap:anywhere}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;margin-top:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* 건강관리 전용 */
+.r.nw,.nw{white-space:nowrap}
+.tl{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tl th,.tl td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.tl th:first-child,.tl td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.tl thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.tl td.j1{color:var(--warn);font-weight:600}.tl td.j2{color:var(--bad);font-weight:700}
+.vrow{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.vrow:first-of-type{border-top:0}
+.vrow .n{min-width:0}
+.vrow .n small{display:block;color:var(--muted);font-size:13px}
+.vrow .v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vrow .v small{font-weight:400;font-size:13px;color:var(--muted);margin-left:2px}
+.vrow .v .d{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.j0{color:var(--ok)}.j1{color:var(--warn)}.j2{color:var(--bad)}
+.tagx.j1{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tagx.j2{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.tagx.j0{background:var(--accent-soft);color:var(--ok);border-color:transparent}
+.ig{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ig .fld input{min-width:0}
+fieldset.grp{border:1px solid var(--line);border-radius:10px;padding:8px 10px 10px;margin:0;background:var(--surface)}
+fieldset.grp legend{font-size:14px;font-weight:600;color:var(--accent);padding:0 4px}
+.tc{margin-top:8px}
+.tc svg{display:block;width:100%;height:auto;overflow:visible}
+.tc .ax{font-size:12px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.tc .band{fill:var(--ok);opacity:.12}
+.tc .ln{fill:none;stroke:var(--accent);stroke-width:2.5}
+.tc .pt{stroke:var(--surface);stroke-width:2}
+.tc .lb{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
+.tc .gd{stroke:var(--line);stroke-dasharray:3 3}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.mcard .hd{display:flex;align-items:center;gap:10px}
+.mcard .hd b{font-weight:600;font-size:17.5px}
+.mcard .hd small{display:block;font-size:13px;color:var(--muted)}
+.flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.flags .tagx{font-size:13px;padding:2px 8px}
+.rvbox .gl{gap:8px}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="tb-home" id="homeBtn" href="../" hidden aria-label="MY 미니앱 허브로">MY</a>
+    <div class="tb-title">우리 가족 건강관리</div>
+    <span class="pill" id="tbPill">검진 0건</span>
+    <button class="save" type="button" id="saveState" data-s="local" aria-label="저장 상태">저장 상태</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+  <main id="vHome"></main>
+  <main id="vExam" hidden></main>
+  <main id="vTrend" hidden></main>
+  <main id="vFam" hidden></main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="home" aria-selected="true"><b>한눈에</b><span>주의·일정</span></button>
+  <button type="button" role="tab" data-view="exam" aria-selected="false"><b>검진</b><span id="tExam">0건</span></button>
+  <button type="button" role="tab" data-view="trend" aria-selected="false"><b>추이</b><span>그래프·해석</span></button>
+  <button type="button" role="tab" data-view="fam" aria-selected="false"><b>가족</b><span>구성원·백업</span></button>
+</div></nav>
+
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="편집"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+(function(){
+"use strict";
+/* ── 고정 목록 (키는 저장 데이터에 들어가므로 바꾸지 말 것: 이름 변경은 라벨만) ── */
+const RELS=["본인","배우자","자녀","부모","기타"];
+const SEX={M:"남",F:"여"};
+const KINDS={nat:"국가 일반검진",comp:"종합검진",cancer:"암검진",etc:"기타 검사"};
+const SRC={file:"검진표 자동 등록",paste:"붙여넣은 자료",manual:"직접 입력"};
+/* 검사 항목: 판정 기준은 국민건강보험공단 일반건강검진 판정 기준을 단순화 (0 정상, 1 주의, 2 이상) */
+const IT=[
+  {k:"height",n:"키",u:"cm",g:"신체"},
+  {k:"weight",n:"몸무게",u:"kg",g:"신체"},
+  {k:"bmi",n:"체질량지수(BMI)",u:"",g:"신체",j:v=>v<18.5?1:v<23?0:v<25?1:2,b:[18.5,22.9],h:"23~24.9 과체중, 25 이상 비만"},
+  {k:"waist",n:"허리둘레",u:"cm",g:"신체",j:(v,s)=>v<(s==="F"?85:90)?0:2,b:s=>[null,s==="F"?84.9:89.9],h:"남 90, 여 85 이상이면 복부비만"},
+  {k:"sbp",n:"수축기 혈압",u:"mmHg",g:"혈압",j:v=>v<120?0:v<140?1:2,b:[null,119],h:"140 이상 고혈압 의심"},
+  {k:"dbp",n:"이완기 혈압",u:"mmHg",g:"혈압",j:v=>v<80?0:v<90?1:2,b:[null,79],h:"90 이상 고혈압 의심"},
+  {k:"glu",n:"공복혈당",u:"mg/dL",g:"당뇨",j:v=>v<100?0:v<126?1:2,b:[null,99],h:"100~125 공복혈당장애, 126 이상 당뇨 의심"},
+  {k:"hba1c",n:"당화혈색소",u:"%",g:"당뇨",j:v=>v<5.7?0:v<6.5?1:2,b:[null,5.6],h:"5.7~6.4 당뇨 전단계, 6.5 이상 당뇨 의심"},
+  {k:"tc",n:"총콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<200?0:v<240?1:2,b:[null,199],h:"240 이상 고콜레스테롤혈증 의심"},
+  {k:"ldl",n:"LDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<130?0:v<160?1:2,b:[null,129],h:"160 이상 높음"},
+  {k:"hdl",n:"HDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v>=40?0:2,b:[40,null],h:"40 미만이면 낮음 (높을수록 좋음)"},
+  {k:"tg",n:"중성지방",u:"mg/dL",g:"콜레스테롤",j:v=>v<150?0:v<200?1:2,b:[null,149],h:"200 이상 높음"},
+  {k:"ast",n:"AST(SGOT)",u:"U/L",g:"간",j:v=>v<=40?0:v<=50?1:2,b:[null,40],h:"51 이상 간질환 의심"},
+  {k:"alt",n:"ALT(SGPT)",u:"U/L",g:"간",j:v=>v<=35?0:v<=45?1:2,b:[null,35],h:"46 이상 간질환 의심"},
+  {k:"ggt",n:"감마지티피(γ-GTP)",u:"U/L",g:"간",j:(v,s)=>s==="F"?(v<=35?0:v<=45?1:2):(v<=63?0:v<=77?1:2),b:s=>[null,s==="F"?35:63],h:"남 78, 여 46 이상 간질환 의심"},
+  {k:"hb",n:"혈색소",u:"g/dL",g:"빈혈",j:(v,s)=>s==="F"?(v>=12?(v<=15.5?0:1):v>=10?1:2):(v>=13?(v<=16.5?0:1):v>=12?1:2),b:s=>s==="F"?[12,15.5]:[13,16.5],h:"남 12, 여 10 미만이면 빈혈 의심"},
+  {k:"cr",n:"혈청 크레아티닌",u:"mg/dL",g:"신장",j:v=>v<=1.5?0:2,b:[null,1.5],h:"1.5 초과 신장질환 의심"},
+  {k:"egfr",n:"신사구체여과율(eGFR)",u:"mL/min",g:"신장",j:v=>v>=60?0:2,b:[60,null],h:"60 미만 신장기능 저하 의심"}];
+const ITK=Object.fromEntries(IT.map(x=>[x.k,x]));
+const GRPS=["신체","혈압","당뇨","콜레스테롤","간","빈혈","신장"];
+const JL=["정상","주의","이상"];
+const MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";let pdfLib=null;
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load"));document.head.appendChild(s)})}
+async function getPdfLib(){if(pdfLib)return pdfLib;await loadScript(PDFJS+"pdf.worker.min.js");await loadScript(PDFJS+"pdf.min.js");pdfLib=window.pdfjsLib;pdfLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";return pdfLib}
+const COLORS=["#8A3B5C","#24456E","#2E6B4F","#9A6400","#6B4A8E","#1D5E54"];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fnum=v=>{if(v===""||v==null)return null;const n=Number(String(v).replace(/[^\d.-]/g,""));return isFinite(n)&&String(v).trim()!==""?n:null};
+const fmt=v=>v==null?"-":(Math.round(v*10)/10).toLocaleString("ko-KR");
+const pd=s=>{if(!s)return null;const d=new Date(s+"T00:00:00");return isNaN(d)?null:d};
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const dot=s=>{const d=pd(s);return d?`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`:""};
+const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ── 저장: 공유 저장소(내 전용 칸) + 이 기기, 최근 고친 쪽 우선, 지움은 표시만 ── */
+const LSK="myapps-health-v1";
+const state={recs:{},view:"home",mem:null,edit:null,tItem:null};
+let db=null,col=null,canWrite=true,uid=null;const extras={sample:null,lim:null,assets:null};
+const ts=r=>(r&&r.updatedAt)||0;
+function take(r){if(!r||!r.id||!r.kind)return false;const c=state.recs[r.id];if(!c||ts(r)>ts(c)){state.recs[r.id]={...r};return true}return false}
+function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:1,recs:state.recs}))}catch(e){}}
+function lsLoad(){try{const o=JSON.parse(localStorage.getItem(LSK)||"null");if(o&&o.recs)Object.values(o.recs).forEach(take)}catch(e){}}
+const q=[];let busy=false;
+function push(id){if(!col||!canWrite)return;const r=state.recs[id];if(!r)return;q.push(()=>col.doc(id).set(JSON.parse(JSON.stringify(r))));if(!busy)run()}
+async function run(){busy=true;while(q.length){const f=q.shift();try{await f();setSave("ok")}catch(e){if(e&&(e.code==="invalid_argument"||e.code==="permission_denied")){canWrite=false;setSave("local","공유 저장소에 쓸 권한이 없어 이 기기에만 저장됩니다")}else setSave("local","저장 실패 · 이 기기에만 저장됨");q.length=0}}busy=false}
+let saveMsg="이 기기에 저장됨";
+function setSave(s,m){const el=$("saveState");el.dataset.s=s;saveMsg=m||(s==="ok"?"공유 저장소(내 전용)에 저장됨":"이 기기에 저장됨");el.title=saveMsg;el.setAttribute("aria-label","저장 상태: "+saveMsg);const t=$("saveTxt");if(t)t.textContent=saveMsg}
+function put(r){r.updatedAt=Date.now();r.createdAt=r.createdAt||r.updatedAt;state.recs[r.id]=r;lsSave();push(r.id);render()}
+let first=true;
+async function connect(){
+  if(!window.claude||!window.claude.use){setSave("local","이 휴대폰에만 저장됨 · 백업 파일을 꼭 받아 두세요");return}
+  try{db=await window.claude.use("db")}catch(e){db=null}
+  let user=null;try{user=await window.claude.use("user")}catch(e){}
+  try{uid=user&&await user.id()}catch(e){uid=null}
+  if(!db||!uid){setSave("local","이 기기에 저장됨 · 공유 저장소 연결 안 됨");return}
+  col=db.collection("data/users/"+uid);setSave("ok");
+  col.onSnapshot(snap=>{
+    const remote={};snap.docs.forEach(d=>{const x=d.data();if(x&&x.kind)remote[d.id]={...x,id:d.id}});
+    Object.values(remote).forEach(take);
+    const up=first?Object.keys(state.recs).filter(id=>!remote[id]||ts(state.recs[id])>ts(remote[id])):[];
+    first=false;lsSave();render();if(up.length)setTimeout(()=>up.forEach(push),0);
+  },()=>setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시"));
+  loadPref();
+  try{extras.assets=await window.claude.use("assets")}catch(e){extras.assets=null}
+  try{const sm=await window.claude.use("sample");if(sm){extras.sample=sm;extras.lim=await sm.limits().catch(()=>null)}}catch(e){}
+  render();
+}
+
+/* ── 계산 ── */
+const live=k=>Object.values(state.recs).filter(r=>r.kind===k&&!r.deleted);
+const members=()=>live("member").sort((a,b)=>(a.order??99)-(b.order??99)||ts(a)-ts(b));
+const mById=id=>state.recs[id]&&!state.recs[id].deleted?state.recs[id]:null;
+const exams=()=>live("exam").sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+const examsOf=mid=>exams().filter(x=>x.owner===mid);
+function age(b,at){const d=pd(b);if(!d)return null;const t=at||today0();let a=t.getFullYear()-d.getFullYear();if(t<new Date(t.getFullYear(),d.getMonth(),d.getDate()))a--;return a}
+/* 값: 입력값, 없으면 BMI는 키·몸무게로 계산 */
+function val(x,k){const v=x&&x.v?fnum(x.v[k]):null;if(v!=null)return v;if(k==="bmi"&&x&&x.v){const h=fnum(x.v.height),w=fnum(x.v.weight);if(h&&w)return Math.round(w/Math.pow(h/100,2)*10)/10}return null}
+function judge(k,v,sex){const it=ITK[k];if(!it||!it.j||v==null)return null;return it.j(v,sex==="F"?"F":"M")}
+const bandOf=(it,s)=>typeof it.b==="function"?it.b(s==="F"?"F":"M"):it.b;
+function flagsOf(x,m){return IT.map(it=>{const v=val(x,it.k);const j=judge(it.k,v,m&&m.sex);return j?{it,v,j}:null}).filter(Boolean).sort((a,b)=>b.j-a.j)}
+function prevOf(x,k){return examsOf(x.owner).filter(y=>String(y.date)<String(x.date)).find(y=>val(y,k)!=null)}
+/* 국가건강검진: 2년마다(출생연도 짝수·홀수와 같은 해). 사무직 외 근로자는 매년 */
+function natDue(m){const d=pd(m&&m.birth);if(!d)return null;const y=today0().getFullYear();if(num1(m.cycle)===1)return y;return d.getFullYear()%2===y%2?y:y+1}
+const num1=v=>Number(v)||0;
+function cancerList(m){const a=age(m.birth),s=m.sex;if(a==null)return [];const y=today0().getFullYear(),even=pd(m.birth).getFullYear()%2===y%2;const out=[];
+  if(a>=40)out.push(["위암","2년마다 위내시경",even]);
+  if(a>=50)out.push(["대장암","매년 분변잠혈검사",true]);
+  if(s==="F"&&a>=40)out.push(["유방암","2년마다 유방촬영",even]);
+  if(s==="F"&&a>=20)out.push(["자궁경부암","2년마다 세포검사",even]);
+  if(a>=40)out.push(["간암","고위험군(간염·간경변)만 6개월마다",null]);
+  if(a>=54&&a<=74)out.push(["폐암","흡연력 30갑년 이상만 2년마다",null]);
+  return out}
+
+/* ── 화면 ── */
+function render(){
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
+  ["home","exam","trend","fam"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=state.view!==v});
+  const n=exams().length;$("tbPill").textContent=`검진 ${n}건`;$("tExam").textContent=`${n}건`;
+  ({home:renderHome,exam:renderExam,trend:renderTrend,fam:renderFam})[state.view]();
+}
+function noMembers(){return `<div class="empty">먼저 건강을 관리할 가족을 등록해 주세요.<br><button class="btn pri" type="button" data-addmem="1">＋ 가족 등록</button></div>`}
+const mono=(m,sm)=>`<span class="mono${sm?" sm":""}" style="background:${esc((m&&m.color)||COLORS[0])}">${esc(((m&&m.name)||"?").slice(0,1))}</span>`;
+function memChips(){const ms=members();if(ms.length<2)return "";return `<div class="chips" role="group" aria-label="가족 고르기">${ms.map(m=>`<button class="chip" type="button" data-mem="${m.id}" aria-pressed="${state.mem===m.id}">${esc(m.name)}</button>`).join("")}</div>`}
+function curMem(){const ms=members();if(!ms.length)return null;if(!state.mem||!mById(state.mem))state.mem=ms[0].id;return mById(state.mem)}
+
+function renderHome(){
+  const ms=members();const d=new Date();
+  let h=`<div class="dayhead"><h2>우리 가족 건강 한눈에</h2><div class="meta">${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준 · 가족 ${ms.length}명 · 검진 ${exams().length}건</div></div>`;
+  if(!ms.length){$("vHome").innerHTML=h+noMembers();return}
+  ms.forEach(m=>{const xs=examsOf(m.id),last=xs[0],a=age(m.birth);const fl=last?flagsOf(last,m):[];const due=natDue(m);const y=today0().getFullYear();
+    h+=`<section class="mcard"><div class="hd">${mono(m)}<span style="flex:1;min-width:0"><b>${esc(m.name)}</b><small>${a!=null?`만 ${a}세`:"생년월일 미입력"}${m.sex?` · ${SEX[m.sex]}`:""}${last?` · 최근 검진 ${dot(last.date)}`:" · 검진 기록 없음"}</small></span>${last?`<button class="btn sm line" type="button" data-exam="${last.id}">자세히</button>`:""}</div>`;
+    if(last){h+=fl.length?`<div class="flags">${fl.slice(0,6).map(f=>{const p=prevOf(last,f.it.k),pv=p&&val(p,f.it.k);const ar=pv!=null&&pv!==f.v?(f.v>pv?" ↑":" ↓"):"";return `<span class="tagx j${f.j}">${esc(f.it.n.replace(/\(.*\)/,""))} ${fmt(f.v)}${ar}</span>`}).join("")}${fl.length>6?`<span class="tagx">외 ${fl.length-6}개</span>`:""}</div>`:`<p class="note tip">최근 검진에서 기준을 벗어난 수치가 없습니다.</p>`;
+      if(last.verdict)h+=`<p class="meta2" style="margin-top:6px">판정: ${esc(last.verdict)}</p>`}
+    else h+=`<p class="meta2" style="margin-top:8px">검진표를 등록하면 주의할 수치와 변화를 보여 드립니다.</p>`;
+    const meds=String(m.meds||"").trim();if(meds)h+=`<p class="meta2" style="margin-top:6px">복용 약: ${esc(meds)}</p>`;
+    h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">국가 일반검진<small>${num1(m.cycle)===1?"매년 대상으로 설정":"2년마다 · 출생연도 짝수·홀수와 같은 해"}</small></span><span class="r nw">${due==null?"-":due===y?`<span class="tagx warn">올해 대상</span>`:`${due}년`}</span></div>`;
+    const cl=cancerList(m);if(cl.length)h+=`<div class="row"><span class="l">암검진 (국가 지원)<small>${cl.map(c=>`${c[0]}: ${c[1]}${c[2]===true?" · 올해 대상":c[2]===false?" · 내년 대상":""}`).join("<br>")}</small></span></div>`;
+    h+=`</section>`});
+  h+=`<p class="meta2" style="margin-top:12px">판정은 국민건강보험공단 일반건강검진 기준을 단순화한 참고용입니다. 진단은 의사와 상담하세요.</p>`;
+  $("vHome").innerHTML=h;
+}
+
+function examCard(x){const m=mById(x.owner);const fl=flagsOf(x,m);
+  const key=[["혈압",val(x,"sbp")!=null?`${fmt(val(x,"sbp"))}/${fmt(val(x,"dbp"))}`:null],["혈당",val(x,"glu")!=null?fmt(val(x,"glu")):null],["BMI",val(x,"bmi")!=null?fmt(val(x,"bmi")):null]].filter(k=>k[1]);
+  return `<li><button class="card" type="button" data-exam="${x.id}">${mono(m)}<span style="min-width:0"><span class="nm">${esc(dot(x.date))} ${esc(KINDS[x.type]||"검진")}</span><span class="ds" style="display:block">${esc(m?m.name:"?")}${x.hospital?" · "+esc(x.hospital):""}</span>
+    <span class="mt">${key.map(k=>`<span>${k[0]} ${k[1]}</span>`).join("·")}${(x.files||[]).length?`<span class="tagx">첨부 ${x.files.length}</span>`:""}</span></span>
+    <span class="amt">${fl.length?`<span class="${fl[0].j===2?"j2":"j1"}">${fl.length}개</span><small>주의·이상</small>`:`<span class="j0">정상</span><small>기준 이내</small>`}</span></button></li>`}
+function renderExam(){
+  const ms=members();let h=`<div class="dayhead"><h2>검진 기록</h2><div class="meta">검진표를 올리면 수치를 자동으로 채웁니다</div></div>`;
+  if(!ms.length){$("vExam").innerHTML=h+noMembers();return}
+  h+=ms.length>1?`<div class="chips" role="group" aria-label="가족 고르기"><button class="chip" type="button" data-mem="" aria-pressed="${!state.mem}">전체 ${exams().length}</button>${ms.map(m=>`<button class="chip" type="button" data-mem="${m.id}" aria-pressed="${state.mem===m.id}">${esc(m.name)} ${examsOf(m.id).length}</button>`).join("")}</div>`:"";
+  h+=`<div class="frow" style="margin-top:10px">${extras.sample?`<button class="btn pri" type="button" data-import="1" style="flex:2;min-height:46px">검진표로 자동 등록</button>`:""}<button class="btn ${extras.sample?"line":"pri"}" type="button" data-addexam="1" style="flex:1;min-height:46px">＋ 직접 입력</button></div>`;
+  const list=exams().filter(x=>!state.mem||x.owner===state.mem);
+  h+=list.length?`<ul class="list">${list.map(examCard).join("")}</ul>`:`<div class="empty">등록된 검진이 없습니다.${extras.sample?`<br>'검진표로 자동 등록'에 결과지 PDF나 사진을 올리면 수치를 자동으로 채웁니다.`:`<br>국민건강보험공단 'The건강보험' 앱의 건강검진 결과를 보고 직접 입력할 수 있습니다.`}</div>`;
+  $("vExam").innerHTML=h;
+}
+
+/* 추이 그래프 (SVG) */
+function trendSvg(m,it,pts){
+  const W=Math.max(280,Math.min(528,($("vTrend").clientWidth||340)-30)),H=190,L=40,R=14,T=22,B=26;
+  const band=bandOf(it,m.sex)||[null,null];const vs=pts.map(p=>p.v);let lo=Math.min(...vs),hi=Math.max(...vs);
+  if(band[0]!=null){lo=Math.min(lo,band[0]);hi=Math.max(hi,band[0])}if(band[1]!=null){lo=Math.min(lo,band[1]);hi=Math.max(hi,band[1])}
+  const pad=(hi-lo)*.15||Math.max(1,hi*.1);lo=Math.max(0,lo-pad);hi=hi+pad;
+  const t0=pd(pts[0].date).getTime(),t1=pd(pts[pts.length-1].date).getTime();
+  const IN=18,X=t=>pts.length<2||t1===t0?L+(W-L-R)/2:L+IN+(t-t0)/(t1-t0)*(W-L-R-IN*2),Y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} ${esc(it.n)} 변화 그래프">`;
+  const bl=band[0]!=null?band[0]:lo,bh=band[1]!=null?band[1]:hi;if(band[0]!=null||band[1]!=null)s+=`<rect class="band" x="${L}" y="${Y(Math.min(hi,bh))}" width="${W-L-R}" height="${Math.max(0,Y(Math.max(lo,bl))-Y(Math.min(hi,bh)))}"/>`;
+  const raw=(hi-lo)/3,p10=Math.pow(10,Math.floor(Math.log10(raw||1))),st=[1,2,2.5,5,10].map(x=>x*p10).find(x=>x>=raw)||p10*10;const ticks=[];for(let v=Math.ceil(lo/st)*st;v<=hi;v+=st)ticks.push(v);
+  ticks.forEach(v=>{s+=`<line class="gd" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L-6}" y="${Y(v)+4}" text-anchor="end">${fmt(v)}</text>`});
+  if(pts.length>1)s+=`<polyline class="ln" points="${pts.map(p=>`${X(pd(p.date).getTime()).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ")}"/>`;
+  const every=Math.ceil(pts.length/6);
+  pts.forEach((p,i)=>{const x=X(pd(p.date).getTime()),y=Y(p.v),c=p.j===2?"var(--bad)":p.j===1?"var(--warn)":"var(--accent)";
+    s+=`<circle class="pt" cx="${x}" cy="${y}" r="5.5" fill="${c}"/>`;
+    if(i%every===0||i===pts.length-1){s+=`<text class="lb" x="${x}" y="${y-10}" text-anchor="middle">${fmt(p.v)}</text><text class="ax" x="${x}" y="${H-6}" text-anchor="middle">${String(p.date).slice(2,7).replace("-",".")}</text>`}});
+  return s+`</svg>`;
+}
+function renderTrend(){
+  const ms=members();let h=`<div class="dayhead"><h2>수치 변화</h2><div class="meta">검진 항목별 추이와 Claude 해석</div></div>`;
+  if(!ms.length){$("vTrend").innerHTML=h+noMembers();return}
+  const m=curMem();h+=memChips();
+  const xs=examsOf(m.id).slice().reverse();
+  if(!xs.length){$("vTrend").innerHTML=h+`<div class="empty">${esc(m.name)}님의 검진 기록이 없습니다.<br><button class="btn pri" type="button" data-goexam="1">검진 등록하러 가기</button></div>`;return}
+  const have=IT.filter(it=>it.k!=="height"&&xs.some(x=>val(x,it.k)!=null));
+  const last=xs[xs.length-1];const fl=flagsOf(last,m).map(f=>f.it.k);
+  if(!state.tItem||!have.some(i=>i.k===state.tItem))state.tItem=(have.find(i=>fl.includes(i.k))||have[0]||{}).k;
+  const it=ITK[state.tItem];
+  h+=`<div class="chips" role="group" aria-label="항목 고르기">${have.map(i=>`<button class="chip" type="button" data-titem="${i.k}" aria-pressed="${i.k===state.tItem}">${esc(i.n.replace(/\(.*\)/,""))}${fl.includes(i.k)?" ·":""}</button>`).join("")}</div>`;
+  if(it){const pts=xs.map(x=>({date:x.date,v:val(x,it.k),j:judge(it.k,val(x,it.k),m.sex)})).filter(p=>p.v!=null&&pd(p.date));
+    const band=bandOf(it,m.sex);const lastP=pts[pts.length-1],firstP=pts[0];
+    h+=`<section class="box"><h3>${esc(it.n)}${it.u?` (${esc(it.u)})`:""}</h3>
+      <div class="row" style="border-top:0"><span class="l">최근 ${esc(dot(lastP.date))}${lastP.j!=null?` <span class="tagx j${lastP.j}">${JL[lastP.j]}</span>`:""}<small>${band?`정상 범위 ${band[0]!=null?fmt(band[0]):""}~${band[1]!=null?fmt(band[1]):""}`:""}${it.h?` · ${esc(it.h)}`:""}</small></span><span class="r nw" style="font-size:20px">${fmt(lastP.v)}</span></div>
+      ${pts.length>1?`<p class="meta2">${esc(dot(firstP.date))} ${fmt(firstP.v)} → ${fmt(lastP.v)} (${lastP.v>=firstP.v?"+":""}${fmt(lastP.v-firstP.v)}, ${pts.length}회)</p>`:""}
+      <div class="tc">${trendSvg(m,it,pts)}</div><p class="meta2" style="margin-top:4px">연한 초록 띠가 정상 범위입니다. 점 색: 정상 · <span class="j1">주의</span> · <span class="j2">이상</span></p></section>`}
+  // 전체 항목 변화표
+  const cols=xs.slice(-5);
+  h+=`<section class="box"><h3>항목별 최근 ${cols.length}회</h3><div class="mxw"><table class="tl"><thead><tr><th>항목</th>${cols.map(x=>`<th>${esc(String(x.date).slice(2,7).replace("-","."))}</th>`).join("")}</tr></thead><tbody>
+    ${have.map(i=>`<tr><td>${esc(i.n.replace(/\(.*\)/,""))}</td>${cols.map(x=>{const v=val(x,i.k),j=judge(i.k,v,m.sex);return `<td class="${j?"j"+j:""}">${v==null?"-":fmt(v)}</td>`}).join("")}</tr>`).join("")}</tbody></table></div></section>`;
+  // Claude 해석
+  const rvs=live("review").filter(r=>r.owner===m.id).sort((a,b)=>ts(b)-ts(a));
+  h+=`<section class="box rvbox"><h3>Claude 건강 해석 (${rvs.length}회)</h3>`;
+  if(extras.sample)h+=`<button class="btn pri" type="button" data-review="${m.id}" style="width:100%;min-height:46px">${esc(m.name)}님 최근 검진 해석 받기</button><p class="meta2" id="rvMsg" style="margin-top:6px">최근 검진 최대 5회와 복용 약·질환 메모를 바탕으로 해석합니다(30초 안팎). 결과는 쌓아서 보관합니다.</p>`;
+  else h+=`<p class="meta2">해석 받기는 Claude판에서 할 수 있습니다. 받은 해석은 백업으로 옮겨 여기서 볼 수 있습니다.</p>`;
+  if(rvs.length){const r=rvs.find(x=>x.id===state.rvSel)||rvs[0];h+=rvView(r);
+    if(rvs.length>1)h+=`<div class="vstack" style="margin-top:10px;gap:6px">${rvs.map(x=>`<button class="rvrow" type="button" data-rvsel="${x.id}" aria-pressed="${x===r}"><span><b style="font-size:15px">${esc(dot(ymd(new Date(x.createdAt||x.updatedAt))))}</b><small>검진 ${esc((x.examDates||[]).slice(-1)[0]||"")}까지 반영</small></span><span></span><span class="meta2">보기</span></button>`).join("")}</div>`}
+  h+=`<p class="meta2" style="margin-top:8px">참고용 해석이며 진단이 아닙니다. 주의·이상 수치는 병원 상담을 받으세요.</p></section>`;
+  $("vTrend").innerHTML=h;
+}
+function rvView(r){const o=r.res||{};const L=a=>Array.isArray(a)?a.filter(Boolean):[];
+  return `<div class="note tip" style="margin-top:10px"><b>${esc(dot(ymd(new Date(r.createdAt||r.updatedAt))))} 해석</b><p style="margin-top:4px">${esc(o.summary||"")}</p></div>
+  ${L(o.watch).length?`<div class="sec" style="margin-top:12px"><h3 style="font-size:15px;color:var(--muted);font-weight:600;margin-bottom:6px">살펴볼 점</h3><ol class="gl">${L(o.watch).map(w=>`<li><b>${esc(w.item||"")}</b>${esc(w.why||"")}${w.action?`<br><span class="meta2">할 일: ${esc(w.action)}</span>`:""}</li>`).join("")}</ol></div>`:""}
+  ${L(o.good).length?`<div class="sec" style="margin-top:12px"><h3 style="font-size:15px;color:var(--muted);font-weight:600;margin-bottom:6px">좋은 점</h3><ul class="ul">${L(o.good).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+  ${L(o.lifestyle).length?`<div class="sec" style="margin-top:12px"><h3 style="font-size:15px;color:var(--muted);font-weight:600;margin-bottom:6px">생활 습관</h3><ul class="ul">${L(o.lifestyle).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+  ${L(o.nextCheck).length?`<div class="sec" style="margin-top:12px"><h3 style="font-size:15px;color:var(--muted);font-weight:600;margin-bottom:6px">다음에 받을 검사</h3><ul class="ul">${L(o.nextCheck).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+  ${o.doctor?`<p class="note warn" style="margin-top:10px">병원 상담: ${esc(o.doctor)}</p>`:""}`}
+const REVIEW_PROMPT=`당신은 한국의 건강검진 결과를 쉽게 풀어 주는 가정의학과 전문의입니다. 아래 가족 구성원의 최근 건강검진 수치(오래된 것부터)를 보고, 50대 일반인이 이해하기 쉬운 존댓말로 해석해 주세요. 수치 변화(좋아짐·나빠짐)를 반드시 근거로 들고, 진단을 단정하지 말고 병원 상담이 필요한 경우를 분명히 말하세요. JSON 하나로만 답하세요.
+{"summary":"두세 문장 요약","watch":[{"item":"항목 이름","why":"수치와 변화 근거","action":"구체적인 할 일"}],"good":["좋은 점"],"lifestyle":["식사·운동·생활 습관 제안 3개 이내"],"nextCheck":["다음에 받으면 좋을 검사와 시기"],"doctor":"병원 상담을 권할 내용, 없으면 빈 문자열"}`;
+async function runReview(mid){
+  const m=mById(mid);if(!m||!extras.sample)return;const xs=examsOf(mid).slice(0,5).reverse();if(!xs.length)return;
+  const btn=document.querySelector(`[data-review="${mid}"]`);if(btn)btn.disabled=true;const msg=$("rvMsg");if(msg)msg.textContent="해석 중입니다… (30초 안팎)";
+  const data={나이:age(m.birth),성별:SEX[m.sex]||"모름",복용약:m.meds||"",질환:m.conds||"",알레르기:m.allergy||"",
+    검진:xs.map(x=>({날짜:x.date,종류:KINDS[x.type]||"",수치:Object.fromEntries(IT.map(it=>[it.n+(it.u?`(${it.u})`:""),val(x,it.k)]).filter(e=>e[1]!=null)),판정:x.verdict||"",기타검사:(x.finds||[]).map(f=>`${f.name}: ${f.result}`),소견:x.opinion||""}))};
+  try{const o=await extras.sample.json(REVIEW_PROMPT+"\n\n=== 자료 ===\n"+JSON.stringify(data),{modelTier:"default"});
+    if(!o||!o.summary)throw{code:"empty"};
+    const r={id:newId("r"),kind:"review",owner:mid,res:o,examDates:xs.map(x=>x.date),deleted:false};state.rvSel=r.id;put(r);toast("해석을 저장했습니다")}
+  catch(e){if(msg)msg.textContent=`해석하지 못했습니다 (${errTxt(e)})`;if(btn)btn.disabled=false}
+}
+
+function renderFam(){
+  const ms=members();const xs=exams();
+  let h=`<div class="dayhead"><h2>가족과 설정</h2><div class="meta">구성원 · 건강 메모 · 백업</div></div>`;
+  h+=`<section class="box"><h3>가족 구성원</h3>${ms.length?ms.map(m=>{const a=age(m.birth);return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center">${mono(m,1)}<span><b style="font-weight:600">${esc(m.name)}</b> <span class="meta2">${esc(m.rel||"")}</span><small>${a!=null?`만 ${a}세 · `:""}${m.sex?SEX[m.sex]+" · ":""}검진 ${examsOf(m.id).length}건${m.meds?` · 약 ${esc(String(m.meds).slice(0,20))}`:""}</small></span></span><span class="r"><button class="btn sm" type="button" data-editmem="${m.id}">수정</button></span></div>`}).join(""):`<p class="meta2">등록된 가족이 없습니다.</p>`}
+    <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addmem="1" style="flex:1">＋ 가족 등록</button></div></section>`;
+  h+=`<section class="box"><h3>백업</h3>
+      <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
+      <div class="row"><span class="l">기록 건수</span><span class="r">가족 ${ms.length} · 검진 ${xs.length} · 해석 ${live("review").length}</span></div>
+      <p class="meta2" style="margin-top:6px">건강 기록은 나만 볼 수 있는 저장 칸과 이 기기에 함께 저장됩니다. 백업 파일을 PC나 휴대폰 'MY' 폴더에 받아 두세요.</p>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><button class="btn line" type="button" id="bkCopy" style="flex:1">백업 코드 복사</button></div>
+      <p class="meta2" id="bkProg" hidden style="margin-top:6px"></p>
+      <div class="vstack" style="margin-top:10px"><p class="meta2">'백업 파일 저장'에는 첨부 자료까지 들어갑니다. 백업 코드에는 첨부 자료가 빠지니, 첨부까지 되살리려면 '파일에서 복원'을 쓰세요.</p><label class="fld">백업 코드로 복원 (기존 기록과 합칩니다)<textarea id="bkText" placeholder="복사해 둔 백업 코드를 붙여넣으세요"></textarea></label>
+        <div class="frow"><button class="btn line" type="button" id="bkRestore" style="flex:1">붙여넣은 코드로 복원</button><label class="btn pick" style="flex:1">파일에서 복원<input type="file" id="bkFile" accept="application/json,.json,.txt"></label></div></div></section>`;
+  const gone=Object.values(state.recs).filter(r=>r.deleted&&["member","exam","review"].includes(r.kind)).sort((a,b)=>(b.deletedAt||ts(b))-(a.deletedAt||ts(a)));
+  if(gone.length)h+=`<section class="box"><h3>지운 기록 (${gone.length}건)</h3>${gone.slice(0,20).map(r=>`<div class="row" style="align-items:center"><span class="l"><span class="tagx">${r.kind==="member"?"가족":r.kind==="exam"?"검진":"해석"}</span> ${esc(r.kind==="member"?r.name:r.kind==="exam"?`${dot(r.date)} ${(mById(r.owner)||{}).name||""}`:dot(ymd(new Date(r.createdAt||0))))}</span><span class="r"><button class="btn sm line" type="button" data-restore="${r.id}">되살리기</button></span></div>`).join("")}</section>`;
+  h+=`<section class="box"><h3>판정 기준</h3><p class="meta2">국민건강보험공단 일반건강검진 판정 기준을 단순화했습니다. 성별에 따라 기준이 다른 항목(허리둘레·감마지티피·혈색소)은 가족의 성별을 넣어야 정확합니다.</p></section>`;
+  $("vFam").innerHTML=h;
+}
+
+/* ── 아래에서 올라오는 창 ── */
+const PWA=/github\.io$/.test(location.hostname);let sheetHist=false,backing=false;
+if(PWA){$("homeBtn").hidden=false;window.addEventListener("popstate",()=>{if(backing){backing=false;return}if(sheetHist){sheetHist=false;$("sheetBg").hidden=true;state.edit=null}})}
+function sheet(title,body,actions){
+  if(PWA&&!sheetHist){try{history.pushState({sheet:1},"");sheetHist=true}catch(e){}}
+  $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>${title}</h2><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>${body}${actions?`<div class="sact${(actions.match(/<button/g)||[]).length===3?" three":""}">${actions}</div>`:'<div style="height:16px"></div>'}`;
+  $("sheetBg").hidden=false;$("sheet").scrollTop=0;
+}
+const closeSheet=()=>{$("sheetBg").hidden=true;state.edit=null;if(sheetHist){sheetHist=false;backing=true;try{history.back()}catch(e){backing=false}}};
+const opt=(arr,v)=>arr.map(x=>{const [k,l]=Array.isArray(x)?x:[x,x];return `<option value="${esc(k)}" ${k===v?"selected":""}>${esc(l)}</option>`}).join("");
+
+function openMember(id){
+  const m=id?{...state.recs[id]}:{id:null,kind:"member",name:"",rel:members().length?"배우자":"본인",birth:"",sex:"",cycle:2,meds:"",conds:"",allergy:"",color:COLORS[members().length%COLORS.length]};
+  state.edit=m;
+  sheet(id?"가족 수정":"가족 등록",`<form class="vstack" style="margin-top:12px">
+    <label class="fld">이름 (또는 호칭)<input id="mName" maxlength="20" value="${esc(m.name)}" placeholder="예: 홍길동, 아내"></label>
+    <div class="frow"><label class="fld">관계<select id="mRel">${opt(RELS,m.rel)}</select></label><label class="fld">성별 (판정 기준)<select id="mSex">${opt([["","선택"],["M","남"],["F","여"]],m.sex||"")}</select></label></div>
+    <div class="frow"><label class="fld">생년월일<input id="mBirth" type="date" value="${esc(m.birth)}" max="${ymd(today0())}"></label><label class="fld">국가 일반검진 주기<select id="mCyc">${opt([["2","2년마다 (사무직·일반)"],["1","매년 (비사무직 근로자)"]],String(m.cycle||2))}</select></label></div>
+    <label class="fld">복용 중인 약 (선택)<input id="mMeds" maxlength="80" value="${esc(m.meds||"")}" placeholder="예: 혈압약(아침), 고지혈증약"></label>
+    <label class="fld">진단받은 질환·수술 이력 (선택)<input id="mConds" maxlength="80" value="${esc(m.conds||"")}" placeholder="예: 고혈압(2020), 지방간"></label>
+    <label class="fld">알레르기 (선택)<input id="mAllergy" maxlength="60" value="${esc(m.allergy||"")}"></label>
+    <div class="fld">표시 색<div class="swatches">${COLORS.map(c=>`<button type="button" class="sw" data-color="${c}" style="background:${c}" aria-pressed="${c===m.color}" aria-label="색 ${c}"></button>`).join("")}</div></div>
+    ${id?`<button class="btn danger" type="button" data-delmem="${id}">이 가족 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="mSave">저장</button>`);
+}
+function saveMember(){const e=state.edit,name=$("mName").value.trim();if(!name){toast("이름을 적어 주세요");return}
+  const r={...e,id:e.id||newId("m"),kind:"member",name,rel:$("mRel").value,sex:$("mSex").value,birth:$("mBirth").value,cycle:Number($("mCyc").value)||2,meds:$("mMeds").value.trim(),conds:$("mConds").value.trim(),allergy:$("mAllergy").value.trim(),color:e.color,deleted:false};
+  if(r.order==null)r.order=members().length;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다")}
+
+/* 검진 상세 */
+function viewExam(id){
+  const x=state.recs[id];if(!x)return;const m=mById(x.owner);
+  let h=`<section class="box"><div class="row" style="border-top:0"><span class="l">${esc(m?m.name:"?")} · ${esc(KINDS[x.type]||"검진")}<small>${esc(dot(x.date))}${x.hospital?" · "+esc(x.hospital):""}${m&&m.birth?` · 당시 만 ${age(m.birth,pd(x.date))}세`:""}</small></span><span class="r nw">${(()=>{const n=flagsOf(x,m).length;return n?`<span class="tagx j2">주의·이상 ${n}</span>`:`<span class="tagx j0">기준 이내</span>`})()}</span></div>${x.verdict?`<div class="row"><span class="l">종합 판정</span><span class="r" style="white-space:normal">${esc(x.verdict)}</span></div>`:""}</section>`;
+  GRPS.forEach(g=>{const rows=IT.filter(it=>it.g===g&&val(x,it.k)!=null);if(!rows.length)return;
+    h+=`<section class="box"><h3>${g}</h3>${rows.map(it=>{const v=val(x,it.k),j=judge(it.k,v,m&&m.sex),p=prevOf(x,it.k),pv=p?val(p,it.k):null;const b=it.b?bandOf(it,m&&m.sex):null;
+      return `<div class="vrow"><span class="n">${esc(it.n)}${j!=null?` <span class="tagx j${j}">${JL[j]}</span>`:""}<small>${b?`정상 ${b[0]!=null?fmt(b[0]):""}~${b[1]!=null?fmt(b[1]):""}`:""}</small></span><span class="v ${j?"j"+j:""}">${fmt(v)}<small>${esc(it.u)}</small>${pv!=null&&it.k!=="height"?`<span class="d">이전 ${fmt(pv)} (${v-pv>=0?"+":""}${fmt(v-pv)})</span>`:""}</span></div>`}).join("")}</section>`});
+  if((x.finds||[]).length)h+=`<section class="box"><h3>기타 검사 결과</h3>${x.finds.map(f=>`<div class="row"><span class="l">${esc(f.name)}</span><span class="r" style="white-space:normal;font-weight:500">${esc(f.result)}</span></div>`).join("")}</section>`;
+  if(x.opinion)h+=`<section class="box"><h3>의사 소견</h3><p style="white-space:pre-wrap">${esc(x.opinion)}</p></section>`;
+  if((x.files||[]).length)h+=`<section class="box"><h3>첨부 자료</h3><div class="files">${x.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm line" type="button" data-openfile="${esc(f.id)}" data-pid="${id}">보기</button></div>`).join("")}</div></section>`;
+  if(x.memo)h+=`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(x.memo)}</p></section>`;
+  h+=`<p class="meta2" style="margin-top:8px">출처: ${esc(SRC[x.source]||"직접 입력")}</p>`;
+  sheet(`${esc(dot(x.date))} 검진`,h,`<button class="btn danger" type="button" data-delexam="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editexam="${id}">수정</button>`);
+}
+/* 검진 입력·수정 */
+function openExam(id,pre){
+  const ms=members();
+  const x=id?JSON.parse(JSON.stringify(state.recs[id])):pre||{id:null,kind:"exam",owner:state.mem||(ms[0]||{}).id||"",date:ymd(today0()),hospital:"",type:"nat",v:{},finds:[],opinion:"",verdict:"",memo:"",files:[]};
+  x.kind="exam";if(!pre&&imp)imp.rest=null;
+  state.edit=x;
+  const fin=(x.finds||[]).map(f=>`${f.name}: ${f.result}`).join("\n");
+  sheet(id?"검진 수정":"검진 입력",`<form class="vstack" style="margin-top:12px">
+    <div class="frow"><label class="fld">가족<select id="eOwner">${opt(ms.map(m=>[m.id,m.name]),x.owner)}</select></label><label class="fld">검진일<input id="eDate" type="date" value="${esc(x.date)}" max="${ymd(today0())}"></label></div>
+    <div class="frow"><label class="fld">종류<select id="eKind">${opt(Object.entries(KINDS),x.type||"nat")}</select></label><label class="fld">검진 기관<input id="eHosp" maxlength="30" value="${esc(x.hospital||"")}" placeholder="예: ○○병원 건강검진센터"></label></div>
+    <p class="meta2">아는 수치만 넣으세요. BMI는 키·몸무게로 자동 계산합니다.</p>
+    ${GRPS.map(g=>`<fieldset class="grp"><legend>${g}</legend><div class="ig">${IT.filter(it=>it.g===g).map(it=>`<label class="fld">${esc(it.n)}${it.u?` (${esc(it.u)})`:""}<input data-iv="${it.k}" inputmode="decimal" value="${x.v&&x.v[it.k]!=null?esc(x.v[it.k]):""}"></label>`).join("")}</div></fieldset>`).join("")}
+    <label class="fld">종합 판정 (선택)<input id="eVerd" maxlength="40" value="${esc(x.verdict||"")}" placeholder="예: 정상B(경계), 질환의심"></label>
+    <label class="fld">기타 검사 결과 (한 줄에 하나, '검사: 결과')<textarea id="eFind" placeholder="예: 위내시경: 만성 표재성 위염&#10;복부초음파: 경도 지방간">${esc(fin)}</textarea></label>
+    <label class="fld">의사 소견 (선택)<textarea id="eOpin">${esc(x.opinion||"")}</textarea></label>
+    <div class="fld">첨부 자료 (결과지 PDF·사진)<div class="files" id="fileList">${fileRows(x)}</div>
+      ${extras.assets?`<label class="btn line pick" style="margin-top:6px">＋ 자료 첨부<input type="file" id="attIn" multiple accept="image/*,application/pdf,.pdf"></label><p class="meta2" id="attMsg"></p>`:`<p class="meta2">첨부는 Claude판(PC)에서 할 수 있습니다.</p>`}</div>
+    <label class="fld">메모<textarea id="eMemo" placeholder="재검 예정, 처방 등">${esc(x.memo||"")}</textarea></label>
+    ${id?`<button class="btn danger" type="button" data-delexam="${id}">이 검진 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="eSave">저장</button>`);
+}
+function saveExam(){
+  const e=state.edit;if(!$("eOwner").value){toast("가족을 고르세요");return false}if(!$("eDate").value){toast("검진일을 넣어 주세요");return false}
+  const v={};document.querySelectorAll("#sheet [data-iv]").forEach(i=>{const n=fnum(i.value);if(n!=null)v[i.dataset.iv]=n});
+  const finds=$("eFind").value.split("\n").map(s=>s.trim()).filter(Boolean).map(s=>{const i=s.indexOf(":");return i>0?{name:s.slice(0,i).trim(),result:s.slice(i+1).trim()}:{name:"검사",result:s}});
+  const r={...e,id:e.id||newId("x"),kind:"exam",owner:$("eOwner").value,date:$("eDate").value,type:$("eKind").value,hospital:$("eHosp").value.trim(),v,finds,verdict:$("eVerd").value.trim(),opinion:$("eOpin").value.trim(),memo:$("eMemo").value.trim(),files:e.files||[],source:e.source||"manual",deleted:false};
+  put(r);closeSheet();state.mem=r.owner;toast(e.id?"수정했습니다":"등록했습니다");return true;
+}
+
+/* ── 첨부 자료 (Claude 자료 저장소 / 설치판은 이 기기 IndexedDB) ── */
+function fileRows(p){return (p.files||[]).map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm" type="button" data-delfile="${esc(f.id)}">빼기</button></div>`).join("")||`<p class="meta2">첨부한 자료가 없습니다.</p>`}
+async function toMem(f){const buf=await f.arrayBuffer();const pdf=String.fromCharCode(...new Uint8Array(buf.slice(0,5)))==="%PDF-";
+  const type=pdf?"application/pdf":(f.type||(/\.png$/i.test(f.name||"")?"image/png":"image/jpeg"));let name=f.name||(pdf?"자료.pdf":"사진.jpg");if(pdf&&!/\.pdf$/i.test(name))name+=".pdf";return new File([buf],name,{type})}
+async function uploadFile(f){const r=await extras.assets.upload(f,{type:f.type});return {id:r.id,name:f.name,type:f.type,size:r.sizeBytes,addedAt:Date.now()}}
+function attMsg(t){const e=$("attMsg");if(e)e.textContent=t}
+let assetUrls=null;
+async function assetUrl(id){if(!assetUrls&&extras.assets){try{const r=await extras.assets.list();assetUrls={};(r.assets||[]).forEach(a=>{if(a&&a.id)assetUrls[a.id]=a.url})}catch(e){assetUrls={}}}return (assetUrls&&assetUrls[id])||("/_blob/"+id)}
+const IDB="myapps-health-files";
+function idb(){return new Promise((ok,no)=>{try{const r=indexedDB.open(IDB,1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}})}
+async function idbGet(id){const d=await idb();return new Promise((ok,no)=>{const q=d.transaction("files").objectStore("files").get(id);q.onsuccess=()=>ok(q.result||null);q.onerror=()=>no(q.error)})}
+async function idbPut(id,v){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction("files","readwrite");t.objectStore("files").put(v,id);t.oncomplete=()=>ok();t.onerror=()=>no(t.error)})}
+async function getFileBlob(id){
+  if(extras.assets){const u=await assetUrl(id);const r=await fetch(u,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};return r.blob()}
+  let v=null;try{v=await idbGet(id)}catch(e){}
+  if(v&&v.blob)return v.blob;throw{code:"local_missing"}}
+const errTxt=e=>{if(!e)return"?";if(typeof e==="string")return e;return [e.code,e.name,e.message].filter(Boolean).join(" · ").slice(0,120)||"?"};
+let fv=null;
+async function openFile(pid,fid){
+  const p=state.recs[pid];const f=p&&(p.files||[]).find(x=>x.id===fid);if(!f)return;fv={pid,fid,f,blob:null};const me=fv;
+  sheet(esc(f.name||"자료"),`<div style="margin-top:12px"></div><p class="note tip" id="fvMsg">불러오는 중입니다…</p>
+    <div id="fvPw" hidden style="margin-top:8px"><label class="fld">PDF 비밀번호<input id="fvPwIn" type="password" autocomplete="off"></label><button class="btn pri" type="button" id="fvPwOk" style="width:100%;margin-top:6px">비밀번호로 열기</button></div>
+    <div id="fvPages" class="vstack" style="gap:8px;margin-top:8px"></div>`,`<button class="btn" type="button" data-exam="${pid}">검진으로</button><button class="btn pri" type="button" id="fvSave">파일 저장</button>`);
+  try{const blob=await getFileBlob(fid);if(fv!==me)return;me.blob=blob;
+    const head=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
+    if(head==="%PDF-")await fvPdf(me);else{$("fvMsg").hidden=true;$("fvPages").innerHTML=`<img class="fvpage" alt="${esc(f.name||"자료")}" src="${URL.createObjectURL(blob)}">`}}
+  catch(e){if(fv===me){const m=$("fvMsg");m.className="note warn";m.textContent=e&&e.code==="local_missing"?"이 휴대폰에 파일이 없습니다. Claude판에서 받은 백업 파일로 '파일에서 복원'을 하면 볼 수 있습니다.":`자료를 열지 못했습니다 (${errTxt(e)})`}}
+}
+async function fvPdf(me,pw){
+  const msg=$("fvMsg");msg.hidden=false;msg.className="note tip";msg.textContent="PDF를 여는 중입니다…";
+  const lib=await getPdfLib();let doc;
+  try{doc=await lib.getDocument({data:new Uint8Array((await me.blob.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){if(e&&e.name==="PasswordException"){$("fvPw").hidden=false;msg.textContent=e.code===2?"비밀번호가 맞지 않습니다.":"비밀번호가 걸린 PDF입니다.";return}msg.className="note warn";msg.textContent=`PDF를 열지 못했습니다 (${errTxt(e)})`;return}
+  $("fvPw").hidden=true;const box=$("fvPages");box.innerHTML="";const N=Math.min(doc.numPages,30),W=Math.min(box.clientWidth||520,560),dpr=Math.min(1.5,window.devicePixelRatio||1);
+  for(let i=1;i<=N&&fv===me;i++){try{const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:W/v0.width*dpr});const cv=document.createElement("canvas");cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;const bl=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85));cv.width=cv.height=0;box.insertAdjacentHTML("beforeend",`<img class="fvpage" alt="${i}쪽" src="${URL.createObjectURL(bl)}">`);msg.textContent=`전체 ${doc.numPages}쪽 중 ${i}쪽 표시`}catch(e){}}
+  doc.destroy();
+}
+async function saveAsset(){const me=fv;if(!me)return;try{if(!me.blob)me.blob=await getFileBlob(me.fid)}catch(e){toast("파일을 불러오지 못했습니다");return}
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  if(dl){try{await dl.save({filename:me.f.name||"검진자료",data:me.blob});toast("파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다")}return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(me.blob);a.download=me.f.name||"검진자료";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),4000)}
+
+/* ── 검진표로 자동 등록 ── */
+let imp=null;
+function openImport(){
+  const ms=members();imp={files:[],busy:false};
+  sheet("검진표로 자동 등록",`<div class="vstack" style="margin-top:12px">
+    <label class="fld">누구의 검진표인가요? (결과지에 이름이 나오면 자동으로 맞춥니다)<select id="iOwner">${opt(ms.map(m=>[m.id,m.name]),state.mem||(ms[0]&&ms[0].id))}</select></label>
+    <section class="box" style="margin-top:0"><h3>이런 자료를 올려 주세요</h3><ol class="ol">
+      <li><b>국가 건강검진</b>: 국민건강보험공단 'The건강보험' 앱·누리집 → 건강검진 결과 조회 (화면 캡처 또는 결과 통보서 PDF)</li>
+      <li><b>종합검진</b>: 병원에서 받은 결과지 PDF 또는 사진</li></ol>
+      <div class="frow" style="margin-top:8px"><a class="btn sm line" href="https://www.nhis.or.kr" target="_blank" rel="noopener">국민건강보험공단</a></div></section>
+    ${MOBILE?`<p class="note tip">파일 올리기는 PC에서 해 주세요. 휴대폰에서는 결과 화면의 글자를 복사해 아래에 붙여넣을 수 있습니다.</p>`:`<label class="btn line pick" style="min-height:46px">파일 고르기 (사진·PDF, 여러 개 가능)<input type="file" id="iFile" multiple accept="image/*,application/pdf,.pdf"></label><div id="iFiles" class="files"></div>
+    <label class="fld">PDF 비밀번호 (걸려 있으면 입력, 저장 안 함)<input id="iPw" type="password" autocomplete="off" placeholder="보통 생년월일 6자리 또는 8자리"></label>`}
+    <label class="fld">또는 결과 화면 글자를 붙여넣기<textarea id="iText" style="min-height:90px" placeholder="결과 화면에서 전체 선택 → 복사 → 붙여넣기"></textarea></label>
+    <p class="meta2" id="iMsg"></p>
+    <p class="meta2">주민등록번호는 Claude에 보내기 전에 가립니다. 읽은 값은 저장 전에 화면에서 확인·수정할 수 있습니다.</p></div>`,
+    `<button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" id="iGo">자료 읽기</button>`);
+}
+function impMsg(t){const e=$("iMsg");if(e)e.textContent=t}
+const IMPORT_PROMPT=`아래 자료는 한국 건강검진 결과(국민건강보험공단 일반건강검진 결과 통보서, 병원 종합검진 결과지 등)입니다. 보이는 값만 옮겨 JSON 하나로 답하세요. 없는 값은 null, 추측 금지. 주민등록번호·연락처·주소는 절대 옮기지 마세요.
+수치는 숫자만(단위 제외). 혈압은 수축기 sbp, 이완기 dbp로 나누세요. 여러 회차 검진이 보이면 회차마다 exams 배열에 하나씩 넣으세요.
+키: height(cm) weight(kg) bmi waist(허리둘레 cm) sbp dbp glu(공복혈당) hba1c(당화혈색소 %) tc(총콜레스테롤) ldl hdl tg(중성지방) ast alt ggt(감마지티피) hb(혈색소) cr(혈청 크레아티닌) egfr(신사구체여과율)
+{"exams":[{"ownerName":"수검자 이름","date":"YYYY-MM-DD 검진일","hospital":"검진 기관","type":"nat(국가 일반검진)|comp(종합검진)|cancer(암검진)|etc","values":{"height":null,"weight":null,"bmi":null,"waist":null,"sbp":null,"dbp":null,"glu":null,"hba1c":null,"tc":null,"ldl":null,"hdl":null,"tg":null,"ast":null,"alt":null,"ggt":null,"hb":null,"cr":null,"egfr":null},"verdict":"종합 판정(정상A, 정상B, 질환의심 등)","finds":[{"name":"검사 이름(위내시경, 복부초음파, 흉부방사선, 요단백, 골밀도, 시력, 청력 등)","result":"결과 요약"}],"opinion":"의사 소견 요약 300자 이내"}]}`;
+async function pdfToInput(file,pw){
+  const lib=await getPdfLib();
+  let doc;try{doc=await lib.getDocument({data:new Uint8Array((await file.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){if(e&&e.name==="PasswordException")throw{code:"pw",message:e.code===2?"PDF 비밀번호가 맞지 않습니다":"비밀번호가 걸린 PDF입니다. 위 칸에 비밀번호를 넣고 다시 읽어 주세요"};throw{code:"pdf_bad",message:"PDF를 열지 못했습니다"}}
+  let text="";const n=Math.min(doc.numPages,12);
+  for(let i=1;i<=n;i++){try{const tc=await (await doc.getPage(i)).getTextContent();text+=`\n[${i}쪽]\n`+tc.items.map(it=>(it.str||"")+(it.hasEOL?"\n":" ")).join("")}catch(e){}}
+  const clean=text.replace(/\s+/g,""),good=(clean.match(/[가-힣A-Za-z0-9]/g)||[]).length/Math.max(1,clean.length);
+  if(clean.length>=100&&good>=0.5){doc.destroy();return {text}}
+  const imgs=[];const m=Math.min(doc.numPages,(extras.lim&&extras.lim.images&&extras.lim.images.maxCount)||3,4);
+  for(let i=1;i<=m;i++){const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:Math.min(2,1400/v0.width)});const cv=document.createElement("canvas");cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;imgs.push(await new Promise(r=>cv.toBlob(r,"image/jpeg",.85)))}
+  doc.destroy();return {images:imgs.filter(Boolean)};
+}
+const maskId=t=>String(t||"").replace(/(\d{6})\s*-?\s*([1-8])\d{6}/g,"$1-$2******");
+async function runImport(){
+  if(!imp||imp.busy)return;const go=$("iGo");
+  const text=($("iText")||{}).value||"",files=imp.files||[];
+  if(!files.length&&text.replace(/\s+/g,"").length<20){toast("파일을 고르거나 글자를 붙여넣어 주세요");return}
+  imp.busy=true;go.disabled=true;const all=[];const errs=[];
+  try{
+    for(let i=0;i<files.length;i++){const f=files[i];impMsg(`${i+1}/${files.length} '${f.name}' 읽는 중… (10~40초)`);
+      try{let input;const head=String.fromCharCode(...new Uint8Array(await f.slice(0,5).arrayBuffer()));
+        if(head==="%PDF-")input=await pdfToInput(f,($("iPw")||{}).value||"");else input={images:[f.type?f:new Blob([f],{type:"image/jpeg"})]};
+        if(input.images&&!(extras.lim&&extras.lim.images))throw{message:"이 화면에서는 사진을 읽을 수 없습니다. 글자를 붙여넣어 주세요"};
+        const o=input.text?await extras.sample.json(IMPORT_PROMPT+"\n\n=== 자료 ===\n"+maskId(input.text).slice(0,60000),{modelTier:"default"}):await extras.sample.json(IMPORT_PROMPT,{images:input.images,modelTier:"default"});
+        let att=null;if(extras.assets){try{att=await uploadFile(await toMem(f))}catch(e){}}
+        if(o&&Array.isArray(o.exams))o.exams.forEach(x=>all.push({...x,_att:att,_src:"file"}));
+      }catch(e){errs.push(`${f.name}: ${(e&&e.message)||(e&&e.code)||"읽지 못함"}`)}}
+    if(text.replace(/\s+/g,"").length>=20){impMsg("붙여넣은 글자 읽는 중… (10~30초)");
+      try{const o=await extras.sample.json(IMPORT_PROMPT+"\n\n=== 자료 ===\n"+maskId(text).slice(0,60000),{modelTier:"default"});if(o&&Array.isArray(o.exams))o.exams.forEach(x=>all.push({...x,_src:"paste"}))}
+      catch(e){errs.push(`붙여넣은 글자: ${(e&&e.code)==="not_granted"?"Claude 사용을 허용하지 않음":(e&&e.code)||"읽지 못함"}`)}}
+  }finally{imp.busy=false;go.disabled=false}
+  const ms=members(),sel=$("iOwner")?$("iOwner").value:(ms[0]||{}).id;
+  const items=all.map(x=>{const v={};Object.entries(x.values||{}).forEach(([k,n])=>{const f=fnum(n);if(ITK[k]&&f!=null)v[k]=f});
+    const byName=x.ownerName&&ms.find(m=>m.name&&(String(x.ownerName).includes(m.name)||m.name.includes(String(x.ownerName))));
+    return {id:null,kind:"exam",owner:(byName||{}).id||sel,date:/^\d{4}-\d{2}-\d{2}$/.test(x.date||"")?x.date:ymd(today0()),hospital:String(x.hospital||"").slice(0,30),type:KINDS[x.type]?x.type:"nat",v,
+      finds:(Array.isArray(x.finds)?x.finds:[]).filter(f=>f&&f.name&&f.result).slice(0,20).map(f=>({name:String(f.name).slice(0,30),result:String(f.result).slice(0,120)})),verdict:String(x.verdict||"").slice(0,40),opinion:String(x.opinion||"").slice(0,600),memo:"",files:x._att?[x._att]:[],source:x._src}}).filter(x=>Object.keys(x.v).length||x.finds.length);
+  if(!items.length){impMsg(`읽은 검진이 없습니다. ${errs.join(" / ")}`);return}
+  /* 같은 사람·같은 날짜 검진이 이미 있으면 그 기록을 고침 */
+  const it=items[0];const dup=examsOf(it.owner).find(y=>y.date===it.date);
+  if(dup){const keep=JSON.parse(JSON.stringify(dup));it.id=dup.id;it.createdAt=dup.createdAt;it.v={...keep.v,...it.v};it.files=[...(keep.files||[]),...it.files];it.memo=keep.memo||"";if(!it.finds.length)it.finds=keep.finds||[];if(!it.opinion)it.opinion=keep.opinion||""}
+  imp.rest=items.slice(1);
+  openExam(null,it);if(dup)state.edit.id=dup.id;
+  $("sheet").querySelector(".shead h2").textContent=dup?"읽은 결과 확인 (기존 검진 갱신)":"읽은 결과 확인";
+  const n=Object.keys(it.v).length;const fl=flagsOf({...it,v:it.v},mById(it.owner)).length;
+  $("sheet").querySelector("form").insertAdjacentHTML("afterbegin",`<p class="note tip">수치 ${n}개${it.finds.length?`, 기타 검사 ${it.finds.length}개`:""}를 읽었습니다${fl?` (주의·이상 ${fl}개)`:""}. 결과지와 맞는지 확인한 뒤 '저장'을 눌러 주세요.${items.length>1?` 저장하면 다음 회차(${items.length-1}건)가 이어서 열립니다.`:""}${errs.length?" 일부 실패: "+esc(errs.join(" / ")):""}</p>`);
+}
+
+/* ── 백업 ── */
+let tt;function toast(m,undoId){const t=$("toast");t.textContent=m;if(undoId){const b=document.createElement("button");b.type="button";b.className="undo";b.dataset.undo=undoId;b.textContent="되돌리기";t.appendChild(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},undoId?7000:2600)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
+const APPN="우리 가족 건강관리";
+const backup=()=>JSON.stringify({app:APPN,v:1,exportedAt:new Date().toISOString(),recs:state.recs},null,1);
+function allFiles(){const m=new Map();Object.values(state.recs).forEach(r=>{if(r&&r.kind==="exam")(r.files||[]).forEach(f=>{if(f&&f.id&&!m.has(f.id))m.set(f.id,f)})});return m}
+const toB64=blob=>new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(String(fr.result).split(",")[1]||"");fr.onerror=()=>no(fr.error);fr.readAsDataURL(blob)});
+const fromB64=(b,type)=>{const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:type||"application/octet-stream"})};
+function bkProg(t){const el=$("bkProg");if(!el)return;el.hidden=!t;el.textContent=t||""}
+async function backupFull(){
+  const fm=[...allFiles().entries()],files={};const miss=[];
+  for(let i=0;i<fm.length;i++){const [id,f]=fm[i];bkProg(`첨부 파일 담는 중… ${i+1}/${fm.length}`);
+    try{const bl=await getFileBlob(id);files[id]={name:f.name||"",type:f.type||bl.type||"",size:bl.size,data:await toB64(bl)}}catch(e){miss.push(f.name||id)}}
+  bkProg("");
+  return {text:JSON.stringify({app:APPN,v:2,exportedAt:new Date().toISOString(),recs:state.recs,files}),count:Object.keys(files).length,miss};
+}
+async function assetExists(id){try{const u=await assetUrl(id);const r=await fetch(u);if(r.body&&r.body.cancel)r.body.cancel().catch(()=>{});return r.ok}catch(e){return false}}
+async function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 코드를 읽지 못했습니다");return}
+  if(!o||!o.recs||o.app!==APPN){toast("건강관리 백업이 아닙니다");return}
+  let n=0;Object.values(o.recs).forEach(r=>{if(take(r)){n++;push(r.id)}});lsSave();render();
+  const fs=o.files&&typeof o.files==="object"?Object.entries(o.files):[];
+  if(!fs.length){toast(n?`${n}건을 복원했습니다`:"이미 최신이라 바뀐 것이 없습니다");return}
+  if(!extras.assets){let saved=0,had=0,bad=0;
+    for(let i=0;i<fs.length;i++){const [id,f]=fs[i];bkProg(`첨부 파일을 이 휴대폰에 저장 중… ${i+1}/${fs.length}`);
+      try{const cur=await idbGet(id);if(cur&&cur.blob){had++;continue}await idbPut(id,{blob:fromB64(f.data,f.type||"application/pdf"),name:f.name||"",type:f.type||"",savedAt:Date.now()});saved++}catch(e){bad++}}
+    bkProg("");toast(`기록 ${n}건 복원 · 첨부 파일 ${saved}개를 이 휴대폰에 저장${had?`, ${had}개는 이미 있음`:""}${bad?`, ${bad}개 실패`:""}`.replace(/^기록 0건 복원/,"기록은 이미 최신"));return}
+  const map={};let up=0,keep=0,fail=0;assetUrls=null;
+  for(let i=0;i<fs.length;i++){const [id,f]=fs[i];bkProg(`첨부 파일 복원 중… ${i+1}/${fs.length}`);
+    try{if(await assetExists(id)){keep++;continue}
+      const again=[...allFiles().values()].find(x=>x.origId===id);if(again&&await assetExists(again.id)){keep++;continue}
+      const ty=f.type||"application/pdf";const r=await extras.assets.upload(fromB64(f.data,ty),{type:ty});map[id]=r.id;up++}catch(e){fail++}}
+  bkProg("");assetUrls=null;
+  if(Object.keys(map).length){Object.values(state.recs).forEach(r=>{if(r.kind==="exam"&&(r.files||[]).some(f=>map[f.id]))put({...r,files:r.files.map(f=>map[f.id]?{...f,id:map[f.id],origId:f.origId||f.id}:f)})});render()}
+  toast(`기록 ${n}건 복원 · 첨부 파일 ${up}개 다시 올림, ${keep}개 그대로${fail?`, ${fail}개 실패`:""}`.replace(/^기록 0건 복원/,"기록은 이미 최신"));
+}
+function softDel(id,msg){const r=state.recs[id];if(!r)return;put({...r,deleted:true,deletedAt:Date.now()});closeSheet();toast(msg,id)}
+function undel(id){const r=state.recs[id];if(!r||!r.deleted)return;const x={...r,deleted:false};delete x.deletedAt;put(x);toast("되살렸습니다")}
+async function saveFile(){
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  const d=new Date(),name=`MY미니앱_건강관리_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+  const btn=$("bkSave");if(btn)btn.disabled=true;
+  try{const b=await backupFull();const fname=b.count?name.replace(".json",`_자료${b.count}개.json`):name;const msg=`백업 파일을 저장했습니다${b.count?` (첨부 파일 ${b.count}개 포함)`:""}${b.miss.length?` · ${b.miss.length}개는 불러오지 못함`:""}`;
+    if(dl){await dl.save({filename:fname,data:new Blob([b.text],{type:"application/json"})});toast(msg)}
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([b.text],{type:"application/json"}));a.download=fname;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);toast(msg)}}
+  catch(e){bkProg("");if(e&&e.code==="declined")return;toast((!dl&&await copyText(backup()))?"파일 저장이 안 되어 백업 코드를 복사했습니다":"저장하지 못했습니다. 백업 코드 복사를 이용해 주세요")}
+  finally{if(btn)btn.disabled=false}
+}
+
+/* ── 이벤트 ── */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.view){state.view=d.view;try{localStorage.setItem("myapps-hl-view",d.view)}catch(_){}render();window.scrollTo({top:0});return}
+  if("mem" in d){state.mem=d.mem||null;state.rvSel=null;render();return}
+  if(d.titem){state.tItem=d.titem;render();return}
+  if(d.rvsel){state.rvSel=d.rvsel;render();return}
+  if(d.review){runReview(d.review);return}
+  if(d.goexam){state.view="exam";render();return}
+  if(d.close){closeSheet();return}
+  if(d.addmem){openMember(null);return}
+  if(d.editmem){openMember(d.editmem);return}
+  if(d.color){state.edit.color=d.color;document.querySelectorAll(".sw").forEach(s=>s.setAttribute("aria-pressed",String(s.dataset.color===d.color)));return}
+  if(d.delmem){softDel(d.delmem,"가족을 지웠습니다");return}
+  if(d.addexam){if(!members().length){openMember(null);return}openExam(null);return}
+  if(d.import){if(!members().length){openMember(null);return}openImport();return}
+  if(d.exam){fv=null;viewExam(d.exam);return}
+  if(d.openfile){openFile(d.pid,d.openfile);return}
+  if(d.delfile){state.edit.files=(state.edit.files||[]).filter(f=>f.id!==d.delfile);$("fileList").innerHTML=fileRows(state.edit);toast("목록에서 뺐습니다. 저장을 눌러야 반영됩니다");return}
+  if(d.editexam){openExam(d.editexam);return}
+  if(d.delexam){softDel(d.delexam,"검진을 지웠습니다");return}
+  if(d.undo){$("toast").hidden=true;undel(d.undo);return}
+  if(d.restore){undel(d.restore);return}
+  if(t.id==="iGo"){runImport();return}
+  if(t.id==="fvSave"){saveAsset();return}
+  if(t.id==="fvPwOk"){const pw=$("fvPwIn").value;if(fv&&fv.blob)fvPdf(fv,pw);return}
+  if(t.id==="mSave"){saveMember();return}
+  if(t.id==="eSave"){if(!saveExam())return;const nx=imp&&imp.rest&&imp.rest.shift();if(nx)setTimeout(()=>{openExam(null,nx);$("sheet").querySelector(".shead h2").textContent="다음 회차 확인"},350);return}
+  if(t.id==="bkSave"){saveFile();return}
+  if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
+  if(t.id==="bkRestore"){restore($("bkText").value);return}
+});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.id==="attIn"){const fl=[...(t.files||[])].slice(0,5);t.value="";if(!fl.length||!state.edit)return;const ed=state.edit;attMsg("올리는 중…");
+    (async()=>{let ok=0;for(const f0 of fl){try{const f=await toMem(f0);const meta=await uploadFile(f);ed.files=[...(ed.files||[]),meta];ok++}catch(e){attMsg(`올리지 못했습니다 (${errTxt(e)})`)}}
+      if(state.edit===ed){$("fileList").innerHTML=fileRows(ed);attMsg(`${ok}개를 첨부했습니다. 저장을 눌러야 반영됩니다.`)}})();return}
+  if(t.id==="iFile"){imp.files=[...(t.files||[])].slice(0,8);t.value="";$("iFiles").innerHTML=imp.files.map(f=>`<div class="file"><span>${esc(f.name)}</span><span class="meta2">${Math.round(f.size/1024)}KB</span></div>`).join("");impMsg(`${imp.files.length}개 파일을 골랐습니다. '자료 읽기'를 눌러 주세요.`);return}
+  if(t.id==="bkFile"&&t.files[0]){t.files[0].text().then(restore);t.value="";return}
+});
+document.addEventListener("submit",e=>e.preventDefault());
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+let rT;window.addEventListener("resize",()=>{clearTimeout(rT);rT=setTimeout(()=>{if(state.view==="trend")render()},200)});
+
+/* ── 글자 크기 (기기 + 내 설정) ── */
+const FS=["s","m","l","xl"];let fs="m",prefRef=null;
+try{const v=localStorage.getItem("myapps-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("myapps-fs",fs)}catch(e){}}
+async function loadPref(){try{if(!uid||!db)return;prefRef=db.doc("data/users/"+uid+"/prefs");const s=await prefRef.get();const v=s.exists&&s.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}}catch(e){}}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+
+try{const v=localStorage.getItem("myapps-hl-view");if(["home","exam","trend","fam"].includes(v))state.view=v}catch(e){}
+applyFs();lsLoad();render();connect();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
