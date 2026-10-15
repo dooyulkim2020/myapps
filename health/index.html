@@ -216,6 +216,12 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
 .ig{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .ig .fld input{min-width:0}
 fieldset.grp{border:1px solid var(--line);border-radius:10px;padding:8px 10px 10px;margin:0;background:var(--surface)}
+details.grp{border:1px solid var(--line);border-radius:10px;padding:0 10px;background:var(--surface)}
+details.grp summary{min-height:44px;display:flex;align-items:center;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer}
+details.grp[open]{padding-bottom:10px}
+.vguide{grid-column:1/-1;font-size:14px;line-height:1.55;color:var(--ink);background:var(--bg);border-radius:8px;padding:8px 10px}
+.vguide b{font-weight:600}
+.vrow summary{list-style:none;cursor:pointer}.vrow summary::-webkit-details-marker{display:none}
 fieldset.grp legend{font-size:14px;font-weight:600;color:var(--accent);padding:0 4px}
 .tc{margin-top:8px}
 .tc svg{display:block;width:100%;height:auto;overflow:visible}
@@ -270,29 +276,49 @@ fieldset.grp legend{font-size:14px;font-weight:600;color:var(--accent);padding:0
 const RELS=["본인","배우자","자녀","부모","기타"];
 const SEX={M:"남",F:"여"};
 const KINDS={nat:"국가 일반검진",comp:"종합검진",cancer:"암검진",etc:"기타 검사"};
-const SRC={file:"검진표 자동 등록",paste:"붙여넣은 자료",manual:"직접 입력"};
+const SRC={file:"결과 파일 자동 등록",paste:"붙여넣은 자료",manual:"직접 입력"};
 /* 검사 항목: 판정 기준은 국민건강보험공단 일반건강검진 판정 기준을 단순화 (0 정상, 1 주의, 2 이상) */
 const IT=[
   {k:"height",n:"키",u:"cm",g:"신체"},
   {k:"weight",n:"몸무게",u:"kg",g:"신체"},
-  {k:"bmi",n:"체질량지수(BMI)",u:"",g:"신체",j:v=>v<18.5?1:v<23?0:v<25?1:2,b:[18.5,22.9],h:"23~24.9 과체중, 25 이상 비만"},
-  {k:"waist",n:"허리둘레",u:"cm",g:"신체",j:(v,s)=>v<(s==="F"?85:90)?0:2,b:s=>[null,s==="F"?84.9:89.9],h:"남 90, 여 85 이상이면 복부비만"},
-  {k:"sbp",n:"수축기 혈압",u:"mmHg",g:"혈압",j:v=>v<120?0:v<140?1:2,b:[null,119],h:"140 이상 고혈압 의심"},
-  {k:"dbp",n:"이완기 혈압",u:"mmHg",g:"혈압",j:v=>v<80?0:v<90?1:2,b:[null,79],h:"90 이상 고혈압 의심"},
-  {k:"glu",n:"공복혈당",u:"mg/dL",g:"당뇨",j:v=>v<100?0:v<126?1:2,b:[null,99],h:"100~125 공복혈당장애, 126 이상 당뇨 의심"},
-  {k:"hba1c",n:"당화혈색소",u:"%",g:"당뇨",j:v=>v<5.7?0:v<6.5?1:2,b:[null,5.6],h:"5.7~6.4 당뇨 전단계, 6.5 이상 당뇨 의심"},
-  {k:"tc",n:"총콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<200?0:v<240?1:2,b:[null,199],h:"240 이상 고콜레스테롤혈증 의심"},
-  {k:"ldl",n:"LDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<130?0:v<160?1:2,b:[null,129],h:"160 이상 높음"},
-  {k:"hdl",n:"HDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v>=40?0:2,b:[40,null],h:"40 미만이면 낮음 (높을수록 좋음)"},
-  {k:"tg",n:"중성지방",u:"mg/dL",g:"콜레스테롤",j:v=>v<150?0:v<200?1:2,b:[null,149],h:"200 이상 높음"},
-  {k:"ast",n:"AST(SGOT)",u:"U/L",g:"간",j:v=>v<=40?0:v<=50?1:2,b:[null,40],h:"51 이상 간질환 의심"},
-  {k:"alt",n:"ALT(SGPT)",u:"U/L",g:"간",j:v=>v<=35?0:v<=45?1:2,b:[null,35],h:"46 이상 간질환 의심"},
-  {k:"ggt",n:"감마지티피(γ-GTP)",u:"U/L",g:"간",j:(v,s)=>s==="F"?(v<=35?0:v<=45?1:2):(v<=63?0:v<=77?1:2),b:s=>[null,s==="F"?35:63],h:"남 78, 여 46 이상 간질환 의심"},
-  {k:"hb",n:"혈색소",u:"g/dL",g:"빈혈",j:(v,s)=>s==="F"?(v>=12?(v<=15.5?0:1):v>=10?1:2):(v>=13?(v<=16.5?0:1):v>=12?1:2),b:s=>s==="F"?[12,15.5]:[13,16.5],h:"남 12, 여 10 미만이면 빈혈 의심"},
-  {k:"cr",n:"혈청 크레아티닌",u:"mg/dL",g:"신장",j:v=>v<=1.5?0:2,b:[null,1.5],h:"1.5 초과 신장질환 의심"},
-  {k:"egfr",n:"신사구체여과율(eGFR)",u:"mL/min",g:"신장",j:v=>v>=60?0:2,b:[60,null],h:"60 미만 신장기능 저하 의심"}];
+  {k:"bmi",n:"체질량지수(BMI)",u:"",g:"신체",j:v=>v<18.5?1:v<23?0:v<25?1:2,b:[18.5,22.9],h:"23~24.9 과체중, 25 이상 비만",d:"몸무게(kg)를 키(m)의 제곱으로 나눈 값으로 비만 정도를 봅니다.",a:"현재 몸무게의 5~10%를 6개월에 걸쳐 줄이면 혈압·혈당·간수치가 함께 좋아집니다. 저녁 탄수화물·야식을 줄이고 주 150분 이상 빠르게 걷기를 권합니다."},
+  {k:"waist",n:"허리둘레",u:"cm",g:"신체",j:(v,s)=>v<(s==="F"?85:90)?0:2,b:s=>[null,s==="F"?84.9:89.9],h:"남 90, 여 85 이상이면 복부비만",d:"내장지방을 가장 잘 보여 주는 수치로, 대사증후군 판정 기준입니다.",a:"복부비만은 당뇨·심혈관질환 위험을 높입니다. 단 음료·술을 줄이고 근력운동을 주 2회 더하세요."},
+  {k:"fat",n:"체지방률",u:"%",g:"신체",j:(v,s)=>s==="F"?(v<=32?0:v<=37?1:2):(v<=25?0:v<=30?1:2),b:s=>[null,s==="F"?32:25],h:"남 25%, 여 32% 넘으면 높음",d:"몸무게 중 지방이 차지하는 비율입니다(체성분 검사).",a:"근육량을 지키며 지방을 줄여야 합니다. 단백질을 끼니마다 챙기고 근력운동을 하세요."},
+  {k:"sbp",n:"수축기 혈압",u:"mmHg",g:"혈압",j:v=>v<120?0:v<140?1:2,b:[null,119],h:"120~139 주의, 140 이상 고혈압 의심",d:"심장이 수축할 때 혈관에 가해지는 압력(높은 쪽 숫자)입니다.",a:"집에서 아침·저녁 2주간 재어 평균이 135/85 이상이면 내과 진료를 받으세요. 소금(국물·젓갈·라면)을 줄이고 절주, 규칙적 걷기가 기본입니다."},
+  {k:"dbp",n:"이완기 혈압",u:"mmHg",g:"혈압",j:v=>v<80?0:v<90?1:2,b:[null,79],h:"80~89 주의, 90 이상 고혈압 의심",d:"심장이 쉬는 동안의 혈관 압력(낮은 쪽 숫자)입니다.",a:"수축기 혈압과 함께 관리합니다. 복부비만·음주가 있으면 잘 올라갑니다."},
+  {k:"glu",n:"공복혈당",u:"mg/dL",g:"당뇨",j:v=>v<100?0:v<126?1:2,b:[null,99],h:"100~125 공복혈당장애, 126 이상 당뇨 의심",d:"8시간 이상 굶은 뒤 잰 혈당입니다.",a:"100 이상이면 당뇨 전단계일 수 있어 당화혈색소를 함께 확인하세요. 126 이상이 두 번 나오면 당뇨로 진단합니다(내분비내과). 흰쌀·밀가루·단 음료를 줄이고 식후 걷기를 하세요."},
+  {k:"hba1c",n:"당화혈색소",u:"%",g:"당뇨",j:v=>v<5.7?0:v<6.5?1:2,b:[null,5.6],h:"5.7~6.4 당뇨 전단계, 6.5 이상 당뇨 의심",d:"최근 2~3개월 평균 혈당을 보여 줍니다.",a:"전단계면 체중 5~7% 감량과 주 150분 운동으로 당뇨 진행을 절반 넘게 줄일 수 있습니다. 6.5 이상이면 내분비내과 진료를 받으세요."},
+  {k:"tc",n:"총콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<200?0:v<240?1:2,b:[null,199],h:"200~239 경계, 240 이상 높음",d:"혈액 속 콜레스테롤 전체 양입니다.",a:"LDL·중성지방과 함께 봅니다. 포화지방(삼겹살·버터·튀김)을 줄이고 채소·생선·견과류를 늘리세요."},
+  {k:"ldl",n:"LDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v<130?0:v<160?1:2,b:[null,129],h:"130~159 경계, 160 이상 높음",d:"혈관 벽에 쌓이는 '나쁜' 콜레스테롤입니다.",a:"당뇨·고혈압·흡연이 있으면 목표가 더 낮습니다(100 미만 등). 160 이상이거나 위험인자가 있으면 내과에서 약 치료 여부를 상담하세요."},
+  {k:"hdl",n:"HDL 콜레스테롤",u:"mg/dL",g:"콜레스테롤",j:v=>v>=40?0:2,b:[40,null],h:"40 미만이면 낮음 (높을수록 좋음)",d:"혈관의 콜레스테롤을 치워 주는 '좋은' 콜레스테롤입니다.",a:"유산소 운동, 금연, 체중 감량으로 올라갑니다."},
+  {k:"tg",n:"중성지방",u:"mg/dL",g:"콜레스테롤",j:v=>v<150?0:v<200?1:2,b:[null,149],h:"150~199 경계, 200 이상 높음",d:"남는 열량이 저장된 지방으로, 술·탄수화물·단것에 민감합니다.",a:"술과 단 음식, 과일 주스를 줄이면 가장 빨리 내려갑니다. 500 이상이면 췌장염 위험이 있어 바로 진료를 받으세요."},
+  {k:"ast",n:"AST(SGOT)",u:"U/L",g:"간",j:v=>v<=40?0:v<=50?1:2,b:[null,40],h:"41~50 주의, 51 이상 간질환 의심",d:"간세포가 손상되면 올라가는 효소입니다(근육·심장에도 있음).",a:"검사 전 과음·격한 운동으로도 오릅니다. 계속 높으면 복부초음파와 간염 검사를 받으세요(소화기내과)."},
+  {k:"alt",n:"ALT(SGPT)",u:"U/L",g:"간",j:v=>v<=35?0:v<=45?1:2,b:[null,35],h:"36~45 주의, 46 이상 간질환 의심",d:"간에 주로 있는 효소로, 지방간·간염에서 올라갑니다.",a:"지방간이 가장 흔한 원인입니다. 체중 감량과 절주로 수치가 내려가는지 3~6개월 뒤 다시 확인하세요. 영양제·한약도 원인이 될 수 있습니다."},
+  {k:"ggt",n:"감마지티피(γ-GTP)",u:"U/L",g:"간",j:(v,s)=>s==="F"?(v<=35?0:v<=45?1:2):(v<=63?0:v<=77?1:2),b:s=>[null,s==="F"?35:63],h:"남 78, 여 46 이상 간질환 의심",d:"술에 가장 민감한 간 수치입니다.",a:"높으면 음주량을 먼저 줄이세요. 4주 금주 뒤 다시 재면 원인을 가늠할 수 있습니다."},
+  {k:"alb",n:"알부민",u:"g/dL",g:"간",j:v=>v>=3.5?0:v>=3?1:2,b:[3.5,5.2],h:"3.5 미만이면 낮음",d:"간에서 만드는 단백질로 영양 상태와 간 기능을 보여 줍니다.",a:"낮으면 영양 부족·간·신장 질환을 확인해야 합니다. 단백질 섭취를 늘리세요."},
+  {k:"tbil",n:"총빌리루빈",u:"mg/dL",g:"간",j:v=>v<=1.2?0:v<=2?1:2,b:[null,1.2],h:"1.2 넘으면 높음",d:"적혈구가 분해되며 생기는 색소로, 높으면 황달이 생깁니다.",a:"다른 간 수치가 정상이고 조금만 높으면 체질(길버트 증후군)인 경우가 많습니다. 2 이상이면 진료를 받으세요."},
+  {k:"alp",n:"알칼리성 인산분해효소(ALP)",u:"U/L",g:"간",j:v=>v<=130?0:v<=200?1:2,b:[null,130],h:"130 넘으면 높음(기관마다 다름)",d:"간·담도와 뼈에서 나오는 효소입니다.",a:"높으면 담도·뼈 질환 여부를 확인합니다. 검진기관 기준치를 함께 보세요."},
+  {k:"hb",n:"혈색소",u:"g/dL",g:"혈액",j:(v,s)=>s==="F"?(v>=12?(v<=15.5?0:1):v>=10?1:2):(v>=13?(v<=16.5?0:1):v>=12?1:2),b:s=>s==="F"?[12,15.5]:[13,16.5],h:"남 13, 여 12 미만이면 빈혈",d:"산소를 나르는 적혈구 속 단백질입니다.",a:"50대 이후 새로 생긴 빈혈은 위·대장 출혈을 확인해야 하니 내시경 여부를 상담하세요. 여성은 철분 부족이 흔합니다."},
+  {k:"wbc",n:"백혈구",u:"천/μL",g:"혈액",j:v=>v>=4&&v<=10?0:(v>=3&&v<=12)?1:2,b:[4,10],h:"4.0~10.0 정상",d:"몸을 지키는 면역세포 수입니다.",a:"감기·염증 때 잠시 오를 수 있습니다. 계속 벗어나면 혈액 검사를 다시 하세요."},
+  {k:"plt",n:"혈소판",u:"천/μL",g:"혈액",j:v=>v>=150&&v<=400?0:(v>=100&&v<=500)?1:2,b:[150,400],h:"150~400 정상",d:"피를 멎게 하는 세포입니다.",a:"낮으면 간질환·혈액질환을, 높으면 염증·철결핍을 확인합니다."},
+  {k:"ua",n:"요산",u:"mg/dL",g:"혈액",j:(v,s)=>v<=(s==="F"?6:7)?0:v<=9?1:2,b:s=>[null,s==="F"?6:7],h:"남 7, 여 6 넘으면 높음",d:"퓨린이 분해되어 생기며, 높으면 통풍·신장결석 위험이 있습니다.",a:"맥주·내장류·등푸른생선 과다, 과당 음료를 줄이고 물을 충분히 드세요. 관절 통증이 있으면 진료를 받으세요."},
+  {k:"cr",n:"혈청 크레아티닌",u:"mg/dL",g:"신장",j:v=>v<=1.5?0:2,b:[null,1.5],h:"1.5 초과 신장질환 의심",d:"근육 대사 노폐물로, 신장이 걸러 내지 못하면 올라갑니다.",a:"eGFR과 함께 봅니다. 진통제(소염제) 장기 복용을 피하고 혈압·혈당을 관리하세요."},
+  {k:"egfr",n:"신사구체여과율(eGFR)",u:"mL/min",g:"신장",j:v=>v>=60?0:2,b:[60,null],h:"60 미만 신장기능 저하 의심",d:"신장이 1분에 걸러 내는 혈액량으로 신장 기능을 보여 줍니다.",a:"60 미만이 3개월 넘게 계속되면 만성콩팥병입니다(신장내과). 요단백 검사를 함께 받으세요."},
+  {k:"bun",n:"요소질소(BUN)",u:"mg/dL",g:"신장",j:v=>v<=23?0:v<=30?1:2,b:[8,23],h:"8~23 정상",d:"단백질 대사 노폐물입니다.",a:"탈수·고단백 식사로 오를 수 있습니다. 크레아티닌과 함께 봅니다."},
+  {k:"tsh",n:"갑상선자극호르몬(TSH)",u:"μIU/mL",g:"갑상선",j:v=>v>=0.4&&v<=4.5?0:(v>=0.1&&v<=10)?1:2,b:[0.4,4.5],h:"0.4~4.5 정상",d:"갑상선 기능을 조절하는 호르몬으로, 높으면 기능 저하, 낮으면 항진을 뜻합니다.",a:"벗어나면 free T4와 함께 다시 검사합니다(내분비내과). 피로·체중 변화·두근거림을 확인하세요."},
+  {k:"ft4",n:"유리 갑상선호르몬(Free T4)",u:"ng/dL",g:"갑상선",j:v=>v>=0.8&&v<=1.8?0:(v>=0.6&&v<=2.2)?1:2,b:[0.8,1.8],h:"0.8~1.8 정상(기관마다 다름)",d:"갑상선이 만드는 호르몬입니다.",a:"TSH와 함께 판정합니다."},
+  {k:"cea",n:"암태아성항원(CEA)",u:"ng/mL",g:"종양표지자",j:v=>v<=5?0:v<=10?1:2,b:[null,5],h:"5 이하 정상 (흡연자는 조금 높을 수 있음)",d:"대장암 등에서 올라갈 수 있는 수치입니다. 단독으로 암을 진단하지 않습니다.",a:"조금 높으면 흡연·염증 때문일 수 있습니다. 계속 오르면 대장내시경 등 해당 검사를 받으세요."},
+  {k:"afp",n:"알파태아단백(AFP)",u:"ng/mL",g:"종양표지자",j:v=>v<=10?0:v<=20?1:2,b:[null,10],h:"10 이하 정상",d:"간암에서 올라갈 수 있는 수치입니다.",a:"B·C형 간염 보유자나 간경변이면 6개월마다 초음파와 함께 확인하세요."},
+  {k:"ca199",n:"CA19-9",u:"U/mL",g:"종양표지자",j:v=>v<=37?0:v<=100?1:2,b:[null,37],h:"37 이하 정상",d:"췌장·담도암에서 올라갈 수 있는 수치입니다.",a:"담석·췌장염·당뇨에서도 오릅니다. 높으면 복부 영상검사를 상담하세요."},
+  {k:"psa",n:"전립선특이항원(PSA)",u:"ng/mL",g:"종양표지자",j:v=>v<=4?0:v<=10?1:2,b:[null,4],h:"4 이하 정상(50대는 3.5 이하 권장)",d:"전립선 질환에서 올라가는 수치입니다(남성).",a:"4를 넘거나 1년에 0.75 넘게 오르면 비뇨의학과 진료를 받으세요."},
+  {k:"ca125",n:"CA-125",u:"U/mL",g:"종양표지자",j:v=>v<=35?0:v<=65?1:2,b:[null,35],h:"35 이하 정상",d:"난소 질환에서 올라갈 수 있는 수치입니다(여성).",a:"생리·자궁근종·자궁내막증에서도 오릅니다. 높으면 부인과 초음파를 받으세요."},
+  {k:"vitd",n:"비타민D",u:"ng/mL",g:"뼈·영양",j:v=>v>=30?0:v>=20?1:2,b:[30,null],h:"30 이상 충분, 20 미만 결핍",d:"뼈 건강과 면역에 중요한 비타민입니다. 한국인 대부분이 부족합니다.",a:"하루 15~30분 햇볕 쬐기, 결핍이면 보충제(하루 1,000~2,000IU)를 의사와 상의하세요."},
+  {k:"bmd",n:"골밀도(T-점수)",u:"",g:"뼈·영양",j:v=>v>=-1?0:v>-2.5?1:2,b:[-1,null],h:"-1 이상 정상, -1~-2.5 골감소, -2.5 이하 골다공증",d:"같은 성별 젊은 성인과 비교한 뼈의 단단함입니다.",a:"골감소면 칼슘·비타민D·근력운동을, 골다공증이면 약 치료를 상담하세요(내분비·정형외과). 여성은 폐경 뒤 빠르게 줄어듭니다."},
+  {k:"crp",n:"고감도 CRP",u:"mg/L",g:"뼈·영양",j:v=>v<1?0:v<=3?1:2,b:[null,1],h:"1 미만 낮음, 3 넘으면 심혈관 위험 증가",d:"몸속 염증 정도로, 심혈관질환 위험 예측에 씁니다.",a:"감기 등 염증이 있을 때는 오르니 2주 뒤 다시 재 보세요."}];
 const ITK=Object.fromEntries(IT.map(x=>[x.k,x]));
-const GRPS=["신체","혈압","당뇨","콜레스테롤","간","빈혈","신장"];
+const GRPS=["신체","혈압","당뇨","콜레스테롤","간","혈액","신장","갑상선","종양표지자","뼈·영양"];
+const BASIC=["신체","혈압","당뇨","콜레스테롤","간","혈액","신장"];
+const DEPT={신체:"가정의학과",혈압:"내과(순환기)",당뇨:"내분비내과",콜레스테롤:"내과(순환기·내분비)",간:"소화기내과",혈액:"내과(혈액)",신장:"신장내과",갑상선:"내분비내과",종양표지자:"해당 장기 진료과",["뼈·영양"]:"내분비내과·정형외과"};
 const JL=["정상","주의","이상"];
 const MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
 const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";let pdfLib=null;
@@ -395,6 +421,8 @@ function renderHome(){
       h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">다음 검진<small>매년 · 지난 검진 1년 뒤</small></span><span class="r nw">${nd?(over?`<span class="tagx warn">${nd.getFullYear()}.${String(nd.getMonth()+1).padStart(2,"0")} 지남</span>`:`${nd.getFullYear()}.${String(nd.getMonth()+1).padStart(2,"0")}`):"-"}</span></div>`}
     else h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">국가 일반검진<small>2년마다 · 출생연도 짝수·홀수와 같은 해</small></span><span class="r nw">${due==null?"-":due===y?`<span class="tagx warn">올해 대상</span>`:`${due}년`}</span></div>`;
     const cl=cancerList(m);if(cl.length)h+=`<div class="row"><span class="l">암검진 (국가 지원)<small>${cl.map(c=>`${c[0]}: ${c[1]}${c[2]===true?" · 올해 대상":c[2]===false?" · 내년 대상":""}`).join("<br>")}</small></span></div>`;
+    const cs=careList(m);if(cs.length)h+=`<details style="border-top:1px solid var(--line);margin-top:4px"><summary style="min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--accent);cursor:pointer">${esc(m.name)}님 나이에 맞는 검사·예방접종 (${cs.length})</summary>${cs.map(c=>`<div class="row"><span class="l"><span class="tagx ${c[0]==="접종"?"ok":""}">${c[0]}</span> ${esc(c[1])}<small>${esc(c[2])}</small></span></div>`).join("")}</details>`;
+    if(last){const fl2=flagsOf(last,m);if(fl2.length){const top=fl2[0];h+=`<p class="note ${top.j===2?"warn":"tip"}" style="margin-top:8px"><b>가장 먼저 챙길 것</b> · ${esc(top.it.n)} ${fmt(top.v)}: ${esc(top.it.a||"")}</p>`}}
     h+=`</section>`});
   h+=`<p class="meta2" style="margin-top:12px">판정은 국민건강보험공단 일반건강검진 기준을 단순화한 참고용입니다. 진단은 의사와 상담하세요.</p>`;
   $("vHome").innerHTML=h;
@@ -450,6 +478,7 @@ function renderTrend(){
     h+=`<section class="box"><h3>${esc(it.n)}${it.u?` (${esc(it.u)})`:""}</h3>
       <div class="row" style="border-top:0"><span class="l">최근 ${esc(dot(lastP.date))}${lastP.j!=null?` <span class="tagx j${lastP.j}">${JL[lastP.j]}</span>`:""}<small>${band?`정상 범위 ${band[0]!=null?fmt(band[0]):""}~${band[1]!=null?fmt(band[1]):""}`:""}${it.h?` · ${esc(it.h)}`:""}</small></span><span class="r nw" style="font-size:20px">${fmt(lastP.v)}</span></div>
       ${pts.length>1?`<p class="meta2">${esc(dot(firstP.date))} ${fmt(firstP.v)} → ${fmt(lastP.v)} (${lastP.v>=firstP.v?"+":""}${fmt(lastP.v-firstP.v)}, ${pts.length}회)</p>`:""}
+      ${it.d?`<p class="vguide" style="margin-top:8px">${esc(it.d)}${it.a?`<br><b>가이드</b> ${esc(it.a)}`:""}</p>`:""}
       <div class="tc">${trendSvg(m,it,pts)}</div><p class="meta2" style="margin-top:4px">연한 초록 띠가 정상 범위입니다. 점 색: 정상 · <span class="j1">주의</span> · <span class="j2">이상</span></p></section>`}
   // 전체 항목 변화표
   const cols=xs.slice(-5);
@@ -533,13 +562,37 @@ function saveMember(){const e=state.edit,name=$("mName").value.trim();if(!name){
   const r={...e,id:e.id||newId("m"),kind:"member",name,rel:$("mRel").value,sex:$("mSex").value,birth:$("mBirth").value,cycle:Number($("mCyc").value)||2,meds:$("mMeds").value.trim(),conds:$("mConds").value.trim(),allergy:$("mAllergy").value.trim(),color:e.color,deleted:false};
   if(r.order==null)r.order=members().length;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다")}
 
+/* 검진 결과 가이드: 주의·이상 항목을 분야별로 묶어 할 일·진료과 안내 */
+function guideBox(x,m){const fl=flagsOf(x,m);if(!fl.length)return `<section class="box"><h3>결과 가이드</h3><p>기준을 벗어난 수치가 없습니다. 지금 생활을 유지하고 ${num1(m&&m.cycle)===1?"1년":"2년"} 뒤 같은 검진을 받으세요.</p></section>`;
+  const byG={};fl.forEach(f=>{(byG[f.it.g]=byG[f.it.g]||[]).push(f)});
+  const bad=fl.filter(f=>f.j===2).length;
+  return `<section class="box"><h3>결과 가이드 (주의 ${fl.length-bad} · 이상 ${bad})</h3>${bad?`<p class="note warn" style="margin-top:0">'이상' 항목은 3개월 안에 재검이나 진료를 받으세요.</p>`:`<p class="note tip" style="margin-top:0">'주의' 항목은 생활 습관을 고치고 다음 검진에서 다시 확인하세요.</p>`}
+    <ol class="gl" style="margin-top:10px">${Object.entries(byG).map(([g,fs])=>`<li><b>${esc(g)}: ${fs.map(f=>`${esc(f.it.n.replace(/\(.*\)/,""))} ${fmt(f.v)}`).join(", ")}</b>${esc(fs.sort((a,b)=>b.j-a.j)[0].it.a||"")}<br><span class="meta2">${fs.some(f=>f.j===2)?"진료":"상담"}: ${esc(DEPT[g]||"내과")}</span></li>`).join("")}</ol></section>`}
+/* 나이·성별 맞춤 건강 가이드 (국가건강검진·예방접종 기준) */
+function careList(m){const a=age(m.birth),s=m.sex;if(a==null)return [];const L=[];
+  L.push(["검사","혈압·혈당·콜레스테롤","국가 일반검진(2년마다)에 포함 · 이상지질혈증은 남 24세·여 40세부터 4년마다"]);
+  if(a>=40)L.push(["검사","B형간염 항원·항체","만 40세 국가검진에 1회 포함 · 보유자면 6개월마다 간 초음파"]);
+  if(s==="F"&&[54,60,66].some(x=>Math.abs(a-x)<=1))L.push(["검사","골밀도","만 54·60·66세 여성 국가검진"]);
+  if(a>=50)L.push(["검사","대장내시경","분변잠혈 양성이면 필수 · 50세 이후 5~10년마다 권장"]);
+  if(a>=40)L.push(["검사","안저·안압 검사","40세 이후 1~2년마다 (녹내장·당뇨망막병증 예방)"]);
+  if(a>=40&&[40,50,60,70].some(x=>Math.abs(a-x)<=1))L.push(["검사","생활습관평가","만 40·50·60·70세 국가검진"]);
+  if(a>=66)L.push(["검사","인지기능장애 검사","66세 이상 2년마다"]);
+  L.push(["검사","치석 제거(스케일링)","매년 1회 건강보험 적용"]);
+  L.push(["접종","인플루엔자","매년 10~11월 · 65세 이상 무료"]);
+  if(a>=50)L.push(["접종","대상포진","50세 이상 권장(2회 접종 백신) · 일부 지자체 지원"]);
+  if(a>=65)L.push(["접종","폐렴구균","65세 이상 무료 1회"]);else if(a>=50)L.push(["접종","폐렴구균","만성질환이 있으면 65세 전에도 권장"]);
+  L.push(["접종","파상풍·디프테리아(Td)","10년마다 1회"]);
+  return L}
+
 /* 검진 상세 */
 function viewExam(id){
   const x=state.recs[id];if(!x)return;const m=mById(x.owner);
   let h=`<section class="box"><div class="row" style="border-top:0"><span class="l">${esc(m?m.name:"?")} · ${esc(KINDS[x.type]||"검진")}<small>${esc(dot(x.date))}${x.hospital?" · "+esc(x.hospital):""}${m&&m.birth?` · 당시 만 ${age(m.birth,pd(x.date))}세`:""}</small></span><span class="r nw">${(()=>{const n=flagsOf(x,m).length;return n?`<span class="tagx j2">주의·이상 ${n}</span>`:`<span class="tagx j0">기준 이내</span>`})()}</span></div>${x.verdict?`<div class="row"><span class="l">종합 판정</span><span class="r" style="white-space:normal">${esc(x.verdict)}</span></div>`:""}</section>`;
   GRPS.forEach(g=>{const rows=IT.filter(it=>it.g===g&&val(x,it.k)!=null);if(!rows.length)return;
     h+=`<section class="box"><h3>${g}</h3>${rows.map(it=>{const v=val(x,it.k),j=judge(it.k,v,m&&m.sex),p=prevOf(x,it.k),pv=p?val(p,it.k):null;const b=it.b?bandOf(it,m&&m.sex):null;
-      return `<div class="vrow"><span class="n">${esc(it.n)}${j!=null?` <span class="tagx j${j}">${JL[j]}</span>`:""}<small>${b?`정상 ${b[0]!=null?fmt(b[0]):""}~${b[1]!=null?fmt(b[1]):""}`:""}</small></span><span class="v ${j?"j"+j:""}">${fmt(v)}<small>${esc(it.u)}</small>${pv!=null&&it.k!=="height"?`<span class="d">이전 ${fmt(pv)} (${v-pv>=0?"+":""}${fmt(v-pv)})</span>`:""}</span></div>`}).join("")}</section>`});
+      const row=`<span class="n">${esc(it.n)}${j!=null?` <span class="tagx j${j}">${JL[j]}</span>`:""}<small>${b?`정상 ${b[0]!=null?fmt(b[0]):""}~${b[1]!=null?fmt(b[1]):""}`:""}${it.d?" · 설명 보기":""}</small></span><span class="v ${j?"j"+j:""}">${fmt(v)}<small>${esc(it.u)}</small>${pv!=null&&it.k!=="height"?`<span class="d">이전 ${fmt(pv)} (${v-pv>=0?"+":""}${fmt(v-pv)})</span>`:""}</span>`;
+      return it.d?`<details class="vrow" ${j?"open":""}><summary style="display:contents">${row}</summary><div class="vguide">${esc(it.d)}${it.h?`<br><span class="meta2">기준: ${esc(it.h)}</span>`:""}${j?`<br><b>가이드</b> ${esc(it.a)}`:""}</div></details>`:`<div class="vrow">${row}</div>`}).join("")}</section>`});
+  h=h.replace(/^(<section class="box">[\s\S]*?<\/section>)/,(m0)=>m0+guideBox(x,m));
   if((x.finds||[]).length)h+=`<section class="box"><h3>기타 검사 결과</h3>${x.finds.map(f=>`<div class="row"><span class="l">${esc(f.name)}</span><span class="r" style="white-space:normal;font-weight:500">${esc(f.result)}</span></div>`).join("")}</section>`;
   if(x.opinion)h+=`<section class="box"><h3>의사 소견</h3><p style="white-space:pre-wrap">${esc(x.opinion)}</p></section>`;
   if((x.files||[]).length)h+=`<section class="box"><h3>첨부 자료</h3><div class="files">${x.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm line" type="button" data-openfile="${esc(f.id)}" data-pid="${id}">보기</button></div>`).join("")}</div></section>`;
@@ -558,7 +611,8 @@ function openExam(id,pre){
     <div class="frow"><label class="fld">가족<select id="eOwner">${opt(ms.map(m=>[m.id,m.name]),x.owner)}</select></label><label class="fld">검진일<input id="eDate" type="date" value="${esc(x.date)}" max="${ymd(today0())}"></label></div>
     <div class="frow"><label class="fld">종류<select id="eKind">${opt(Object.entries(KINDS),x.type||"nat")}</select></label><label class="fld">검진 기관<input id="eHosp" maxlength="30" value="${esc(x.hospital||"")}" placeholder="예: ○○병원 건강검진센터"></label></div>
     <p class="meta2">아는 수치만 넣으세요. BMI는 키·몸무게로 자동 계산합니다.</p>
-    ${GRPS.map(g=>`<fieldset class="grp"><legend>${g}</legend><div class="ig">${IT.filter(it=>it.g===g).map(it=>`<label class="fld">${esc(it.n)}${it.u?` (${esc(it.u)})`:""}<input data-iv="${it.k}" inputmode="decimal" value="${x.v&&x.v[it.k]!=null?esc(x.v[it.k]):""}"></label>`).join("")}</div></fieldset>`).join("")}
+    ${GRPS.map(g=>{const its=IT.filter(it=>it.g===g),has=its.some(it=>x.v&&x.v[it.k]!=null);const inner=`<div class="ig">${its.map(it=>`<label class="fld">${esc(it.n)}${it.u?` (${esc(it.u)})`:""}<input data-iv="${it.k}" inputmode="decimal" value="${x.v&&x.v[it.k]!=null?esc(x.v[it.k]):""}"></label>`).join("")}</div>`;
+      return BASIC.includes(g)?`<fieldset class="grp"><legend>${g}</legend>${inner}</fieldset>`:`<details class="grp" ${has?"open":""}><summary>${g} (종합검진 항목)</summary>${inner}</details>`}).join("")}
     <label class="fld">종합 판정 (선택)<input id="eVerd" maxlength="40" value="${esc(x.verdict||"")}" placeholder="예: 정상B(경계), 질환의심"></label>
     <label class="fld">기타 검사 결과 (한 줄에 하나, '검사: 결과')<textarea id="eFind" placeholder="예: 위내시경: 만성 표재성 위염&#10;복부초음파: 경도 지방간">${esc(fin)}</textarea></label>
     <label class="fld">의사 소견 (선택)<textarea id="eOpin">${esc(x.opinion||"")}</textarea></label>
@@ -639,8 +693,8 @@ function openImport(){
 function impMsg(t){const e=$("iMsg");if(e)e.textContent=t}
 const IMPORT_PROMPT=`아래 자료는 한국 건강검진 결과(국민건강보험공단 일반건강검진 결과 통보서, 병원 종합검진 결과지 등)입니다. 보이는 값만 옮겨 JSON 하나로 답하세요. 없는 값은 null, 추측 금지. 주민등록번호·연락처·주소는 절대 옮기지 마세요.
 수치는 숫자만(단위 제외). 혈압은 수축기 sbp, 이완기 dbp로 나누세요. 여러 회차 검진이 보이면 회차마다 exams 배열에 하나씩 넣으세요.
-키: height(cm) weight(kg) bmi waist(허리둘레 cm) sbp dbp glu(공복혈당) hba1c(당화혈색소 %) tc(총콜레스테롤) ldl hdl tg(중성지방) ast alt ggt(감마지티피) hb(혈색소) cr(혈청 크레아티닌) egfr(신사구체여과율)
-{"exams":[{"ownerName":"수검자 이름","date":"YYYY-MM-DD 검진일","hospital":"검진 기관","type":"nat(국가 일반검진)|comp(종합검진)|cancer(암검진)|etc","values":{"height":null,"weight":null,"bmi":null,"waist":null,"sbp":null,"dbp":null,"glu":null,"hba1c":null,"tc":null,"ldl":null,"hdl":null,"tg":null,"ast":null,"alt":null,"ggt":null,"hb":null,"cr":null,"egfr":null},"verdict":"종합 판정(정상A, 정상B, 질환의심 등)","finds":[{"name":"검사 이름(위내시경, 복부초음파, 흉부방사선, 요단백, 골밀도, 시력, 청력 등)","result":"결과 요약"}],"opinion":"의사 소견 요약 300자 이내"}]}`;
+키: height(cm) weight(kg) bmi waist(허리둘레 cm) fat(체지방률 %) sbp dbp glu(공복혈당) hba1c(당화혈색소 %) tc(총콜레스테롤) ldl hdl tg(중성지방) ast alt ggt(감마지티피) alb(알부민) tbil(총빌리루빈) alp hb(혈색소) wbc(백혈구, 천/μL 단위로: 6,500/μL이면 6.5) plt(혈소판, 천/μL 단위로) ua(요산) cr(혈청 크레아티닌) egfr bun(요소질소) tsh ft4(free T4) cea afp ca199(CA19-9) psa ca125(CA-125) vitd(비타민D) bmd(골밀도 T-점수, 여러 부위면 가장 낮은 값) crp(고감도 CRP mg/L)
+{"exams":[{"ownerName":"수검자 이름","date":"YYYY-MM-DD 검진일","hospital":"검진 기관","type":"nat(국가 일반검진)|comp(종합검진)|cancer(암검진)|etc","values":{"height":null,"weight":null,"bmi":null,"waist":null,"fat":null,"sbp":null,"dbp":null,"glu":null,"hba1c":null,"tc":null,"ldl":null,"hdl":null,"tg":null,"ast":null,"alt":null,"ggt":null,"alb":null,"tbil":null,"alp":null,"hb":null,"wbc":null,"plt":null,"ua":null,"cr":null,"egfr":null,"bun":null,"tsh":null,"ft4":null,"cea":null,"afp":null,"ca199":null,"psa":null,"ca125":null,"vitd":null,"bmd":null,"crp":null},"verdict":"종합 판정(정상A, 정상B, 질환의심 등)","finds":[{"name":"검사 이름(위내시경, 복부초음파, 흉부방사선, 요단백, 골밀도, 시력, 청력 등)","result":"결과 요약"}],"opinion":"의사 소견 요약 300자 이내"}]}`;
 async function pdfToInput(file,pw){
   const lib=await getPdfLib();
   let doc;try{doc=await lib.getDocument({data:new Uint8Array((await file.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
