@@ -1,0 +1,604 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#24456E"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="연금관리"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style></head><body>
+<title>우리 가족 연금관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: MY 미니앱 기본 체계 v1 — 폭 560 한 줄, 상단 고정 바(제목·가±), 카드 목록, 하단 고정 탭 4개 (한눈에·연금·수령 계획·가족) */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#24456E; --accent-soft:#E5EBF4; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC; --bad:#A23B2A; --bad-soft:#FBE9E5;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#9DB8E0; --accent-soft:#1E2A3B; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#9DB8E0; --accent-soft:#1E2A3B; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+.tb-home{flex:none;display:grid;place-items:center;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--accent)}
+.tb-home[hidden]{display:none}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted)}
+
+/* 요약 */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.kpi .big{font:600 28px/1.25 var(--body);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .big small{font-size:16px;font-weight:500;color:var(--muted);margin-left:2px}
+.kpi .sub{font-size:14px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bar{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.bar .trk{height:10px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bar .fil{height:100%;border-radius:99px;background:var(--accent)}
+.bar b{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* 카드 목록 */
+.list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;color:inherit;min-width:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+.card:active{background:var(--accent-soft)}
+.card.off{opacity:.62}
+.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font:700 18px/1 var(--display);flex:none}
+.mono.sm{width:32px;height:32px;border-radius:9px;font-size:14px}
+.card .nm{font-weight:600;font-size:17.5px;line-height:1.35;overflow-wrap:anywhere}
+.card .ds{font-size:14px;color:var(--muted);line-height:1.5}
+.card .mt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .amt small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.pinfo{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;font-size:14px;line-height:1.45}
+.pi{display:grid;grid-template-columns:64px 1fr;gap:8px}
+.pi .k{color:var(--muted);font-size:13px;padding-top:1px}
+.pi .v{min-width:0;overflow-wrap:anywhere}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tagx.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tagx.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.tagx.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.empty{margin-top:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.empty .btn{margin-top:10px}
+
+/* 상자 */
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ol li::marker{color:var(--accent);font-weight:600}
+.note{margin-top:8px;font-size:14px;padding:8px 10px;border-radius:8px}
+.note.tip{background:var(--accent-soft)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.meta2{font-size:13.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.pick.busy{opacity:.5;pointer-events:none}
+.btn.danger{background:var(--surface);border-color:var(--bad);color:var(--bad);font-weight:600}
+.sact.three{grid-template-columns:1fr 1fr 2fr}
+.toast .undo{margin-left:10px;min-height:34px;padding:2px 12px;border-radius:8px;border:1px solid var(--surface);background:transparent;color:var(--surface);font-weight:600;cursor:pointer}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.frow>.fld{flex:1 1 140px}
+.vstack{display:flex;flex-direction:column;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:72px;resize:vertical}
+.fld .ck{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;color:var(--ink)}
+.fld .ck input{width:22px;height:22px;min-height:0}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+
+/* 보장 표 */
+.mx{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mxw{overflow-x:auto;margin-inline:-14px;padding-inline:14px}
+.mx th,.mx td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.mx th:first-child,.mx td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.mx thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.mx td.no{color:var(--bad);font-weight:600}
+.mx td.yes{font-weight:600}
+
+/* 일정 */
+.ev{display:grid;grid-template-columns:58px 1fr;gap:10px;padding-block:9px;border-top:1px solid var(--line);align-items:center}
+.ev:first-child{border-top:0}
+.ev .dd{text-align:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px;padding:4px 0;font-variant-numeric:tabular-nums}
+.ev .dd.soon{background:var(--warn-soft);color:var(--warn)}
+.ev b{font-weight:600;font-size:15px;display:block}
+.ev small{font-size:13px;color:var(--muted)}
+
+/* 보험 분석 */
+.rvrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font:inherit;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.rvrow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.rvrow b{font-weight:600;font-size:17px}
+.rvrow small{display:block;font-size:13px;color:var(--muted)}
+.up{color:var(--ok);font-size:13px;font-weight:600}.down{color:var(--bad);font-size:13px;font-weight:600}
+.score{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.score .big{font:600 34px/1.1 var(--body);font-variant-numeric:tabular-nums}
+.score .big small{font-size:16px;color:var(--muted);font-weight:500}
+.gl{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.gl li::marker{color:var(--accent);font-weight:700}
+.gl b{display:block;font-weight:600}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+/* 보장 입력 줄 */
+.cov{border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;grid-template-columns:1fr 112px 40px;gap:6px;background:var(--surface)}
+.cov .full{grid-column:1/-1}
+.cov select,.cov input{font-size:16px;padding:6px 8px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box;min-width:0}
+.cov .x{width:40px;height:42px;border-radius:8px}
+.files{display:flex;flex-direction:column;gap:6px}
+.fvpage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:8px}
+.file{display:flex;align-items:center;gap:8px;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:6px 8px 6px 12px;background:var(--surface);font-size:14px}
+.file a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;min-height:34px;display:flex;align-items:center}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display);min-width:0;overflow-wrap:anywhere}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;margin-top:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* 연금관리 전용 */
+.tl{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.tl th,.tl td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.tl th:first-child,.tl td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.tl thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.r.nw,.nw{white-space:nowrap}
+.tl tr.peak td{font-weight:700;color:var(--accent)}
+.rng{width:100%;accent-color:var(--accent);min-height:40px}
+.gauge{height:10px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:6px}
+.gauge>span{display:block;height:100%;background:var(--accent);border-radius:99px}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="tb-home" id="homeBtn" href="../" hidden aria-label="MY 미니앱 허브로">MY</a>
+    <div class="tb-title">우리 가족 연금관리</div>
+    <span class="pill" id="tbPill">연금 0건</span>
+    <button class="save" type="button" id="saveState" data-s="local" aria-label="저장 상태">저장 상태</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+  <main id="vHome"></main>
+  <main id="vPlan" hidden></main>
+  <main id="vSim" hidden></main>
+  <main id="vFam" hidden></main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="home" aria-selected="true"><b>한눈에</b><span>적립·수령</span></button>
+  <button type="button" role="tab" data-view="plan" aria-selected="false"><b>연금</b><span id="tPlan">0건</span></button>
+  <button type="button" role="tab" data-view="sim" aria-selected="false"><b>수령 계획</b><span>연도별·세금</span></button>
+  <button type="button" role="tab" data-view="fam" aria-selected="false"><b>가족</b><span>구성원·백업</span></button>
+</div></nav>
+
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="편집"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ── 고정 목록 (키는 저장 데이터에 들어가므로 바꾸지 말 것: 이름 변경은 라벨만) ── */
+const RELS=["본인","배우자","기타"];
+const TYPES=[["nps","국민연금","공적"],["gov","공무원·사학·군인연금","공적"],["db","퇴직연금 DB형","퇴직"],["dc","퇴직연금 DC형","퇴직"],["irp","IRP (개인형퇴직연금)","퇴직"],["psf","연금저축펀드","개인"],["psi","연금저축보험","개인"],["pins","연금보험 (비과세)","개인"],["house","주택연금","기타"],["etc","기타","기타"]];
+const TN=Object.fromEntries(TYPES.map(t=>[t[0],t[1]])),TG=Object.fromEntries(TYPES.map(t=>[t[0],t[2]]));
+const GROUPS=["공적","퇴직","개인","기타"];
+const STATUS={pay:"납입 중",stop:"납입 중지",recv:"수령 중",done:"수령 완료",end:"해지"};
+/* 세액공제 대상(본인 납입분) */
+const TAXCREDIT=["psf","psi","irp","dc"];
+const COLORS=["#24456E","#2E6B4F","#7A1F2B","#9A6400","#6B4A8E","#1D5E54"];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const n=Number(String(v??"").replace(/[^\d.-]/g,""));return isFinite(n)?n:0};
+const won=n=>Math.round(n||0).toLocaleString("ko-KR")+"원";
+const manW=n=>Math.round((n||0)/1e4).toLocaleString("ko-KR")+"만원";
+const eok=n=>n>=1e8?(n/1e8).toFixed(2).replace(/\.?0+$/,"")+"억":Math.round(n/1e4).toLocaleString("ko-KR")+"만";
+const man=n=>{n=Math.round((n||0)/10000);if(!n)return"0원";const e=Math.floor(n/10000),r=n%10000;return (e?e+"억":"")+(e&&r?" ":"")+(r?r.toLocaleString("ko-KR")+"만":"")+"원"};
+const pd=s=>{if(!s)return null;const d=new Date(s+"T00:00:00");return isNaN(d)?null:d};
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ── 저장: 공유 저장소(내 전용 칸) + 이 기기, 최근 고친 쪽 우선, 지움은 표시만 ── */
+const LSK="myapps-pension-v1";
+const state={recs:{},view:"home",mem:null,edit:null};
+let db=null,col=null,canWrite=true,uid=null;
+const ts=r=>(r&&r.updatedAt)||0;
+function take(r){if(!r||!r.id||!r.kind)return false;const c=state.recs[r.id];if(!c||ts(r)>ts(c)){state.recs[r.id]={...r};return true}return false}
+function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:1,recs:state.recs}))}catch(e){}}
+function lsLoad(){try{const o=JSON.parse(localStorage.getItem(LSK)||"null");if(o&&o.recs)Object.values(o.recs).forEach(take)}catch(e){}}
+const q=[];let busy=false;
+function push(id){if(!col||!canWrite)return;const r=state.recs[id];if(!r)return;q.push(()=>col.doc(id).set(JSON.parse(JSON.stringify(r))));if(!busy)run()}
+async function run(){busy=true;while(q.length){const f=q.shift();try{await f();setSave("ok")}catch(e){if(e&&(e.code==="invalid_argument"||e.code==="permission_denied")){canWrite=false;setSave("local","공유 저장소에 쓸 권한이 없어 이 기기에만 저장됩니다")}else setSave("local","저장 실패 · 이 기기에만 저장됨");q.length=0}}busy=false}
+let saveMsg="이 기기에 저장됨";
+function setSave(s,m){const el=$("saveState");el.dataset.s=s;saveMsg=m||(s==="ok"?"공유 저장소(내 전용)에 저장됨":"이 기기에 저장됨");el.title=saveMsg;el.setAttribute("aria-label","저장 상태: "+saveMsg);const t=$("saveTxt");if(t)t.textContent=saveMsg}
+function put(r){r.updatedAt=Date.now();r.createdAt=r.createdAt||r.updatedAt;state.recs[r.id]=r;lsSave();push(r.id);render()}
+let first=true;
+async function connect(){
+  if(!window.claude||!window.claude.use){setSave("local","이 휴대폰에만 저장됨 · 백업 파일을 꼭 받아 두세요");return}
+  try{db=await window.claude.use("db")}catch(e){db=null}
+  let user=null;try{user=await window.claude.use("user")}catch(e){}
+  try{uid=user&&await user.id()}catch(e){uid=null}
+  if(!db||!uid){setSave("local","이 기기에 저장됨 · 공유 저장소 연결 안 됨");return}
+  col=db.collection("data/users/"+uid);setSave("ok");
+  col.onSnapshot(snap=>{
+    const remote={};snap.docs.forEach(d=>{const x=d.data();if(x&&x.kind)remote[d.id]={...x,id:d.id}});
+    Object.values(remote).forEach(take);
+    const up=first?Object.keys(state.recs).filter(id=>!remote[id]||ts(state.recs[id])>ts(remote[id])):[];
+    first=false;lsSave();render();if(up.length)setTimeout(()=>up.forEach(push),0);
+  },()=>setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시"));
+  loadPref();
+}
+
+/* ── 계산 ── */
+const live=k=>Object.values(state.recs).filter(r=>r.kind===k&&!r.deleted);
+const members=()=>live("member").sort((a,b)=>(a.order??99)-(b.order??99)||ts(a)-ts(b));
+const mById=id=>state.recs[id]&&!state.recs[id].deleted?state.recs[id]:null;
+const plans=()=>live("plan");
+const getSet=()=>state.recs.settings&&!state.recs.settings.deleted?state.recs.settings:{};
+const rate=()=>{const r=getSet().rate;return r===""||r==null?3:num(r)};
+function age(b,at){const d=pd(b);if(!d)return null;const t=at||today0();let a=t.getFullYear()-d.getFullYear();if(t<new Date(t.getFullYear(),d.getMonth(),d.getDate()))a--;return a}
+/* 국민연금 노령연금 수령 개시 나이 (출생연도 기준, 국민연금법 부칙) */
+function npsAge(b){const d=pd(b);if(!d)return 65;const y=d.getFullYear();return y<=1952?60:y<=1956?61:y<=1960?62:y<=1964?63:y<=1968?64:65}
+/* 조기 수령: 1년당 6% 감액(최대 5년), 연기: 1년당 7.2% 증액(최대 5년) */
+const npsFactor=adj=>adj<0?1+0.06*adj:1+0.072*adj;
+function planName(p){return p.product||TN[p.type]||"연금"}
+function startAgeOf(p,m){
+  if(p.type==="nps")return npsAge(m&&m.birth)+num(p.npsAdj||0);
+  const a=num(p.startAge);return a||(p.type==="house"?55:p.type==="gov"?65:60);
+}
+/* 한 연금의 월 수령액(예상): 입력한 예상액이 있으면 그 값, 없으면 적립금을 기대수익률로 불려 수령 기간에 나눔 */
+function project(p,m){
+  const sa=startAgeOf(p,m),cur=age(m&&m.birth);const r=rate()/100/12;
+  let monthly=0,basis="",fv=0;
+  if(num(p.expected)>0){monthly=num(p.expected)*(p.type==="nps"?npsFactor(num(p.npsAdj||0)):1);basis=p.type==="nps"?"공단 예상액 기준":"입력한 예상액"}
+  else if(num(p.balance)>0||num(p.monthly)>0){
+    const n=cur==null?0:Math.max(0,(sa-cur)*12);const payN=p.status==="pay"?Math.max(0,Math.min(n,((num(p.payEndAge)||sa)-(cur||0))*12)):0;
+    fv=num(p.balance)*Math.pow(1+r,n);
+    if(payN>0){const c=num(p.monthly);fv+=r?c*((Math.pow(1+r,payN)-1)/r)*Math.pow(1+r,n-payN):c*payN}
+    const yrs=num(p.payYears)||Math.max(10,90-sa);const m2=yrs*12;
+    monthly=r?fv*r/(1-Math.pow(1+r,-m2)):fv/m2;basis=`적립금·납입액 기준 계산 (연 ${rate()}%${num(p.payYears)?"":", 90세까지 가정"})`;
+      }
+  const yrs=num(p.payYears);const end=yrs?sa+yrs:200;
+  return {start:sa,end,monthly,basis,lifelong:!yrs,fv};
+}
+const active=p=>p.status!=="end"&&p.status!=="done";
+function streams(m){return plans().filter(p=>p.owner===m.id&&active(p)).map(p=>({p,...project(p,m)}))}
+/* 연도별 가족 월 수령액 표 */
+function yearTable(){
+  const ms=members().filter(m=>pd(m.birth));if(!ms.length)return null;
+  const y0=today0().getFullYear(),rows=[];
+  const st=ms.map(m=>({m,s:streams(m)}));
+  const startYears=st.flatMap(x=>x.s.map(s=>pd(x.m.birth).getFullYear()+s.start));
+  const from=Math.max(y0,Math.min(...startYears,y0+40)-1);
+  for(let y=from;y<=y0+40;y+=1){
+    const cells=st.map(x=>{const a=y-pd(x.m.birth).getFullYear();return x.s.filter(s=>a>=s.start&&a<s.end).reduce((t,s)=>t+s.monthly,0)});
+    rows.push({y,ages:st.map(x=>y-pd(x.m.birth).getFullYear()),cells,sum:cells.reduce((a,b)=>a+b,0)});
+  }
+  return {ms:st.map(x=>x.m),rows};
+}
+
+/* ── 화면 ── */
+function render(){
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
+  ["home","plan","sim","fam"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=state.view!==v});
+  const ps=plans().filter(active);
+  $("tbPill").textContent=`연금 ${ps.length}건`;$("tPlan").textContent=`${ps.length}건`;
+  ({home:renderHome,plan:renderPlan,sim:renderSim,fam:renderFam})[state.view]();
+}
+function noMembers(){return `<div class="empty">먼저 연금을 관리할 가족(본인·배우자)을 등록해 주세요.<br><button class="btn pri" type="button" data-addmem="1">＋ 가족 등록</button></div>`}
+function renderHome(){
+  const ms=members(),ps=plans().filter(active);const d=new Date();
+  let h=`<div class="dayhead"><h2>우리 가족 연금 한눈에</h2><div class="meta">${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준 · 가족 ${ms.length}명 · 연금 ${ps.length}건</div></div>`;
+  if(!ms.length){$("vHome").innerHTML=h+noMembers();return}
+  const bal=ps.reduce((s,p)=>s+num(p.balance),0),mon=ps.filter(p=>p.status==="pay").reduce((s,p)=>s+num(p.monthly),0);
+  const yt=yearTable();const peak=yt&&yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);
+  h+=`<div class="kpi"><div class="sub">현재 적립금 합계 (국민연금 제외)</div><div class="big">${man(bal)}</div><div class="sub">매달 납입 ${won(mon)} · 1년 ${man(mon*12)}</div>`;
+  if(peak&&peak.sum>0)h+=`<p class="note tip">가족 월 수령액이 가장 많은 해: <b>${peak.y}년</b> 월 ${won(peak.sum)} (${yt.ms.map((m,i)=>`${esc(m.name)} ${peak.ages[i]}세`).join(" · ")})</p>`;
+  h+=`</div>`;
+  // 가족별
+  h+=`<section class="box"><h3>가족별 연금</h3>${ms.map(m=>{const s=streams(m);const a=age(m.birth);const np=s.find(x=>x.p.type==="nps");
+    const at65=s.filter(x=>65>=x.start&&65<x.end).reduce((t,x)=>t+x.monthly,0);
+    return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center"><span class="mono sm" style="background:${esc(m.color||COLORS[0])}">${esc(m.name.slice(0,1))}</span><span><b style="font-weight:600">${esc(m.name)}</b> <span class="meta2">${a!=null?`만 ${a}세`:"생년월일 미입력"}</span><small>연금 ${s.length}건${np?` · 국민연금 ${np.start}세부터`:` · 국민연금 미등록`}</small></span></span><span class="r nw">${at65?manW(at65):"-"}<small style="display:block;font-weight:400;font-size:13px;color:var(--muted)">65세 무렵 월</small></span></div>`}).join("")}</section>`;
+  // 종류별
+  h+=`<section class="box"><h3>종류별</h3>${GROUPS.map(g=>{const gs=ps.filter(p=>TG[p.type]===g);if(!gs.length)return"";return `<div class="row"><span class="l">${g}연금<small>${gs.map(p=>esc(planName(p))).join(" · ")}</small></span><span class="r">${gs.length}건${gs.some(p=>num(p.balance))?`<small style="display:block;font-weight:400;font-size:13px;color:var(--muted)">${man(gs.reduce((s,p)=>s+num(p.balance),0))}</small>`:""}</span></div>`}).join("")||`<p class="meta2">등록된 연금이 없습니다.</p>`}</section>`;
+  // 다가오는 일
+  const ev=events();
+  h+=`<section class="box"><h3>다가오는 연금 일정 (10년)</h3>${ev.length?ev.map(e=>`<div class="row"><span class="l">${esc(e.title)}<small>${esc(e.sub)}</small></span><span class="r nw">${e.y}.${e.m?String(e.m).padStart(2,"0"):""}${e.m?"":"년"}</span></div>`).join(""):`<p class="meta2">10년 안에 시작하는 연금이 없습니다.</p>`}</section>`;
+  // 세액공제
+  const tc=ms.map(m=>[m,taxCredit(m)]).filter(x=>x[1].paid>0);
+  if(tc.length)h+=`<section class="box"><h3>올해 연금 세액공제 (예상)</h3>${tc.map(([m,t])=>`<div class="row"><span class="l">${esc(m.name)}<small>공제 대상 납입 ${man(t.eligible)} / 한도 900만원${t.room>0?` · ${man(t.room)} 더 넣을 수 있음`:""}</small><div class="gauge"><span style="width:${Math.min(100,t.eligible/9e6*100)}%"></span></div></span><span class="r nw">${t.rateTxt?manW(t.refund):"-"}<small style="display:block;font-weight:400;font-size:13px;color:var(--muted)">${t.rateTxt||"총급여 입력 필요"}</small></span></div>`).join("")}<p class="meta2" style="margin-top:6px">연금저축 600만원, IRP 포함 900만원까지. 총급여 5,500만원 이하 16.5%, 초과 13.2% (지방세 포함).</p></section>`;
+  $("vHome").innerHTML=h;
+}
+function events(){
+  const out=[],t=today0(),y0=t.getFullYear();
+  members().forEach(m=>{const b=pd(m.birth);if(!b)return;
+    streams(m).forEach(s=>{const y=b.getFullYear()+s.start;if(y>=y0&&y<=y0+10){
+      const mo=s.p.type==="nps"?(b.getMonth()+2>12?1:b.getMonth()+2):0;const yy=s.p.type==="nps"&&b.getMonth()+2>12?y+1:y;
+      out.push({y:yy,m:mo,title:`${planName(s.p)} 수령 시작`,sub:`${m.name} ${s.start}세 · 월 ${won(s.monthly)} 예상`})}});
+    const y55=b.getFullYear()+55;if(y55>=y0&&y55<=y0+10&&plans().some(p=>p.owner===m.id&&["psf","psi","irp"].includes(p.type)&&active(p)))out.push({y:y55,m:0,title:"연금계좌 수령 가능 나이(55세)",sub:`${m.name} · 연금저축·IRP를 연금으로 받을 수 있는 나이`});
+  });
+  return out.sort((a,b)=>a.y-b.y||a.m-b.m);
+}
+function taxCredit(m){
+  const ps=plans().filter(p=>p.owner===m.id&&p.status==="pay"&&TAXCREDIT.includes(p.type)&&p.taxOn!==false);
+  const savings=ps.filter(p=>p.type==="psf"||p.type==="psi").reduce((s,p)=>s+num(p.monthly)*12,0);
+  const ret=ps.filter(p=>p.type==="irp"||p.type==="dc").reduce((s,p)=>s+num(p.monthly)*12,0);
+  const eligible=Math.min(Math.min(savings,6e6)+ret,9e6);const sal=num(m.salary);
+  const r=sal?(sal<=5.5e7?0.165:0.132):0;
+  return {paid:savings+ret,eligible,room:Math.max(0,9e6-eligible),refund:eligible*r,rateTxt:r?`${(r*100).toFixed(1)}% 환급 예상`:""};
+}
+
+function renderPlan(){
+  const ms=members();
+  let h=`<div class="dayhead"><h2>가입한 연금</h2><div class="meta">카드를 누르면 자세히 보고 고칠 수 있습니다</div></div>`;
+  if(!ms.length){$("vPlan").innerHTML=h+noMembers();return}
+  const ps=plans();if(state.mem&&!mById(state.mem))state.mem=null;
+  h+=`<div class="chips">${[[null,"전체",ps.length],...ms.map(m=>[m.id,m.name,ps.filter(p=>p.owner===m.id).length])].map(([k,l,n])=>`<button class="chip" type="button" data-mem="${k??""}" aria-pressed="${state.mem===k}">${esc(l)} ${n}</button>`).join("")}</div>`;
+  h+=`<div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addplan="1" style="flex:1;min-height:46px">＋ 연금 등록</button></div>`;
+  const list=ps.filter(p=>!state.mem||p.owner===state.mem).sort((a,b)=>(active(b)-active(a))||(GROUPS.indexOf(TG[a.type])-GROUPS.indexOf(TG[b.type])));
+  h+=list.length?`<ul class="list">${list.map(planCard).join("")}</ul>`:`<div class="empty">등록된 연금이 없습니다. 국민연금은 국민연금공단 '내 연금 알아보기', 퇴직·개인연금은 금융감독원 '통합연금포털'에서 한 번에 확인할 수 있습니다.</div>`;
+  $("vPlan").innerHTML=h;
+}
+function planCard(p){
+  const m=mById(p.owner),pr=project(p,m);
+  const st=p.status||"pay",stc=st==="pay"?"ok":st==="recv"?"ok":st==="end"?"bad":"";
+  const info=[["수령",`${pr.start}세부터 ${pr.lifelong?(p.type==="nps"||p.type==="gov"||p.type==="house"?"평생":"90세까지 가정"):num(p.payYears)+"년간"}`],
+    ["예상 월",pr.monthly?`${won(pr.monthly)} <span class="meta2">(${esc(pr.basis)})</span>`:`<span class="meta2">예상액 또는 적립금 입력 필요</span>`]];
+  if(num(p.balance))info.push(["적립금",`${man(num(p.balance))}${p.balanceDate?` <span class="meta2">(${esc(p.balanceDate.slice(0,7).replace("-","."))} 기준)</span>`:""}`]);
+  if(p.type==="nps"&&num(p.npsAdj))info.push(["조정",num(p.npsAdj)<0?`조기 수령 ${-num(p.npsAdj)}년 (${Math.round((1-npsFactor(num(p.npsAdj)))*100)}% 감액)`:`연기 ${num(p.npsAdj)}년 (${Math.round((npsFactor(num(p.npsAdj))-1)*1000)/10}% 증액)`]);
+  return `<li><button class="card ${active(p)?"":"off"}" type="button" data-plan="${p.id}"><span class="mono" style="background:${esc((m&&m.color)||COLORS[0])}">${esc((m?m.name:"?").slice(0,1))}</span>
+  <span style="min-width:0"><span class="nm clamp2">${esc(planName(p))}</span><span class="ds" style="display:block">${esc(TN[p.type]||"")}${p.provider?" · "+esc(p.provider):""}${m?" · "+esc(m.name):""}</span>
+  <span class="mt"><span class="tagx ${stc}">${STATUS[st]}</span><span class="tagx">${TG[p.type]}연금</span></span></span>
+  <span class="amt">${p.status==="pay"&&num(p.monthly)?won(num(p.monthly)):"-"}<small>월 납입</small></span>
+  <span class="pinfo">${info.map(([k,v])=>`<span class="pi"><span class="k">${k}</span><span class="v">${v}</span></span>`).join("")}</span></button></li>`;
+}
+
+function renderSim(){
+  const ms=members();
+  let h=`<div class="dayhead"><h2>수령 계획</h2><div class="meta">연도별 가족 월 수령액과 국민연금 조기·연기 비교</div></div>`;
+  if(!ms.length){$("vSim").innerHTML=h+noMembers();return}
+  const yt=yearTable();
+  if(!yt){$("vSim").innerHTML=h+`<div class="empty">가족의 생년월일을 입력하면 연도별 수령액을 계산합니다.</div>`;return}
+  const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);
+  const shown=yt.rows.filter((r,i)=>i===0||r.y%5===0||r===peak||r.cells.some((c,j)=>c!==yt.rows[i-1].cells[j]));
+  h+=`<section class="box"><h3>연도별 가족 월 수령액 (예상)</h3><div class="mxw"><table class="tl"><thead><tr><th>연도</th>${yt.ms.map(m=>`<th>${esc(m.name)}</th>`).join("")}<th>합계</th></tr></thead><tbody>
+    ${shown.map(r=>`<tr class="${r===peak?"peak":""}"><td>${r.y}</td>${r.cells.map((c,i)=>`<td>${c?Math.round(c/1e4).toLocaleString("ko-KR")+"만":"-"}<br><span class="meta2">${r.ages[i]}세</span></td>`).join("")}<td>${r.sum?Math.round(r.sum/1e4).toLocaleString("ko-KR")+"만":"-"}</td></tr>`).join("")}</tbody></table></div>
+    <p class="meta2" style="margin-top:8px">수령액이 바뀌는 해와 5년 단위만 표시합니다. 국민연금은 공단 예상액(현재가치), 나머지는 기대수익률 연 ${rate()}%로 계산한 명목 금액입니다. 세금 전 금액입니다.</p></section>`;
+  // 국민연금 조기·연기
+  ms.forEach(m=>{const np=plans().find(p=>p.owner===m.id&&p.type==="nps"&&active(p));if(!np||!num(np.expected))return;
+    const base=npsAge(m.birth),cur=num(np.npsAdj||0),e=num(np.expected);
+    const opts=[...new Set([-5,-3,-1,0,1,3,5,cur])].sort((a,b)=>a-b).map(a=>{const mo=e*npsFactor(a),startA=base+a;const by85=Math.max(0,(85-startA)*12)*mo,by90=Math.max(0,(90-startA)*12)*mo;return {a,mo,startA,by85,by90}});
+    const best85=opts.reduce((x,y)=>y.by85>x.by85?y:x),best90=opts.reduce((x,y)=>y.by90>x.by90?y:x);
+    h+=`<section class="box"><h3>${esc(m.name)} 국민연금 시작 나이 비교</h3>
+      <label class="fld">시작 나이 조정: <b id="adjLbl-${np.id}">${cur<0?`${-cur}년 앞당김`:cur>0?`${cur}년 늦춤`:"정상 ("+base+"세)"}</b><input class="rng" type="range" min="-5" max="5" step="1" value="${cur}" data-npsadj="${np.id}"></label>
+      <div class="mxw" style="margin-top:6px"><table class="tl"><thead><tr><th>시작</th><th>월 수령</th><th>85세까지</th><th>90세까지</th></tr></thead><tbody>
+      ${opts.map(o=>`<tr class="${o.a===cur?"peak":""}"><td>${o.startA}세${o.a?` (${o.a>0?"+":""}${o.a})`:""}</td><td>${Math.round(o.mo/1e4).toLocaleString("ko-KR")}만</td><td>${eok(o.by85)}</td><td>${eok(o.by90)}</td></tr>`).join("")}</tbody></table></div>
+      <p class="meta2" style="margin-top:8px">앞당기면 1년마다 6% 줄고(최대 5년), 늦추면 1년마다 7.2% 늘어납니다(최대 5년). 85세까지 받는다면 ${best85.startA}세, 90세까지라면 ${best90.startA}세 시작이 합계가 가장 큽니다(물가 상승·이자 미반영 단순 합계).</p></section>`;
+  });
+  // 사적연금 세금
+  const tax=ms.map(m=>{const s=streams(m).filter(x=>["psf","psi","irp"].includes(x.p.type)||(x.p.type==="dc"&&x.p.taxOn!==false));if(!s.length)return null;
+    const peakY=Math.max(...s.map(x=>x.start));const yearly=s.filter(x=>peakY>=x.start&&peakY<x.end).reduce((t,x)=>t+x.monthly*12,0);return {m,yearly,peakY}}).filter(Boolean);
+  if(tax.length)h+=`<section class="box"><h3>연금계좌 연금소득 (세금 확인)</h3>${tax.map(t=>`<div class="row"><span class="l">${esc(t.m.name)} ${t.peakY}세 무렵<small>연금저축·IRP(본인 납입 DC 포함)에서 받는 연간 합계</small></span><span class="r nw">${man(t.yearly)} ${t.yearly>1.5e7?`<span class="tagx warn">1,500만원 초과</span>`:`<span class="tagx ok">기준 이하</span>`}</span></div>`).join("")}
+    <p class="meta2" style="margin-top:6px">연금계좌에서 받는 연금(본인 납입·운용수익 부분)이 연 1,500만원 이하면 3.3~5.5%로 분리과세되고, 넘으면 종합과세 또는 16.5% 분리과세를 골라야 합니다. 퇴직금을 연금으로 받는 부분은 이 한도에 넣지 않으므로 실제 해당 여부는 금융회사에 확인해 주세요.</p></section>`;
+  $("vSim").innerHTML=h;
+}
+
+function renderFam(){
+  const ms=members(),ps=plans();const s=getSet();
+  let h=`<div class="dayhead"><h2>가족과 설정</h2><div class="meta">구성원 · 계산 기준 · 백업</div></div>`;
+  h+=`<section class="box"><h3>가족 구성원</h3>${ms.length?ms.map(m=>{const a=age(m.birth);return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center"><span class="mono sm" style="background:${esc(m.color||COLORS[0])}">${esc(m.name.slice(0,1))}</span><span><b style="font-weight:600">${esc(m.name)}</b> <span class="meta2">${esc(m.rel||"")}</span><small>${a!=null?`만 ${a}세 · 국민연금 ${npsAge(m.birth)}세부터 · `:""}연금 ${ps.filter(p=>p.owner===m.id&&active(p)).length}건</small></span></span><span class="r"><button class="btn sm" type="button" data-editmem="${m.id}">수정</button></span></div>`}).join(""):`<p class="meta2">등록된 가족이 없습니다.</p>`}
+    <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addmem="1" style="flex:1">＋ 가족 등록</button></div></section>`;
+  h+=`<section class="box"><h3>계산 기준</h3><label class="fld">기대수익률 (연 %, 적립금을 불리는 계산에 사용)<input id="rateIn" inputmode="decimal" value="${esc(s.rate===""||s.rate==null?"3":s.rate)}"></label><p class="meta2" style="margin-top:6px">예상 월 수령액을 직접 입력한 연금은 이 값과 상관없이 입력값을 씁니다.</p></section>`;
+  h+=`<section class="box"><h3>백업</h3>
+      <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
+      <div class="row"><span class="l">기록 건수</span><span class="r">가족 ${ms.length} · 연금 ${ps.length}</span></div>
+      <p class="meta2" style="margin-top:6px">연금 기록은 나만 볼 수 있는 저장 칸과 이 기기에 함께 저장됩니다. 백업 파일을 PC나 휴대폰 'MY' 폴더에 받아 두세요.</p>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><button class="btn line" type="button" id="bkCopy" style="flex:1">백업 코드 복사</button></div>
+      <div class="vstack" style="margin-top:10px"><label class="fld">백업 코드로 복원 (기존 기록과 합칩니다)<textarea id="bkText" placeholder="복사해 둔 백업 코드를 붙여넣으세요"></textarea></label>
+        <div class="frow"><button class="btn line" type="button" id="bkRestore" style="flex:1">붙여넣은 코드로 복원</button><label class="btn pick" style="flex:1">파일에서 복원<input type="file" id="bkFile" accept="application/json,.json,.txt"></label></div></div></section>`;
+  const gone=Object.values(state.recs).filter(r=>r.deleted&&["member","plan"].includes(r.kind)).sort((a,b)=>(b.deletedAt||ts(b))-(a.deletedAt||ts(a)));
+  if(gone.length)h+=`<section class="box"><h3>지운 기록 (${gone.length}건)</h3>${gone.slice(0,20).map(r=>`<div class="row" style="align-items:center"><span class="l"><span class="tagx">${r.kind==="member"?"가족":"연금"}</span> ${esc(r.kind==="member"?r.name:planName(r))}</span><span class="r"><button class="btn sm line" type="button" data-restore="${r.id}">되살리기</button></span></div>`).join("")}</section>`;
+  h+=`<section class="box"><h3>자료 찾는 곳</h3><ol class="ol"><li>국민연금 예상액: 국민연금공단 누리집·앱 '내 연금 알아보기'</li><li>퇴직연금·연금저축·IRP: 금융감독원 '통합연금포털'(모든 금융회사 연금을 한 번에 조회)</li><li>공무원·사학·군인연금: 각 연금공단 누리집</li></ol><p class="meta2" style="margin-top:6px">주민번호, 계좌 전체 번호는 입력하지 않습니다. 계좌는 뒤 4자리만 적어 주세요.</p></section>`;
+  $("vFam").innerHTML=h;
+}
+
+/* ── 시트 ── */
+const PWA=/github\.io$/.test(location.hostname);let sheetHist=false,backing=false;
+if(PWA){$("homeBtn").hidden=false;window.addEventListener("popstate",()=>{if(backing){backing=false;return}if(sheetHist){sheetHist=false;$("sheetBg").hidden=true;state.edit=null}})}
+function sheet(title,body,actions){
+  if(PWA&&!sheetHist){try{history.pushState({sheet:1},"");sheetHist=true}catch(e){}}
+  $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>${title}</h2><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>${body}${actions?`<div class="sact${(actions.match(/<button/g)||[]).length===3?" three":""}">${actions}</div>`:'<div style="height:16px"></div>'}`;
+  $("sheetBg").hidden=false;$("sheet").scrollTop=0;
+}
+const closeSheet=()=>{$("sheetBg").hidden=true;state.edit=null;if(sheetHist){sheetHist=false;backing=true;try{history.back()}catch(e){backing=false}}};
+const opt=(arr,v)=>arr.map(x=>{const [k,l]=Array.isArray(x)?x:[x,x];return `<option value="${esc(k)}" ${k===v?"selected":""}>${esc(l)}</option>`}).join("");
+
+function openMember(id){
+  const m=id?{...state.recs[id]}:{id:null,kind:"member",name:"",rel:members().length?"배우자":"본인",birth:"",salary:"",color:COLORS[members().length%COLORS.length]};
+  state.edit=m;
+  sheet(id?"가족 수정":"가족 등록",`<form class="vstack" style="margin-top:12px">
+    <label class="fld">이름 (또는 호칭)<input id="mName" maxlength="20" value="${esc(m.name)}" placeholder="예: 홍길동, 아내"></label>
+    <div class="frow"><label class="fld">관계<select id="mRel">${opt(RELS,m.rel)}</select></label><label class="fld">생년월일<input id="mBirth" type="date" value="${esc(m.birth)}" max="${ymd(today0())}"></label></div>
+    <label class="fld">올해 총급여 (원, 세액공제 계산용 · 선택)<input id="mSal" inputmode="numeric" value="${m.salary?num(m.salary).toLocaleString("ko-KR"):""}" placeholder="예: 60,000,000"></label>
+    <div class="fld">표시 색<div class="swatches">${COLORS.map(c=>`<button type="button" class="sw" data-color="${c}" style="background:${c}" aria-pressed="${c===m.color}" aria-label="색 ${c}"></button>`).join("")}</div></div>
+    ${id?`<button class="btn danger" type="button" data-delmem="${id}">이 가족 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="mSave">저장</button>`);
+}
+function saveMember(){const e=state.edit,name=$("mName").value.trim();if(!name){toast("이름을 적어 주세요");return}
+  const r={...e,id:e.id||newId("m"),kind:"member",name,rel:$("mRel").value,birth:$("mBirth").value,salary:num($("mSal").value)||"",color:e.color,deleted:false};
+  if(r.order==null)r.order=members().length;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다")}
+
+function viewPlan(id){
+  const p=state.recs[id];if(!p)return;const m=mById(p.owner),pr=project(p,m);
+  const rows=[["가입자",m?m.name:"-"],["종류",TN[p.type]||"-"],["기관",p.provider||"-"],["계좌 뒤 4자리",p.no4?"…"+p.no4:"-"],["상태",STATUS[p.status||"pay"]],
+    ["가입일",p.start||"-"],["월 납입",num(p.monthly)?won(num(p.monthly)):"-"],["적립금",num(p.balance)?`${won(num(p.balance))}${p.balanceDate?` (${p.balanceDate} 기준)`:""}`:"-"],
+    ["수령 시작",`${pr.start}세`],["수령 기간",pr.lifelong?(["nps","gov","house"].includes(p.type)?"평생":"입력 없음 (90세까지 가정)"):num(p.payYears)+"년"],
+    ["예상 월 수령",pr.monthly?`${won(pr.monthly)} (${pr.basis})`:"-"]];
+  if(pr.fv)rows.push(["수령 시작 때 적립금(예상)",man(pr.fv)]);
+  if(TAXCREDIT.includes(p.type))rows.push(["세액공제",p.taxOn===false?"대상 아님(회사 납입 등)":"대상 (본인 납입분)"]);
+  sheet(esc(planName(p)),`<section class="box">${rows.map(([l,v])=>`<div class="row"><span class="l">${l}</span><span class="r" style="white-space:normal">${esc(v)}</span></div>`).join("")}</section>${p.memo?`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(p.memo)}</p></section>`:""}`,
+    `<button class="btn danger" type="button" data-delplan="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editplan="${id}">수정</button>`);
+}
+function openPlan(id){
+  const ms=members();
+  const p=id?{...state.recs[id]}:{id:null,kind:"plan",owner:state.mem||(ms[0]||{}).id||"",type:"nps",provider:"",product:"",no4:"",status:"pay",start:"",monthly:"",balance:"",balanceDate:ymd(today0()),expected:"",startAge:"",payYears:"",payEndAge:"",npsAdj:0,taxOn:true,memo:""};
+  state.edit=p;
+  sheet(id?"연금 수정":"연금 등록",`<form class="vstack" style="margin-top:12px">
+    <div class="frow"><label class="fld">가입자<select id="pOwner">${opt(ms.map(m=>[m.id,m.name]),p.owner)}</select></label><label class="fld">종류<select id="pType">${opt(TYPES.map(t=>[t[0],t[1]]),p.type)}</select></label></div>
+    <div class="frow"><label class="fld">기관 (금융회사·공단)<input id="pProv" maxlength="30" value="${esc(p.provider)}" placeholder="예: 국민연금공단, 미래에셋증권"></label><label class="fld">상품명 (선택)<input id="pProd" maxlength="50" value="${esc(p.product)}"></label></div>
+    <div class="frow"><label class="fld">상태<select id="pSt">${opt(Object.entries(STATUS),p.status||"pay")}</select></label><label class="fld">계좌 뒤 4자리<input id="pNo" inputmode="numeric" maxlength="4" value="${esc(p.no4)}"></label></div>
+    <div class="frow"><label class="fld">월 납입액 (원)<input id="pMon" inputmode="numeric" value="${p.monthly?num(p.monthly).toLocaleString("ko-KR"):""}" placeholder="예: 300,000"></label><label class="fld">가입일<input id="pStart" type="date" value="${esc(p.start)}"></label></div>
+    <div class="frow" id="balRow"><label class="fld">현재 적립금 (원)<input id="pBal" inputmode="numeric" value="${p.balance?num(p.balance).toLocaleString("ko-KR"):""}"></label><label class="fld">적립금 기준일<input id="pBalD" type="date" value="${esc(p.balanceDate)}"></label></div>
+    <label class="fld"><span id="expLbl">예상 월 수령액 (원)</span><input id="pExp" inputmode="numeric" value="${p.expected?num(p.expected).toLocaleString("ko-KR"):""}" placeholder="안내받은 금액이 있으면 입력"></label>
+    <p class="meta2" id="expHelp"></p>
+    <div class="frow" id="ageRow"><label class="fld">수령 시작 나이<input id="pSA" inputmode="numeric" maxlength="3" value="${esc(p.startAge)}" placeholder="예: 60"></label><label class="fld">수령 기간 (년, 비우면 평생/90세까지)<input id="pPY" inputmode="numeric" maxlength="3" value="${esc(p.payYears)}" placeholder="예: 10, 20"></label></div>
+    <label class="fld" id="payEndRow">납입 종료 나이 (비우면 수령 시작까지 납입)<input id="pPE" inputmode="numeric" maxlength="3" value="${esc(p.payEndAge)}"></label>
+    <div class="fld" id="taxRow">세액공제<label class="ck"><input type="checkbox" id="pTax" ${p.taxOn!==false?"checked":""}>본인이 넣는 돈이라 세액공제 대상</label></div>
+    <label class="fld">메모<textarea id="pMemo" placeholder="수령 방법, 담당자, 확인할 일 등">${esc(p.memo)}</textarea></label>
+    ${id?`<button class="btn danger" type="button" data-delplan="${id}">이 연금 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="pSave">저장</button>`);
+  typeUi();
+}
+function typeUi(){const t=$("pType");if(!t)return;const v=t.value;const m=mById($("pOwner").value);
+  const nps=v==="nps",pub=v==="nps"||v==="gov"||v==="house";
+  $("ageRow").hidden=nps;$("taxRow").hidden=!TAXCREDIT.includes(v);$("payEndRow").hidden=pub;$("balRow").hidden=pub;
+  $("expLbl").textContent=nps?"예상 월 연금액 (원, 공단 조회값)":v==="house"?"월 지급금 (원)":"예상 월 수령액 (원, 선택)";
+  $("expHelp").textContent=nps?`국민연금공단 '내 연금 알아보기'의 예상 연금월액(현재가치)을 넣어 주세요. 수령 시작: ${m&&m.birth?npsAge(m.birth)+"세 (출생연도 기준)":"생년월일을 입력하면 자동 계산"}. 조기·연기는 '수령 계획'에서 비교합니다.`:pub?"":"비워 두면 적립금·월 납입액·기대수익률로 계산합니다.";
+  if(state.edit&&!state.edit.id&&$("pTax"))$("pTax").checked=v!=="dc";
+}
+function savePlan(){
+  const e=state.edit;if(!$("pOwner").value){toast("가입자를 고르세요");return}
+  const v=$("pType").value;
+  const r={...e,id:e.id||newId("p"),kind:"plan",owner:$("pOwner").value,type:v,provider:$("pProv").value.trim(),product:$("pProd").value.trim(),status:$("pSt").value,no4:$("pNo").value.replace(/\D/g,"").slice(-4),
+    monthly:num($("pMon").value)||"",start:$("pStart").value,balance:num($("pBal").value)||"",balanceDate:$("pBalD").value,expected:num($("pExp").value)||"",
+    startAge:v==="nps"?"":num($("pSA").value)||"",payYears:v==="nps"?"":num($("pPY").value)||"",payEndAge:num($("pPE").value)||"",taxOn:$("pTax").checked,memo:$("pMemo").value.trim(),deleted:false};
+  delete r._fv;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
+}
+
+/* ── 이벤트 ── */
+let tt;function toast(m,undoId){const t=$("toast");t.textContent=m;if(undoId){const b=document.createElement("button");b.type="button";b.className="undo";b.dataset.undo=undoId;b.textContent="되돌리기";t.appendChild(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},undoId?7000:2600)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
+const backup=()=>JSON.stringify({app:"우리 가족 연금관리",v:1,exportedAt:new Date().toISOString(),recs:state.recs},null,1);
+function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 코드를 읽지 못했습니다");return}
+  if(!o||!o.recs||o.app!=="우리 가족 연금관리"){toast("연금관리 백업이 아닙니다");return}
+  let n=0;Object.values(o.recs).forEach(r=>{if(take(r)){n++;push(r.id)}});lsSave();render();toast(n?`${n}건을 복원했습니다`:"이미 최신이라 바뀐 것이 없습니다")}
+function softDel(id,msg){const r=state.recs[id];if(!r)return;const x={...r,deleted:true,deletedAt:Date.now()};delete x._fv;put(x);closeSheet();toast(msg,id)}
+function undel(id){const r=state.recs[id];if(!r||!r.deleted)return;const x={...r,deleted:false};delete x.deletedAt;put(x);toast("되살렸습니다")}
+async function saveFile(){
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  const d=new Date(),name=`MY미니앱_연금관리_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+  if(!dl){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backup()],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),4000);toast("백업 파일을 저장했습니다")}catch(e){toast((await copyText(backup()))?"파일 저장이 안 되어 백업 코드를 복사했습니다":"백업 코드 복사를 이용해 주세요")}return}
+  try{await dl.save({filename:name,data:backup()});toast("백업 파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다. 백업 코드 복사를 이용해 주세요")}
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.view){state.view=d.view;try{localStorage.setItem("myapps-pen-view",d.view)}catch(_){}render();window.scrollTo({top:0});return}
+  if("mem" in d){state.mem=d.mem||null;render();return}
+  if(d.close){closeSheet();return}
+  if(d.addmem){openMember(null);return}
+  if(d.editmem){openMember(d.editmem);return}
+  if(d.color){state.edit.color=d.color;document.querySelectorAll(".sw").forEach(s=>s.setAttribute("aria-pressed",String(s.dataset.color===d.color)));return}
+  if(d.delmem){softDel(d.delmem,"가족을 지웠습니다");return}
+  if(d.addplan){if(!members().length){openMember(null);return}openPlan(null);return}
+  if(d.plan){viewPlan(d.plan);return}
+  if(d.editplan){openPlan(d.editplan);return}
+  if(d.delplan){softDel(d.delplan,"연금을 지웠습니다");return}
+  if(d.undo){$("toast").hidden=true;undel(d.undo);return}
+  if(d.restore){undel(d.restore);return}
+  if(t.id==="mSave"){saveMember();return}
+  if(t.id==="pSave"){savePlan();return}
+  if(t.id==="bkSave"){saveFile();return}
+  if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
+  if(t.id==="bkRestore"){restore($("bkText").value);return}
+});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.id==="pType"||t.id==="pOwner"){typeUi();return}
+  if(t.id==="bkFile"&&t.files[0]){t.files[0].text().then(restore);t.value="";return}
+  if(t.id==="rateIn"){const v=Math.max(0,Math.min(15,num(t.value)));put({...getSet(),id:"settings",kind:"settings",rate:v,deleted:false});toast(`기대수익률 연 ${v}%로 계산합니다`);return}
+  if(t.dataset.npsadj){const p=state.recs[t.dataset.npsadj];if(p){const x={...p,npsAdj:num(t.value)};delete x._fv;put(x)}return}
+});
+document.addEventListener("input",e=>{const t=e.target;
+  if(["pMon","pBal","pExp","mSal"].includes(t.id)){const n=num(t.value);t.value=n?n.toLocaleString("ko-KR"):""}
+  if(t.dataset&&t.dataset.npsadj){const a=num(t.value),l=$("adjLbl-"+t.dataset.npsadj);if(l)l.textContent=a<0?`${-a}년 앞당김`:a>0?`${a}년 늦춤`:"정상"}
+});
+document.addEventListener("submit",e=>e.preventDefault());
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+
+/* ── 글자 크기 (기기 + 내 설정) ── */
+const FS=["s","m","l","xl"];let fs="m",prefRef=null;
+try{const v=localStorage.getItem("myapps-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("myapps-fs",fs)}catch(e){}}
+async function loadPref(){try{if(!uid||!db)return;prefRef=db.doc("data/users/"+uid+"/prefs");const s=await prefRef.get();const v=s.exists&&s.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}}catch(e){}}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+
+try{const v=localStorage.getItem("myapps-pen-view");if(["home","plan","sim","fam"].includes(v))state.view=v}catch(e){}
+applyFs();lsLoad();render();connect();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
