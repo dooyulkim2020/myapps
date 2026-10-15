@@ -201,6 +201,8 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
 .tl th:first-child,.tl td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
 .tl thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
 .r.nw,.nw{white-space:nowrap}
+.sec{margin-top:12px}
+.sec h3{margin:0 0 4px;font-size:15px;color:var(--muted);font-weight:600}
 .tl tr.peak td{font-weight:700;color:var(--accent)}
 .rng{width:100%;accent-color:var(--accent);min-height:40px}
 .gauge{height:10px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:6px}
@@ -271,7 +273,7 @@ const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,
 /* ── 저장: 공유 저장소(내 전용 칸) + 이 기기, 최근 고친 쪽 우선, 지움은 표시만 ── */
 const LSK="myapps-pension-v1";
 const state={recs:{},view:"home",mem:null,edit:null};
-let db=null,col=null,canWrite=true,uid=null;const extras={sample:null,lim:null};
+let db=null,col=null,canWrite=true,uid=null;const extras={sample:null,lim:null,assets:null};
 const ts=r=>(r&&r.updatedAt)||0;
 function take(r){if(!r||!r.id||!r.kind)return false;const c=state.recs[r.id];if(!c||ts(r)>ts(c)){state.recs[r.id]={...r};return true}return false}
 function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:1,recs:state.recs}))}catch(e){}}
@@ -297,6 +299,7 @@ async function connect(){
     first=false;lsSave();render();if(up.length)setTimeout(()=>up.forEach(push),0);
   },()=>setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시"));
   loadPref();
+  try{extras.assets=await window.claude.use("assets")}catch(e){extras.assets=null}
   try{const sm=await window.claude.use("sample");if(sm){extras.sample=sm;extras.lim=await sm.limits().catch(()=>null)}}catch(e){}
   render();
 }
@@ -430,6 +433,9 @@ function planCard(p){
   const info=[["수령",`${pr.start}세부터 ${pr.lifelong?(p.type==="nps"||p.type==="gov"||p.type==="house"?"평생":"90세까지 가정"):num(p.payYears)+"년간"}`],
     ["예상 월",pr.monthly?`${won(pr.monthly)} <span class="meta2">(${esc(pr.basis)})</span>`:`<span class="meta2">예상액 또는 적립금 입력 필요</span>`]];
   if(num(p.balance))info.push(["적립금",`${man(num(p.balance))}${p.balanceDate?` <span class="meta2">(${esc(ym(p.balanceDate))} 기준)</span>`:""}`]);
+  if(num(p.principal)&&num(p.balance)){const g=num(p.balance)-num(p.principal);info.push(["수익",`<span style="color:${g>=0?"var(--ok)":"var(--bad)"}">${g>=0?"+":""}${man(g)} (${(g/num(p.principal)*100).toFixed(1)}%)</span> <span class="meta2">원금 ${man(num(p.principal))}</span>`])}
+  if(p.type==="nps"&&num(p.npsMonths))info.push(["가입 기간",`${Math.floor(num(p.npsMonths)/12)}년 ${num(p.npsMonths)%12}개월`]);
+  if((p.files||[]).length)info.push(["첨부",`${p.files.length}개`]);
   info.push(["출처",`${esc(SRC[p.source]||"직접 입력")}${p.sourceDate?` · ${esc(ym(p.sourceDate))}`:""}${stale(p)?` <span class="tagx warn">갱신 필요</span>`:""}`]);
   if(p.type==="nps"&&num(p.npsAdj))info.push(["조정",num(p.npsAdj)<0?`조기 수령 ${-num(p.npsAdj)}년 (${Math.round((1-npsFactor(num(p.npsAdj)))*100)}% 감액)`:`연기 ${num(p.npsAdj)}년 (${Math.round((npsFactor(num(p.npsAdj))-1)*1000)/10}% 증액)`]);
   return `<li><button class="card ${active(p)?"":"off"}" type="button" data-plan="${p.id}"><span class="mono" style="background:${esc((m&&m.color)||COLORS[0])}">${esc((m?m.name:"?").slice(0,1))}</span>
@@ -514,16 +520,34 @@ function saveMember(){const e=state.edit,name=$("mName").value.trim();if(!name){
   const r={...e,id:e.id||newId("m"),kind:"member",name,rel:$("mRel").value,birth:$("mBirth").value,salary:num($("mSal").value)||"",color:e.color,deleted:false};
   if(r.order==null)r.order=members().length;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다")}
 
+const PAYM={fixed:"확정기간형",life:"종신형",inherit:"상속형",lump:"일시금",undecided:"미정"};
 function viewPlan(id){
-  const p=state.recs[id];if(!p)return;const m=mById(p.owner),pr=project(p,m);
-  const rows=[["가입자",m?m.name:"-"],["종류",TN[p.type]||"-"],["기관",p.provider||"-"],["계좌 뒤 4자리",p.no4?"…"+p.no4:"-"],["상태",STATUS[p.status||"pay"]],
-    ["가입일",p.start||"-"],["월 납입",num(p.monthly)?won(num(p.monthly)):"-"],["적립금",num(p.balance)?`${won(num(p.balance))}${p.balanceDate?` (${p.balanceDate} 기준)`:""}`:"-"],
-    ["수령 시작",`${pr.start}세`],["수령 기간",pr.lifelong?(["nps","gov","house"].includes(p.type)?"평생":"입력 없음 (90세까지 가정)"):num(p.payYears)+"년"],
-    ["예상 월 수령",pr.monthly?`${won(pr.monthly)} (${pr.basis})`:"-"],["출처",`${SRC[p.source]||"직접 입력"}${p.sourceDate?` (${p.sourceDate} 기준)`:""}`]];
-  if(pr.fv)rows.push(["수령 시작 때 적립금(예상)",man(pr.fv)]);
-  if(TAXCREDIT.includes(p.type))rows.push(["세액공제",p.taxOn===false?"대상 아님(회사 납입 등)":"대상 (본인 납입분)"]);
-  sheet(esc(planName(p)),`<section class="box">${rows.map(([l,v])=>`<div class="row"><span class="l">${l}</span><span class="r" style="white-space:normal">${esc(v)}</span></div>`).join("")}</section>${p.memo?`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(p.memo)}</p></section>`:""}`,
-    `<button class="btn danger" type="button" data-delplan="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editplan="${id}">수정</button>`);
+  const p=state.recs[id];if(!p)return;const m=mById(p.owner),pr=project(p,m);const t=today0();
+  const yrsSince=p.start&&pd(p.start)?Math.floor((t-pd(p.start))/(365.25*864e5)):null;
+  const b=m&&pd(m.birth);const startYm=b?`${b.getFullYear()+pr.start}년${p.type==="nps"?` ${b.getMonth()+2>12?1:b.getMonth()+2}월`:""}`:"";
+  const bal=num(p.balance),prin=num(p.principal),gain=bal&&prin?bal-prin:null;
+  const curAge=age(m&&m.birth);const payEnd=num(p.payEndAge)||pr.start;
+  const remainPay=p.status==="pay"&&num(p.monthly)&&curAge!=null&&payEnd>curAge?num(p.monthly)*(payEnd-curAge)*12:0;
+  const totalRecv=pr.monthly?pr.monthly*12*((pr.lifelong?90:pr.end)-pr.start):0;
+  const sec=(t,rows)=>{rows=rows.filter(r=>r&&r[1]!==""&&r[1]!=null);return rows.length?`<section class="box"><h3>${t}</h3>${rows.map(([l,v,raw])=>`<div class="row"><span class="l">${l}</span><span class="r" style="white-space:normal">${raw?v:esc(v)}</span></div>`).join("")}</section>`:""};
+  const npsM=num(p.npsMonths);
+  let h=sec("기본 정보",[["가입자",m?m.name:"-"],["종류",TN[p.type]||"-"],["기관",p.provider],["상품명",p.product],["계좌 뒤 4자리",p.no4?"…"+p.no4:""],["회사",p.company],["상태",STATUS[p.status||"pay"]],
+      ["가입일",p.start?`${p.start}${yrsSince!=null?` (${yrsSince}년째)`:""}`:""],["국민연금 가입 기간",npsM?`${Math.floor(npsM/12)}년 ${npsM%12}개월 (${npsM}개월)`:""],["운용 방식·이율",p.rateInfo]])
+   +sec("납입",[["월 납입",num(p.monthly)?won(num(p.monthly)):""],["지금까지 낸 돈(원금)",prin?won(prin):""],["최근 납입일",p.lastPaid],
+      ["작년 납입액",num(p.annualPaid)?`${won(num(p.annualPaid))}${p.paidYear?` (${p.paidYear}년)`:""}`:""],["납입 종료",p.status==="pay"&&p.type!=="nps"?`${payEnd}세까지`:""],
+      ["앞으로 낼 금액(예상)",remainPay?man(remainPay):""],["세액공제",TAXCREDIT.includes(p.type)?(p.taxOn===false?"대상 아님(회사 납입 등)":"대상 (본인 납입분)"):""]])
+   +sec("적립금·수익",[["적립금",bal?`${won(bal)}${p.balanceDate?` (${p.balanceDate} 기준)`:""}`:""],
+      ["수익금",gain!=null?`<span style="color:${gain>=0?"var(--ok)":"var(--bad)"}">${gain>=0?"+":""}${won(gain)}</span>`:"",1],
+      ["수익률",gain!=null&&prin?`${(gain/prin*100).toFixed(1)}%`:""],["해지환급금",num(p.surrender)?won(num(p.surrender)):""],["수령 시작 때 적립금(예상)",pr.fv?man(pr.fv):""]])
+   +sec("수령",[["수령 시작",`${pr.start}세${startYm?` (${startYm})`:""}`],["수령 방식",PAYM[p.payMethod]||""],
+      ["수령 기간",pr.lifelong?(["nps","gov","house"].includes(p.type)?"평생":"입력 없음 (90세까지 가정)"):num(p.payYears)+"년"],
+      ["예상 월 수령",pr.monthly?`${won(pr.monthly)}`:""],["예상 연 수령",pr.monthly?man(pr.monthly*12):""],
+      ["총 예상 수령액",totalRecv?`${man(totalRecv)}${pr.lifelong?" (90세까지)":""}`:""],["계산 근거",pr.monthly?pr.basis:""],
+      ["국민연금 조정",p.type==="nps"&&num(p.npsAdj)?`${num(p.npsAdj)<0?`${-num(p.npsAdj)}년 앞당김`:`${num(p.npsAdj)}년 늦춤`} (정상 ${npsAge(m&&m.birth)}세)`:""]])
+   +sec("자료",[["출처",`${SRC[p.source]||"직접 입력"}${p.sourceDate?` (${p.sourceDate} 기준)`:""}${stale(p)?` <span class="tagx warn">갱신 필요</span>`:""}`,1],["담당·연락처",p.contact]]);
+  if((p.files||[]).length)h+=`<section class="box"><h3>첨부 자료</h3><div class="files">${p.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm line" type="button" data-openfile="${esc(f.id)}" data-pid="${id}">보기</button></div>`).join("")}</div></section>`;
+  if(p.memo)h+=`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(p.memo)}</p></section>`;
+  sheet(esc(planName(p)),h,`<button class="btn danger" type="button" data-delplan="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editplan="${id}">수정</button>`);
 }
 function openPlan(id){
   const ms=members();
@@ -540,6 +564,13 @@ function openPlan(id){
     <div class="frow" id="ageRow"><label class="fld">수령 시작 나이<input id="pSA" inputmode="numeric" maxlength="3" value="${esc(p.startAge)}" placeholder="예: 60"></label><label class="fld">수령 기간 (년, 비우면 평생/90세까지)<input id="pPY" inputmode="numeric" maxlength="3" value="${esc(p.payYears)}" placeholder="예: 10, 20"></label></div>
     <label class="fld" id="payEndRow">납입 종료 나이 (비우면 수령 시작까지 납입)<input id="pPE" inputmode="numeric" maxlength="3" value="${esc(p.payEndAge)}"></label>
     <div class="fld" id="taxRow">세액공제<label class="ck"><input type="checkbox" id="pTax" ${p.taxOn!==false?"checked":""}>본인이 넣는 돈이라 세액공제 대상</label></div>
+    <details ${p.principal||p.rateInfo||p.payMethod||p.npsMonths||p.contact||p.company||p.surrender||p.lastPaid?"open":""}><summary style="min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--accent);cursor:pointer">자세한 정보 (선택)</summary><div class="vstack">
+      <div class="frow"><label class="fld">지금까지 낸 돈·원금 (원)<input id="pPrin" inputmode="numeric" value="${p.principal?num(p.principal).toLocaleString("ko-KR"):""}"></label><label class="fld">최근 납입일<input id="pLast" type="date" value="${esc(p.lastPaid||"")}"></label></div>
+      <div class="frow"><label class="fld">수령 방식<select id="pPM">${opt([["","선택 안 함"],...Object.entries(PAYM)],p.payMethod||"")}</select></label><label class="fld" id="npsMRow">국민연금 가입 기간 (개월)<input id="pNM" inputmode="numeric" maxlength="4" value="${esc(p.npsMonths||"")}"></label></div>
+      <div class="frow"><label class="fld">운용 방식·이율<input id="pRate" maxlength="60" value="${esc(p.rateInfo||"")}" placeholder="예: 원리금보장 3.2%, 펀드"></label><label class="fld">해지환급금 (원)<input id="pSur" inputmode="numeric" value="${p.surrender?num(p.surrender).toLocaleString("ko-KR"):""}"></label></div>
+      <div class="frow"><label class="fld">회사명 (퇴직연금)<input id="pComp" maxlength="30" value="${esc(p.company||"")}"></label><label class="fld">담당·연락처<input id="pCont" maxlength="40" value="${esc(p.contact||"")}" placeholder="예: 고객센터 1588-0000"></label></div></div></details>
+    <div class="fld">첨부 자료 (조회 화면 캡처·PDF)<div class="files" id="fileList">${fileRows(p)}</div>
+      ${extras.assets?`<label class="btn line pick" style="margin-top:6px">＋ 자료 첨부<input type="file" id="attIn" multiple accept="image/*,application/pdf,.pdf"></label>${extras.sample?`<button class="btn line" type="button" id="readAtt" style="margin-top:6px">첨부 자료로 이 연금 고치기</button>`:""}<label class="fld" style="margin-top:6px">PDF 비밀번호 (걸려 있으면)<input id="aPw" type="password" autocomplete="off"></label><p class="meta2" id="attMsg"></p>`:`<p class="meta2">첨부는 Claude판(PC)에서 할 수 있습니다.</p>`}</div>
     <label class="fld">메모<textarea id="pMemo" placeholder="수령 방법, 담당자, 확인할 일 등">${esc(p.memo)}</textarea></label>
     ${id?`<button class="btn danger" type="button" data-delplan="${id}">이 연금 지우기</button>`:""}</form>`,
     `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="pSave">저장</button>`);
@@ -547,7 +578,7 @@ function openPlan(id){
 }
 function typeUi(){const t=$("pType");if(!t)return;const v=t.value;const m=mById($("pOwner").value);
   const nps=v==="nps",pub=v==="nps"||v==="gov"||v==="house";
-  $("ageRow").hidden=nps;$("taxRow").hidden=!TAXCREDIT.includes(v);$("payEndRow").hidden=pub;$("balRow").hidden=pub;
+  $("ageRow").hidden=nps;if($("npsMRow"))$("npsMRow").hidden=!nps;$("taxRow").hidden=!TAXCREDIT.includes(v);$("payEndRow").hidden=pub;$("balRow").hidden=pub;
   $("expLbl").textContent=nps?"예상 월 연금액 (원, 공단 조회값)":v==="house"?"월 지급금 (원)":"예상 월 수령액 (원, 선택)";
   $("expHelp").textContent=nps?`국민연금공단 '내 연금 알아보기'의 예상 연금월액(현재가치)을 넣어 주세요. 수령 시작: ${m&&m.birth?npsAge(m.birth)+"세 (출생연도 기준)":"생년월일을 입력하면 자동 계산"}. 조기·연기는 '수령 계획'에서 비교합니다.`:pub?"":"비워 두면 적립금·월 납입액·기대수익률로 계산합니다.";
   if(state.edit&&!state.edit.id&&$("pTax"))$("pTax").checked=v!=="dc";
@@ -557,10 +588,84 @@ function savePlan(){
   const v=$("pType").value;
   const r={...e,id:e.id||newId("p"),kind:"plan",owner:$("pOwner").value,type:v,provider:$("pProv").value.trim(),product:$("pProd").value.trim(),status:$("pSt").value,no4:$("pNo").value.replace(/\D/g,"").slice(-4),
     monthly:num($("pMon").value)||"",start:$("pStart").value,balance:num($("pBal").value)||"",balanceDate:$("pBalD").value,expected:num($("pExp").value)||"",
-    startAge:v==="nps"?"":num($("pSA").value)||"",payYears:v==="nps"?"":num($("pPY").value)||"",payEndAge:num($("pPE").value)||"",taxOn:$("pTax").checked,memo:$("pMemo").value.trim(),deleted:false};
+    startAge:v==="nps"?"":num($("pSA").value)||"",payYears:v==="nps"?"":num($("pPY").value)||"",payEndAge:num($("pPE").value)||"",taxOn:$("pTax").checked,memo:$("pMemo").value.trim(),
+    principal:num($("pPrin").value)||"",lastPaid:$("pLast").value,payMethod:$("pPM").value,npsMonths:num($("pNM").value)||"",rateInfo:$("pRate").value.trim(),surrender:num($("pSur").value)||"",company:$("pComp").value.trim(),contact:$("pCont").value.trim(),
+    files:e.files||[],deleted:false};
+  if(e._read){r.source=e._read.source;r.sourceDate=e._read.date}
+  delete r._read;delete r._new;
   if(!e.id){r.source="manual";r.sourceDate=ymd(today0())}
   delete r._fv;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
 }
+
+/* ── 첨부 자료 (Claude 자료 저장소) ── */
+function fileRows(p){return (p.files||[]).map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}${f.addedAt?` <span class="meta2">${esc(ymd(new Date(f.addedAt)).slice(2).replace(/-/g,"."))}</span>`:""}</span><button class="btn sm" type="button" data-delfile="${esc(f.id)}">빼기</button></div>`).join("")||`<p class="meta2">첨부한 자료가 없습니다.</p>`}
+async function toMem(f){const buf=await f.arrayBuffer();const pdf=String.fromCharCode(...new Uint8Array(buf.slice(0,5)))==="%PDF-";
+  const type=pdf?"application/pdf":(f.type||(/\.png$/i.test(f.name||"")?"image/png":"image/jpeg"));let name=f.name||(pdf?"자료.pdf":"캡처.jpg");if(pdf&&!/\.pdf$/i.test(name))name+=".pdf";return new File([buf],name,{type})}
+async function uploadFile(f){const r=await extras.assets.upload(f,{type:f.type});return {id:r.id,name:f.name,type:f.type,size:r.sizeBytes,addedAt:Date.now()}}
+function attMsg(t){const e=$("attMsg");if(e)e.textContent=t}
+let assetUrls=null;
+async function assetUrl(id){if(!assetUrls&&extras.assets){try{const r=await extras.assets.list();assetUrls={};(r.assets||[]).forEach(a=>{if(a&&a.id)assetUrls[a.id]=a.url})}catch(e){assetUrls={}}}return (assetUrls&&assetUrls[id])||("/_blob/"+id)}
+async function getFileBlob(id){if(!extras.assets)throw{code:"local_missing"};const u=await assetUrl(id);const r=await fetch(u,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};return r.blob()}
+const errTxt=e=>{if(!e)return"?";if(typeof e==="string")return e;return [e.code,e.name,e.message].filter(Boolean).join(" · ").slice(0,120)||"?"};
+/* 첨부 자료를 읽어 이 연금의 칸만 채움 (저장은 사용자가) */
+async function readAttach(){
+  const e=state.edit;if(!e||!extras.sample)return;const fl=(e._new&&e._new.length?e._new:(e.files||[]).slice(-3));
+  if(!fl.length){toast("먼저 자료를 첨부해 주세요");return}
+  const btn=$("readAtt");btn.disabled=true;const before=snapForm();
+  try{
+    const it=TN[$("pType").value];const ctx=`이 자료는 다음 연금 하나에 대한 것입니다: 종류 ${it}, 기관 ${$("pProv").value||"?"}, 상품 ${$("pProd").value||"?"}, 계좌 뒤4자리 ${$("pNo").value||"?"}. 여러 연금이 보이면 이 연금에 해당하는 값만 고르세요.`;
+    const all=[];
+    for(let i=0;i<fl.length;i++){attMsg(`${i+1}/${fl.length} 자료 읽는 중… (10~40초)`);
+      const blob=fl[i] instanceof Blob?fl[i]:await getFileBlob(fl[i].id);const f=blob instanceof File?blob:new File([blob],(fl[i].name||"자료"),{type:blob.type||fl[i].type||""});
+      const head=String.fromCharCode(...new Uint8Array(await f.slice(0,5).arrayBuffer()));
+      const input=head==="%PDF-"?await pdfToInput(f,($("aPw")||{}).value||""):{images:[f.type?f:new Blob([f],{type:"image/jpeg"})]};
+      const o=input.text?await extras.sample.json(ctx+"\n"+IMPORT_PROMPT+"\n\n=== 자료 ===\n"+maskId(input.text).slice(0,60000),{modelTier:"default"}):await extras.sample.json(ctx+"\n"+IMPORT_PROMPT,{images:input.images,modelTier:"default"});
+      if(o&&Array.isArray(o.items))o.items.forEach(x=>all.push({...x,_src:o.source,_base:o.baseDate}))}
+    const want=$("pType").value,no4=$("pNo").value,prov=normP($("pProv").value);
+    const pick=all.find(x=>x.type===want&&no4&&String(x.no4||"").endsWith(no4))||all.find(x=>x.type===want&&prov&&normP(x.provider)===prov)||all.find(x=>x.type===want)||all[0];
+    if(!pick){attMsg("자료에서 이 연금의 값을 찾지 못했습니다.");return}
+    const set=(id,v,fmt)=>{const el=$(id);if(el&&v!==""&&v!=null&&v!==0){el.value=fmt?num(v).toLocaleString("ko-KR"):v}};
+    set("pBal",num(pick.balance),1);set("pMon",num(pick.monthly)||(num(pick.annualPaid)?Math.round(num(pick.annualPaid)/12):""),1);set("pExp",num(pick.expected),1);set("pPrin",num(pick.principal),1);set("pSur",num(pick.surrender),1);
+    if(want!=="nps"){set("pSA",num(pick.startAge));set("pPY",num(pick.payYears))}set("pNM",num(pick.npsMonths));
+    if(pick.provider&&!$("pProv").value)$("pProv").value=String(pick.provider).slice(0,30);if(pick.product&&!$("pProd").value)$("pProd").value=String(pick.product).slice(0,50);
+    const n4=String(pick.no4||"").replace(/\D/g,"").slice(-4);if(n4&&!$("pNo").value)$("pNo").value=n4;
+    if(pick.rateInfo)$("pRate").value=String(pick.rateInfo).slice(0,60);if(pick.company&&!$("pComp").value)$("pComp").value=String(pick.company).slice(0,30);
+    if(PAYM[pick.payMethod])$("pPM").value=pick.payMethod;if(/^\d{4}-\d{2}-\d{2}$/.test(pick.startDate||"")&&!$("pStart").value)$("pStart").value=pick.startDate;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(pick.lastPaid||""))$("pLast").value=pick.lastPaid;if(STATUS[pick.status])$("pSt").value=pick.status;
+    const bd=/^\d{4}-\d{2}-\d{2}$/.test(pick._base||"")?pick._base:ymd(today0());if(num(pick.balance))$("pBalD").value=bd;
+    e._read={source:SRC[pick._src]?pick._src:"other",date:bd};
+    const after=snapForm();const ch=Object.keys(after).filter(k=>after[k]!==before[k]).map(k=>`${LBL[k]}: ${before[k]||"없음"} → ${after[k]}`);
+    if(ch.length){const d=document.querySelector("#sheet details");if(d)d.open=true}
+    attMsg(ch.length?`바뀐 항목 ${ch.length}개 — ${ch.join(" / ")}. 확인 후 '저장'을 눌러 주세요.`:"자료의 값이 지금 입력과 같습니다.");
+  }catch(err){attMsg(`읽지 못했습니다 (${errTxt(err)})`)}finally{btn.disabled=false}
+}
+const LBL={pBal:"적립금",pMon:"월 납입",pExp:"예상 월 수령",pPrin:"원금",pSur:"해지환급금",pSA:"수령 시작 나이",pPY:"수령 기간",pNM:"가입 기간",pProv:"기관",pProd:"상품명",pNo:"계좌",pRate:"운용",pComp:"회사",pPM:"수령 방식",pStart:"가입일",pLast:"최근 납입일",pSt:"상태",pBalD:"기준일"};
+function snapForm(){const o={};Object.keys(LBL).forEach(k=>{const el=$(k);o[k]=el?(el.tagName==="SELECT"?(el.selectedOptions[0]||{}).text||"":el.value):""});return o}
+/* 첨부 보기 */
+let fv=null;
+async function openFile(pid,fid){
+  const p=state.recs[pid];const f=p&&(p.files||[]).find(x=>x.id===fid);if(!f)return;fv={pid,fid,f,blob:null};const me=fv;
+  sheet(esc(f.name||"자료"),`<div style="margin-top:12px"></div><p class="note tip" id="fvMsg">불러오는 중입니다…</p>
+    <div id="fvPw" hidden style="margin-top:8px"><label class="fld">PDF 비밀번호<input id="fvPwIn" type="password" autocomplete="off"></label><button class="btn pri" type="button" id="fvPwOk" style="width:100%;margin-top:6px">비밀번호로 열기</button></div>
+    <div id="fvPages" class="vstack" style="gap:8px;margin-top:8px"></div>`,`<button class="btn" type="button" data-plan="${pid}">연금으로</button><button class="btn pri" type="button" id="fvSave">파일 저장</button>`);
+  try{const blob=await getFileBlob(fid);if(fv!==me)return;me.blob=blob;
+    const head=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
+    if(head==="%PDF-")await fvPdf(me);else{$("fvMsg").hidden=true;$("fvPages").innerHTML=`<img class="fvpage" alt="${esc(f.name||"자료")}" src="${URL.createObjectURL(blob)}">`}}
+  catch(e){if(fv===me){const m=$("fvMsg");m.className="note warn";m.textContent=e&&e.code==="local_missing"?"첨부 자료는 Claude판에서 볼 수 있습니다.":`자료를 열지 못했습니다 (${errTxt(e)})`}}
+}
+async function fvPdf(me,pw){
+  const msg=$("fvMsg");msg.hidden=false;msg.className="note tip";msg.textContent="PDF를 여는 중입니다…";
+  const lib=await getPdfLib();let doc;
+  try{doc=await lib.getDocument({data:new Uint8Array((await me.blob.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){if(e&&e.name==="PasswordException"){$("fvPw").hidden=false;msg.textContent=e.code===2?"비밀번호가 맞지 않습니다.":"비밀번호가 걸린 PDF입니다.";return}msg.className="note warn";msg.textContent=`PDF를 열지 못했습니다 (${errTxt(e)})`;return}
+  $("fvPw").hidden=true;const box=$("fvPages");box.innerHTML="";const N=Math.min(doc.numPages,30),W=Math.min(box.clientWidth||520,560),dpr=Math.min(1.5,window.devicePixelRatio||1);
+  for(let i=1;i<=N&&fv===me;i++){try{const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:W/v0.width*dpr});const cv=document.createElement("canvas");cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;const bl=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85));cv.width=cv.height=0;box.insertAdjacentHTML("beforeend",`<img class="fvpage" alt="${i}쪽" src="${URL.createObjectURL(bl)}">`);msg.textContent=`전체 ${doc.numPages}쪽 중 ${i}쪽 표시`}catch(e){}}
+  doc.destroy();
+}
+async function saveAsset(){const me=fv;if(!me)return;try{if(!me.blob)me.blob=await getFileBlob(me.fid)}catch(e){toast("파일을 불러오지 못했습니다");return}
+  let dl=null;try{dl=await window.claude.use("downloads")}catch(e){}
+  if(dl){try{await dl.save({filename:me.f.name||"연금자료",data:me.blob});toast("파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다")}return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(me.blob);a.download=me.f.name||"연금자료";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),4000)}
 
 /* ── 공식 자료로 한 번에 등록 ── */
 let imp=null;
@@ -585,7 +690,7 @@ const IMPORT_PROMPT=`아래 자료는 한국 연금 조회 자료입니다(국�
 규칙: 금액은 모두 '원' 단위 숫자로(만원·천원 표기는 환산). 주민등록번호·계좌 전체번호는 절대 옮기지 말고 계좌·증권번호는 마지막 4자리만 no4에. 같은 계좌가 여러 번 나오면 하나로 합치세요.
 종류(type): 국민연금 nps, 공무원·사학·군인연금 gov, 퇴직연금 DB형 db, DC형(기업형IRP 포함) dc, 개인형IRP irp, 연금저축펀드·연금저축신탁 psf, 연금저축보험 psi, 세제비적격 연금보험 pins, 주택연금 house, 그 밖 etc.
 상태(status): 납입 중 pay, 납입 중지 stop, 연금 수령 중 recv.
-{"source":"nps|fss|hometax|statement|other","baseDate":"YYYY-MM-DD (조회일·기준일)","items":[{"ownerName":"가입자 이름","type":"","provider":"금융회사·기관","product":"상품명","no4":"","status":"","balance":적립금·평가금액,"monthly":월 납입액,"annualPaid":연간 납입액,"paidYear":납입 연도,"expected":예상 월 연금액,"startAge":연금 개시 나이,"payYears":연금 수령 기간(년),"startDate":"YYYY-MM-DD 가입일"}]}`;
+{"source":"nps|fss|hometax|statement|other","baseDate":"YYYY-MM-DD (조회일·기준일)","items":[{"ownerName":"가입자 이름","type":"","provider":"금융회사·기관","product":"상품명","no4":"","status":"","balance":적립금·평가금액,"monthly":월 납입액,"annualPaid":연간 납입액,"paidYear":납입 연도,"expected":예상 월 연금액,"startAge":연금 개시 나이,"payYears":연금 수령 기간(년),"startDate":"YYYY-MM-DD 가입일","principal":지금까지 낸 돈(납입 원금·납부 총액),"npsMonths":국민연금 가입 개월 수,"rateInfo":"운용 방식·적용 이율","payMethod":"fixed(확정기간)|life(종신)|inherit(상속)|lump(일시금)","surrender":해지환급금,"company":"퇴직연금 회사명","lastPaid":"YYYY-MM-DD 최근 납입일"}]}`;
 async function pdfToInput(file,pw){
   const lib=await getPdfLib();
   let doc;try{doc=await lib.getDocument({data:new Uint8Array((await file.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
@@ -611,7 +716,8 @@ async function runImport(){
         if(head==="%PDF-")input=await pdfToInput(f,($("iPw")||{}).value||"");else input={images:[f.type?f:new Blob([f],{type:"image/jpeg"})]};
         if(input.images&&!(extras.lim&&extras.lim.images))throw{message:"이 화면에서는 사진을 읽을 수 없습니다. 글자를 붙여넣어 주세요"};
         const o=input.text?await extras.sample.json(IMPORT_PROMPT+"\n\n=== 자료 ===\n"+maskId(input.text).slice(0,60000),{modelTier:"default"}):await extras.sample.json(IMPORT_PROMPT,{images:input.images,modelTier:"default"});
-        if(o&&Array.isArray(o.items)){o.items.forEach(x=>all.push({...x,_src:o.source,_base:o.baseDate}));src=src||o.source;base=base||o.baseDate}
+        let att=null;if(extras.assets){try{att=await uploadFile(await toMem(f))}catch(e){}}
+        if(o&&Array.isArray(o.items)){o.items.forEach(x=>all.push({...x,_src:o.source,_base:o.baseDate,_att:att}));src=src||o.source;base=base||o.baseDate}
       }catch(e){errs.push(`${f.name}: ${(e&&e.message)||(e&&e.code)||"읽지 못함"}`)}}
     if(text.replace(/\s+/g,"").length>=20){impMsg("붙여넣은 글자 읽는 중… (10~30초)");
       try{const o=await extras.sample.json(IMPORT_PROMPT+"\n\n=== 자료 ===\n"+maskId(text).slice(0,60000),{modelTier:"default"});if(o&&Array.isArray(o.items))o.items.forEach(x=>all.push({...x,_src:o.source||"paste",_base:o.baseDate}))}
@@ -629,6 +735,7 @@ function normItem(x){
   const it={type:x.type,provider:String(x.provider||"").slice(0,30),product:String(x.product||"").slice(0,60),no4:String(x.no4||"").replace(/\D/g,"").slice(-4),
     status:STATUS[x.status]?x.status:"",balance:num(x.balance)||"",monthly:num(x.monthly)||(num(x.annualPaid)?Math.round(num(x.annualPaid)/12):""),annualPaid:num(x.annualPaid)||"",paidYear:num(x.paidYear)||"",
     expected:num(x.expected)||"",startAge:num(x.startAge)||"",payYears:num(x.payYears)||"",start:/^\d{4}-\d{2}-\d{2}$/.test(x.startDate||"")?x.startDate:"",
+    principal:num(x.principal)||"",npsMonths:num(x.npsMonths)||"",rateInfo:String(x.rateInfo||"").slice(0,60),payMethod:PAYM[x.payMethod]?x.payMethod:"",surrender:num(x.surrender)||"",company:String(x.company||"").slice(0,30),lastPaid:/^\d{4}-\d{2}-\d{2}$/.test(x.lastPaid||"")?x.lastPaid:"",att:x._att||null,
     source:SRC[x._src]?x._src:"other",sourceDate:/^\d{4}-\d{2}-\d{2}$/.test(x._base||"")?x._base:ymd(today0()),owner:(byName||{}).id||sel,on:true};
   return it;
 }
@@ -660,11 +767,12 @@ function renderImport(){
 function applyImport(){
   if(!imp||!imp.items)return;let nNew=0,nUp=0;
   imp.items.filter(x=>x.on).forEach(it=>{const mt=findMatch(it);
-    const fields=["balance","monthly","annualPaid","paidYear","expected","startAge","payYears","status"];
+    const fields=["balance","monthly","annualPaid","paidYear","expected","startAge","payYears","status","principal","npsMonths","rateInfo","payMethod","surrender","company","lastPaid"];
+    const addAtt=fs=>it.att&&!(fs||[]).some(f=>f.id===it.att.id)?[...(fs||[]),it.att]:(fs||[]);
     if(mt){const r={...mt};fields.forEach(k=>{if(it[k]!==""&&it[k]!=null)r[k]=it[k]});["provider","product","no4","start"].forEach(k=>{if(!r[k]&&it[k])r[k]=it[k]});
-      if(it.balance)r.balanceDate=it.sourceDate;r.source=it.source;r.sourceDate=it.sourceDate;if(r.type==="nps"){r.startAge="";r.payYears=""}put(r);nUp++}
+      if(it.balance)r.balanceDate=it.sourceDate;r.source=it.source;r.sourceDate=it.sourceDate;r.files=addAtt(r.files);if(r.type==="nps"){r.startAge="";r.payYears=""}put(r);nUp++}
     else{const r={id:newId("p"),kind:"plan",owner:it.owner,type:it.type,provider:it.provider,product:it.product,no4:it.no4,status:it.status||"pay",start:it.start,monthly:it.monthly,balance:it.balance,balanceDate:it.balance?it.sourceDate:"",
-      expected:it.expected,annualPaid:it.annualPaid,paidYear:it.paidYear,startAge:it.type==="nps"?"":it.startAge,payYears:it.type==="nps"?"":it.payYears,payEndAge:"",npsAdj:0,taxOn:it.type!=="dc",memo:"",source:it.source,sourceDate:it.sourceDate,deleted:false};put(r);nNew++}});
+      expected:it.expected,annualPaid:it.annualPaid,paidYear:it.paidYear,startAge:it.type==="nps"?"":it.startAge,payYears:it.type==="nps"?"":it.payYears,payEndAge:"",npsAdj:0,taxOn:it.type!=="dc",memo:"",source:it.source,sourceDate:it.sourceDate,principal:it.principal,npsMonths:it.npsMonths,rateInfo:it.rateInfo,payMethod:it.payMethod,surrender:it.surrender,company:it.company,lastPaid:it.lastPaid,files:addAtt([]),deleted:false};put(r);nNew++}});
   closeSheet();state.view="plan";render();toast(`새로 ${nNew}건 등록 · ${nUp}건 갱신했습니다`);
 }
 
@@ -694,12 +802,17 @@ document.addEventListener("click",e=>{
   if(d.delmem){softDel(d.delmem,"가족을 지웠습니다");return}
   if(d.addplan){if(!members().length){openMember(null);return}openPlan(null);return}
   if(d.import){if(!members().length){openMember(null);return}openImport();return}
-  if(d.plan){viewPlan(d.plan);return}
+  if(d.plan){fv=null;viewPlan(d.plan);return}
+  if(d.openfile){openFile(d.pid,d.openfile);return}
+  if(d.delfile){state.edit.files=(state.edit.files||[]).filter(f=>f.id!==d.delfile);$("fileList").innerHTML=fileRows(state.edit);toast("목록에서 뺐습니다. 저장을 눌러야 반영됩니다");return}
   if(d.editplan){openPlan(d.editplan);return}
   if(d.delplan){softDel(d.delplan,"연금을 지웠습니다");return}
   if(d.undo){$("toast").hidden=true;undel(d.undo);return}
   if(d.restore){undel(d.restore);return}
   if(t.id==="iGo"){runImport();return}
+  if(t.id==="readAtt"){readAttach();return}
+  if(t.id==="fvSave"){saveAsset();return}
+  if(t.id==="fvPwOk"){const pw=$("fvPwIn").value;if(fv&&fv.blob)fvPdf(fv,pw);return}
   if(t.id==="iApply"){applyImport();return}
   if(t.id==="mSave"){saveMember();return}
   if(t.id==="pSave"){savePlan();return}
@@ -709,6 +822,9 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",e=>{const t=e.target;
   if(t.id==="pType"||t.id==="pOwner"){typeUi();return}
+  if(t.id==="attIn"){const fl=[...(t.files||[])].slice(0,5);t.value="";if(!fl.length||!state.edit)return;const ed=state.edit;attMsg("올리는 중…");
+    (async()=>{let ok=0;ed._new=[];for(const f0 of fl){try{const f=await toMem(f0);const meta=await uploadFile(f);ed.files=[...(ed.files||[]),meta];ed._new.push(f);ok++}catch(e){attMsg(`올리지 못했습니다 (${errTxt(e)})`)}}
+      if(state.edit===ed){$("fileList").innerHTML=fileRows(ed);attMsg(`${ok}개를 첨부했습니다.${extras.sample?" '첨부 자료로 이 연금 고치기'를 누르면 내용을 읽어 칸을 채웁니다.":""} 저장을 눌러야 반영됩니다.`)}})();return}
   if(t.id==="iFile"){imp.files=[...(t.files||[])].slice(0,8);t.value="";$("iFiles").innerHTML=imp.files.map(f=>`<div class="file"><span>${esc(f.name)}</span><span class="meta2">${Math.round(f.size/1024)}KB</span></div>`).join("");impMsg(`${imp.files.length}개 파일을 골랐습니다. '자료 읽기'를 눌러 주세요.`);return}
   if(t.dataset&&t.dataset.ion!=null&&imp&&imp.items){imp.items[+t.dataset.ion].on=t.checked;const b=$("iApply");if(b)b.textContent=`선택한 연금 등록 (${imp.items.filter(x=>x.on).length}건)`;return}
   if(t.dataset&&t.dataset.iown!=null&&imp&&imp.items){imp.items[+t.dataset.iown].owner=t.value;renderImport();return}
@@ -717,7 +833,7 @@ document.addEventListener("change",e=>{const t=e.target;
   if(t.dataset.npsadj){const p=state.recs[t.dataset.npsadj];if(p){const x={...p,npsAdj:num(t.value)};delete x._fv;put(x)}return}
 });
 document.addEventListener("input",e=>{const t=e.target;
-  if(["pMon","pBal","pExp","mSal"].includes(t.id)){const n=num(t.value);t.value=n?n.toLocaleString("ko-KR"):""}
+  if(["pMon","pBal","pExp","mSal","pPrin","pSur"].includes(t.id)){const n=num(t.value);t.value=n?n.toLocaleString("ko-KR"):""}
   if(t.dataset&&t.dataset.npsadj){const a=num(t.value),l=$("adjLbl-"+t.dataset.npsadj);if(l)l.textContent=a<0?`${-a}년 앞당김`:a>0?`${a}년 늦춤`:"정상"}
 });
 document.addEventListener("submit",e=>e.preventDefault());
