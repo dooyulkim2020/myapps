@@ -437,7 +437,8 @@ function sheet(title,body,actions){
   $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>${title}</h2><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>${body}${actions?`<div class="sact${(actions.match(/<button/g)||[]).length===3?" three":""}">${actions}</div>`:'<div style="height:16px"></div>'}`;
   $("sheetBg").hidden=false;$("sheet").scrollTop=0;
 }
-const closeSheet=()=>{$("sheetBg").hidden=true;state.edit=null;pendingPdf=null;state.rv=null;fv=null;if(sheetHist){sheetHist=false;backing=true;try{history.back()}catch(e){backing=false}}};
+const freeFv=()=>{try{if(fv&&fv.doc)fv.doc.destroy()}catch(e){}fv=null};
+const closeSheet=()=>{$("sheetBg").hidden=true;state.edit=null;pendingPdf=null;state.rv=null;freeFv();if(sheetHist){sheetHist=false;backing=true;try{history.back()}catch(e){backing=false}}};
 const opt=(arr,v)=>arr.map(x=>{const [k,l]=Array.isArray(x)?x:[x,x];return `<option value="${esc(k)}" ${k===v?"selected":""}>${esc(l)}</option>`}).join("");
 
 function openMember(id){
@@ -544,43 +545,63 @@ function openReview(mid,selId){
 
 /* ── 보관 자료 보기: 앱 안에서 열기 (새 창 링크는 Claude 앱·휴대폰에서 막힘). 비밀번호 PDF는 여기서 비밀번호 입력 ── */
 let fv=null;
+/* 자료 주소: 현재 화면에 맞는 주소를 assets.list()에서 받고, 없으면 /_blob/<id> */
+let assetUrls=null;
+async function assetUrl(id){
+  if(!assetUrls&&extras.assets){try{const r=await extras.assets.list();assetUrls={};(r.assets||[]).forEach(a=>{if(a&&a.id)assetUrls[a.id]=a.url})}catch(e){assetUrls={}}}
+  return (assetUrls&&assetUrls[id])||("/_blob/"+id);
+}
+const errTxt=e=>{if(!e)return"?";if(typeof e==="string")return e;return [e.code,e.name,e.message].filter(Boolean).join(" · ").slice(0,120)||"?"};
 async function openFile(pid,fid){
   const p=state.recs[pid];const f=p&&(p.files||[]).find(x=>x.id===fid);if(!f)return;
-  fv={pid,fid,f,blob:null};const me=fv;
+  fv={pid,fid,f,blob:null,url:null};const me=fv;
   sheet(esc(f.name||"자료"),`<div style="margin-top:12px"></div><p class="note tip" id="fvMsg">불러오는 중입니다…</p>
     <div id="fvPw" hidden style="margin-top:8px"><label class="fld">PDF 비밀번호<input id="fvPwIn" type="password" autocomplete="off" placeholder="보통 생년월일 6자리 또는 8자리"></label><button class="btn pri" type="button" id="fvPwOk" style="width:100%;margin-top:6px">비밀번호로 열기</button><p class="meta2" style="margin-top:4px">비밀번호는 저장하지 않습니다.</p></div>
     <div id="fvPages" class="vstack" style="gap:8px;margin-top:8px"></div>`,
     `<button class="btn" type="button" data-backpol="${pid}">보험으로</button><button class="btn pri" type="button" id="fvSave">파일 저장</button>`);
+  let step="주소";
   try{
-    const r=await fetch("/_blob/"+fid);if(!r.ok)throw{code:"http_"+r.status};
-    const blob=await r.blob();if(fv!==me)return;me.blob=blob;
+    me.url=await assetUrl(fid);step="내려받기";
+    const r=await fetch(me.url,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};
+    const blob=await r.blob();if(fv!==me)return;me.blob=blob;step="형식";
     const head=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
-    if(head==="%PDF-")await fvPdf(me);
+    if(head==="%PDF-"){step="PDF";await fvPdf(me)}
     else{$("fvMsg").hidden=true;$("fvPages").innerHTML=`<img class="fvpage" alt="${esc(f.name||"자료")}" src="${URL.createObjectURL(blob)}">`}
-  }catch(e){if(fv===me)fvErr(e)}
+  }catch(e){if(fv===me)fvErr(e,step)}
 }
-function fvErr(e){const m=$("fvMsg");if(!m)return;m.hidden=false;m.className="note warn";m.textContent=`자료를 열지 못했습니다. '파일 저장'으로 받아서 열어 보세요. (오류: ${(e&&(e.code||e.name))||"?"})`}
+function fvErr(e,step){const m=$("fvMsg");if(!m)return;m.hidden=false;m.className="note warn";
+  m.innerHTML=`자료를 열지 못했습니다(${esc(step||"")} 단계). '파일 저장'으로 받아 휴대폰·PC에서 열어 보세요.<br><small>오류: ${esc(errTxt(e))}</small>${fv&&fv.url?`<br><a href="${esc(fv.url)}" target="_blank" rel="noopener" style="font-weight:600">원본 새 창으로 열기</a>`:""}`}
+/* PDF는 화면에 가까워진 쪽만 그리고, 그린 뒤 그림(JPEG)으로 바꿔 메모리를 아낌. 쪽마다 실패해도 나머지는 표시 */
 async function fvPdf(me,pw){
   const msg=$("fvMsg");msg.hidden=false;msg.className="note tip";msg.textContent="PDF를 여는 중입니다…";
-  let lib;try{lib=await getPdfLib()}catch(e){throw{code:"pdf_load"}}
+  let lib;try{lib=await getPdfLib()}catch(e){throw{code:"pdf_load",message:"PDF 도구를 불러오지 못함"}}
   let doc;
-  try{doc=await lib.getDocument({data:new Uint8Array(await me.blob.arrayBuffer()),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
-  catch(e){if(e&&e.name==="PasswordException"){$("fvPw").hidden=false;msg.textContent=e.code===2?"비밀번호가 맞지 않습니다. 다시 입력해 주세요.":"비밀번호가 걸린 증권입니다. 비밀번호를 입력해 주세요.";const i=$("fvPwIn");i.value="";setTimeout(()=>i.focus(),50);return}throw{code:"pdf_bad",name:e&&e.name}}
-  $("fvPw").hidden=true;
-  const box=$("fvPages"),N=Math.min(doc.numPages,30),W=Math.min(box.clientWidth||520,560),dpr=Math.min(2,window.devicePixelRatio||1);
-  for(let i=1;i<=N;i++){
-    if(fv!==me){doc.destroy();return}
-    msg.textContent=`${doc.numPages}쪽 중 ${i}쪽을 표시하는 중…`;
-    const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:W/v0.width*dpr});
-    const cv=document.createElement("canvas");cv.className="fvpage";cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
-    box.appendChild(cv);await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
-  }
-  msg.textContent=doc.numPages>N?`앞 ${N}쪽만 표시했습니다 (전체 ${doc.numPages}쪽). 전체는 '파일 저장'으로 받아 보세요.`:`전체 ${doc.numPages}쪽`;
-  doc.destroy();
+  try{doc=await lib.getDocument({data:new Uint8Array((await me.blob.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){if(e&&e.name==="PasswordException"){$("fvPw").hidden=false;msg.textContent=e.code===2?"비밀번호가 맞지 않습니다. 다시 입력해 주세요.":"비밀번호가 걸린 증권입니다. 비밀번호를 입력해 주세요.";const i=$("fvPwIn");i.value="";setTimeout(()=>i.focus(),50);return}throw{code:"pdf_bad",name:e&&e.name,message:e&&e.message}}
+  $("fvPw").hidden=true;me.doc=doc;
+  const box=$("fvPages");box.innerHTML="";const N=Math.min(doc.numPages,50),W=Math.min(box.clientWidth||520,560),dpr=Math.min(1.5,window.devicePixelRatio||1);
+  let done=0,fail=0;
+  const status=()=>{if(fv!==me)return;msg.textContent=`전체 ${doc.numPages}쪽${doc.numPages>N?` 중 앞 ${N}쪽 표시 (전체는 '파일 저장')`:""}${fail?` · ${fail}쪽은 표시하지 못함`:""}`};
+  const queue=[];let busy=false;
+  const renderPage=async(i,slot)=>{
+    try{const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:W/v0.width*dpr});
+      const cv=document.createElement("canvas");cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+      await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+      const b=await new Promise(r=>cv.toBlob(r,"image/jpeg",.85));cv.width=cv.height=0;pg.cleanup();
+      if(fv!==me)return;slot.innerHTML=`<img class="fvpage" alt="${i}쪽" src="${URL.createObjectURL(b)}">`;slot.style.minHeight="";done++}
+    catch(e){fail++;slot.innerHTML=`<p class="meta2">${i}쪽을 표시하지 못했습니다 (${esc(errTxt(e))})</p>`;slot.style.minHeight=""}
+    status();
+  };
+  const pump=async()=>{if(busy)return;busy=true;while(queue.length&&fv===me){const [i,slot]=queue.shift();await renderPage(i,slot)}busy=false;if(fv!==me)doc.destroy()};
+  const v1=(await doc.getPage(1)).getViewport({scale:1}),ph=Math.round(W*v1.height/v1.width);
+  const io="IntersectionObserver" in window?new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){io.unobserve(en.target);queue.push([+en.target.dataset.pg,en.target]);pump()}})},{root:$("sheet"),rootMargin:"800px 0px"}):null;
+  for(let i=1;i<=N;i++){const slot=document.createElement("div");slot.dataset.pg=i;slot.style.minHeight=ph+"px";slot.className="fvslot";box.appendChild(slot);if(io)io.observe(slot);else queue.push([i,slot])}
+  if(!io)pump();
+  status();
 }
 async function saveAsset(){
   const me=fv;if(!me)return;
-  try{if(!me.blob){const r=await fetch("/_blob/"+me.fid);if(!r.ok)throw{code:"http_"+r.status};me.blob=await r.blob()}}catch(e){fvErr(e);return}
+  try{if(!me.blob){me.url=me.url||await assetUrl(me.fid);const r=await fetch(me.url,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};me.blob=await r.blob()}}catch(e){fvErr(e,"저장");return}
   const name=me.f.name||"보험자료.pdf";
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
   if(dl){try{await dl.save({filename:name,data:me.blob});toast("파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다")}return}
@@ -810,9 +831,9 @@ document.addEventListener("click",e=>{
   if(d.addmem){openMember(null);return}
   if(d.editmem){openMember(d.editmem);return}
   if(d.openfile){openFile(d.pid,d.openfile);return}
-  if(d.backpol){fv=null;viewPolicy(d.backpol);return}
+  if(d.backpol){freeFv();viewPolicy(d.backpol);return}
   if(t.id==="fvSave"){saveAsset();return}
-  if(t.id==="fvPwOk"){const pw=$("fvPwIn").value;if(!pw){toast("비밀번호를 입력해 주세요");return}$("fvPwIn").value="";if(fv&&fv.blob)fvPdf(fv,pw).catch(fvErr);return}
+  if(t.id==="fvPwOk"){const pw=$("fvPwIn").value;if(!pw){toast("비밀번호를 입력해 주세요");return}$("fvPwIn").value="";if(fv&&fv.blob)fvPdf(fv,pw).catch(e=>fvErr(e,"PDF"));return}
   if(d.review){openReview(d.review);return}
   if(d.runrv){runReview(d.runrv);return}
   if(d.rvsel){openReview(state.rv,d.rvsel);return}
