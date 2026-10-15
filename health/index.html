@@ -391,7 +391,9 @@ function renderHome(){
       if(last.verdict)h+=`<p class="meta2" style="margin-top:6px">판정: ${esc(last.verdict)}</p>`}
     else h+=`<p class="meta2" style="margin-top:8px">검진표를 등록하면 주의할 수치와 변화를 보여 드립니다.</p>`;
     const meds=String(m.meds||"").trim();if(meds)h+=`<p class="meta2" style="margin-top:6px">복용 약: ${esc(meds)}</p>`;
-    h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">국가 일반검진<small>${num1(m.cycle)===1?"매년 대상으로 설정":"2년마다 · 출생연도 짝수·홀수와 같은 해"}</small></span><span class="r nw">${due==null?"-":due===y?`<span class="tagx warn">올해 대상</span>`:`${due}년`}</span></div>`;
+    if(num1(m.cycle)===1){const nd=last&&pd(last.date)?new Date(pd(last.date).getFullYear()+1,pd(last.date).getMonth(),1):null;const over=nd&&nd<=today0();
+      h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">다음 검진<small>매년 · 지난 검진 1년 뒤</small></span><span class="r nw">${nd?(over?`<span class="tagx warn">${nd.getFullYear()}.${String(nd.getMonth()+1).padStart(2,"0")} 지남</span>`:`${nd.getFullYear()}.${String(nd.getMonth()+1).padStart(2,"0")}`):"-"}</span></div>`}
+    else h+=`<div class="row" style="margin-top:6px;border-top:1px solid var(--line)"><span class="l">국가 일반검진<small>2년마다 · 출생연도 짝수·홀수와 같은 해</small></span><span class="r nw">${due==null?"-":due===y?`<span class="tagx warn">올해 대상</span>`:`${due}년`}</span></div>`;
     const cl=cancerList(m);if(cl.length)h+=`<div class="row"><span class="l">암검진 (국가 지원)<small>${cl.map(c=>`${c[0]}: ${c[1]}${c[2]===true?" · 올해 대상":c[2]===false?" · 내년 대상":""}`).join("<br>")}</small></span></div>`;
     h+=`</section>`});
   h+=`<p class="meta2" style="margin-top:12px">판정은 국민건강보험공단 일반건강검진 기준을 단순화한 참고용입니다. 진단은 의사와 상담하세요.</p>`;
@@ -399,7 +401,7 @@ function renderHome(){
 }
 
 function examCard(x){const m=mById(x.owner);const fl=flagsOf(x,m);
-  const key=[["혈압",val(x,"sbp")!=null?`${fmt(val(x,"sbp"))}/${fmt(val(x,"dbp"))}`:null],["혈당",val(x,"glu")!=null?fmt(val(x,"glu")):null],["BMI",val(x,"bmi")!=null?fmt(val(x,"bmi")):null]].filter(k=>k[1]);
+  const key=[["혈압",val(x,"sbp")!=null?`${fmt(val(x,"sbp"))}${val(x,"dbp")!=null?"/"+fmt(val(x,"dbp")):""}`:null],["혈당",val(x,"glu")!=null?fmt(val(x,"glu")):null],["BMI",val(x,"bmi")!=null?fmt(val(x,"bmi")):null]].filter(k=>k[1]);
   return `<li><button class="card" type="button" data-exam="${x.id}">${mono(m)}<span style="min-width:0"><span class="nm">${esc(dot(x.date))} ${esc(KINDS[x.type]||"검진")}</span><span class="ds" style="display:block">${esc(m?m.name:"?")}${x.hospital?" · "+esc(x.hospital):""}</span>
     <span class="mt">${key.map(k=>`<span>${k[0]} ${k[1]}</span>`).join("·")}${(x.files||[]).length?`<span class="tagx">첨부 ${x.files.length}</span>`:""}</span></span>
     <span class="amt">${fl.length?`<span class="${fl[0].j===2?"j2":"j1"}">${fl.length}개</span><small>주의·이상</small>`:`<span class="j0">정상</span><small>기준 이내</small>`}</span></button></li>`}
@@ -407,9 +409,9 @@ function renderExam(){
   const ms=members();let h=`<div class="dayhead"><h2>검진 기록</h2><div class="meta">검진표를 올리면 수치를 자동으로 채웁니다</div></div>`;
   if(!ms.length){$("vExam").innerHTML=h+noMembers();return}
   h+=ms.length>1?`<div class="chips" role="group" aria-label="가족 고르기"><button class="chip" type="button" data-mem="" aria-pressed="${!state.mem}">전체 ${exams().length}</button>${ms.map(m=>`<button class="chip" type="button" data-mem="${m.id}" aria-pressed="${state.mem===m.id}">${esc(m.name)} ${examsOf(m.id).length}</button>`).join("")}</div>`:"";
-  h+=`<div class="frow" style="margin-top:10px">${extras.sample?`<button class="btn pri" type="button" data-import="1" style="flex:2;min-height:46px">검진표로 자동 등록</button>`:""}<button class="btn ${extras.sample?"line":"pri"}" type="button" data-addexam="1" style="flex:1;min-height:46px">＋ 직접 입력</button></div>`;
+  h+=`<div class="frow" style="margin-top:10px">${extras.sample?`<button class="btn pri" type="button" data-import="1" style="flex:2;min-height:46px">검진 결과 파일로 등록</button>`:""}<button class="btn ${extras.sample?"line":"pri"}" type="button" data-addexam="1" style="flex:1;min-height:46px">＋ 직접 입력</button></div>`;
   const list=exams().filter(x=>!state.mem||x.owner===state.mem);
-  h+=list.length?`<ul class="list">${list.map(examCard).join("")}</ul>`:`<div class="empty">등록된 검진이 없습니다.${extras.sample?`<br>'검진표로 자동 등록'에 결과지 PDF나 사진을 올리면 수치를 자동으로 채웁니다.`:`<br>국민건강보험공단 'The건강보험' 앱의 건강검진 결과를 보고 직접 입력할 수 있습니다.`}</div>`;
+  h+=list.length?`<ul class="list">${list.map(examCard).join("")}</ul>`:`<div class="empty">등록된 검진이 없습니다.${extras.sample?`<br>'검진 결과 파일로 등록'에서 검진센터가 준 PDF 파일을 고르면 수치를 자동으로 채웁니다.`:`<br>국민건강보험공단 'The건강보험' 앱의 건강검진 결과를 보고 직접 입력할 수 있습니다.`}</div>`;
   $("vExam").innerHTML=h;
 }
 
@@ -519,7 +521,7 @@ function openMember(id){
   sheet(id?"가족 수정":"가족 등록",`<form class="vstack" style="margin-top:12px">
     <label class="fld">이름 (또는 호칭)<input id="mName" maxlength="20" value="${esc(m.name)}" placeholder="예: 홍길동, 아내"></label>
     <div class="frow"><label class="fld">관계<select id="mRel">${opt(RELS,m.rel)}</select></label><label class="fld">성별 (판정 기준)<select id="mSex">${opt([["","선택"],["M","남"],["F","여"]],m.sex||"")}</select></label></div>
-    <div class="frow"><label class="fld">생년월일<input id="mBirth" type="date" value="${esc(m.birth)}" max="${ymd(today0())}"></label><label class="fld">국가 일반검진 주기<select id="mCyc">${opt([["2","2년마다 (사무직·일반)"],["1","매년 (비사무직 근로자)"]],String(m.cycle||2))}</select></label></div>
+    <div class="frow"><label class="fld">생년월일<input id="mBirth" type="date" value="${esc(m.birth)}" max="${ymd(today0())}"></label><label class="fld">국가 일반검진 주기<select id="mCyc">${opt([["2","2년마다 (국가검진 기본)"],["1","매년 (검진센터·비사무직)"]],String(m.cycle||2))}</select></label></div>
     <label class="fld">복용 중인 약 (선택)<input id="mMeds" maxlength="80" value="${esc(m.meds||"")}" placeholder="예: 혈압약(아침), 고지혈증약"></label>
     <label class="fld">진단받은 질환·수술 이력 (선택)<input id="mConds" maxlength="80" value="${esc(m.conds||"")}" placeholder="예: 고혈압(2020), 지방간"></label>
     <label class="fld">알레르기 (선택)<input id="mAllergy" maxlength="60" value="${esc(m.allergy||"")}"></label>
@@ -620,15 +622,16 @@ async function saveAsset(){const me=fv;if(!me)return;try{if(!me.blob)me.blob=awa
 let imp=null;
 function openImport(){
   const ms=members();imp={files:[],busy:false};
-  sheet("검진표로 자동 등록",`<div class="vstack" style="margin-top:12px">
+  sheet("검진 결과 파일로 등록",`<div class="vstack" style="margin-top:12px">
     <label class="fld">누구의 검진표인가요? (결과지에 이름이 나오면 자동으로 맞춥니다)<select id="iOwner">${opt(ms.map(m=>[m.id,m.name]),state.mem||(ms[0]&&ms[0].id))}</select></label>
     <section class="box" style="margin-top:0"><h3>이런 자료를 올려 주세요</h3><ol class="ol">
       <li><b>국가 건강검진</b>: 국민건강보험공단 'The건강보험' 앱·누리집 → 건강검진 결과 조회 (화면 캡처 또는 결과 통보서 PDF)</li>
-      <li><b>종합검진</b>: 병원에서 받은 결과지 PDF 또는 사진</li></ol>
+      <li><b>검진센터 종합검진</b>: 받은 결과지 PDF 파일 (여러 해 파일을 한 번에 골라도 됩니다)</li></ol>
       <div class="frow" style="margin-top:8px"><a class="btn sm line" href="https://www.nhis.or.kr" target="_blank" rel="noopener">국민건강보험공단</a></div></section>
-    ${MOBILE?`<p class="note tip">파일 올리기는 PC에서 해 주세요. 휴대폰에서는 결과 화면의 글자를 복사해 아래에 붙여넣을 수 있습니다.</p>`:`<label class="btn line pick" style="min-height:46px">파일 고르기 (사진·PDF, 여러 개 가능)<input type="file" id="iFile" multiple accept="image/*,application/pdf,.pdf"></label><div id="iFiles" class="files"></div>
-    <label class="fld">PDF 비밀번호 (걸려 있으면 입력, 저장 안 함)<input id="iPw" type="password" autocomplete="off" placeholder="보통 생년월일 6자리 또는 8자리"></label>`}
-    <label class="fld">또는 결과 화면 글자를 붙여넣기<textarea id="iText" style="min-height:90px" placeholder="결과 화면에서 전체 선택 → 복사 → 붙여넣기"></textarea></label>
+    <label class="btn pri pick" style="min-height:50px;font-size:16px">검진 결과 파일 고르기 (PDF·사진, 여러 개 가능)<input type="file" id="iFile" multiple accept="image/*,application/pdf,.pdf"></label><div id="iFiles" class="files"></div>
+    ${MOBILE?`<p class="meta2">카카오톡·문자로 받은 파일은 먼저 휴대폰에 저장한 뒤 '내 파일'(다운로드)에서 고르세요.</p>`:""}
+    <label class="fld">PDF 비밀번호 (걸려 있으면 입력, 저장 안 함)<input id="iPw" type="password" autocomplete="off" placeholder="보통 생년월일 6자리 또는 8자리"></label>
+    <label class="fld">파일이 없으면: 결과 화면 글자를 붙여넣기<textarea id="iText" style="min-height:70px" placeholder="결과 화면에서 전체 선택 → 복사 → 붙여넣기"></textarea></label>
     <p class="meta2" id="iMsg"></p>
     <p class="meta2">주민등록번호는 Claude에 보내기 전에 가립니다. 읽은 값은 저장 전에 화면에서 확인·수정할 수 있습니다.</p></div>`,
     `<button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" id="iGo">자료 읽기</button>`);
@@ -676,6 +679,7 @@ async function runImport(){
       finds:(Array.isArray(x.finds)?x.finds:[]).filter(f=>f&&f.name&&f.result).slice(0,20).map(f=>({name:String(f.name).slice(0,30),result:String(f.result).slice(0,120)})),verdict:String(x.verdict||"").slice(0,40),opinion:String(x.opinion||"").slice(0,600),memo:"",files:x._att?[x._att]:[],source:x._src}}).filter(x=>Object.keys(x.v).length||x.finds.length);
   if(!items.length){impMsg(`읽은 검진이 없습니다. ${errs.join(" / ")}`);return}
   /* 같은 사람·같은 날짜 검진이 이미 있으면 그 기록을 고침 */
+  items.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   const it=items[0];const dup=examsOf(it.owner).find(y=>y.date===it.date);
   if(dup){const keep=JSON.parse(JSON.stringify(dup));it.id=dup.id;it.createdAt=dup.createdAt;it.v={...keep.v,...it.v};it.files=[...(keep.files||[]),...it.files];it.memo=keep.memo||"";if(!it.finds.length)it.finds=keep.finds||[];if(!it.opinion)it.opinion=keep.opinion||""}
   imp.rest=items.slice(1);
@@ -769,7 +773,10 @@ document.addEventListener("change",e=>{const t=e.target;
   if(t.id==="attIn"){const fl=[...(t.files||[])].slice(0,5);t.value="";if(!fl.length||!state.edit)return;const ed=state.edit;attMsg("올리는 중…");
     (async()=>{let ok=0;for(const f0 of fl){try{const f=await toMem(f0);const meta=await uploadFile(f);ed.files=[...(ed.files||[]),meta];ok++}catch(e){attMsg(`올리지 못했습니다 (${errTxt(e)})`)}}
       if(state.edit===ed){$("fileList").innerHTML=fileRows(ed);attMsg(`${ok}개를 첨부했습니다. 저장을 눌러야 반영됩니다.`)}})();return}
-  if(t.id==="iFile"){imp.files=[...(t.files||[])].slice(0,8);t.value="";$("iFiles").innerHTML=imp.files.map(f=>`<div class="file"><span>${esc(f.name)}</span><span class="meta2">${Math.round(f.size/1024)}KB</span></div>`).join("");impMsg(`${imp.files.length}개 파일을 골랐습니다. '자료 읽기'를 눌러 주세요.`);return}
+  if(t.id==="iFile"){const fl=[...(t.files||[])].slice(0,8);t.value="";if(!fl.length)return;impMsg("파일을 불러오는 중…");
+    (async()=>{const ok=[],bad=[];for(const f of fl){try{ok.push(await toMem(f))}catch(e){bad.push(f.name||"파일")}}
+      imp.files=[...(imp.files||[]),...ok].slice(0,8);$("iFiles").innerHTML=imp.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span><span class="meta2">${Math.round(f.size/1024)}KB</span></div>`).join("");
+      impMsg(`${imp.files.length}개 파일을 골랐습니다. 아래 '자료 읽기'를 눌러 주세요.${bad.length?` (${bad.join(", ")}은 열지 못함 — 휴대폰에 저장한 뒤 다시 골라 주세요)`:""}`)})();return}
   if(t.id==="bkFile"&&t.files[0]){t.files[0].text().then(restore);t.value="";return}
 });
 document.addEventListener("submit",e=>e.preventDefault());
