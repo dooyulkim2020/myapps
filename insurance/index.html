@@ -551,6 +551,17 @@ async function assetUrl(id){
   if(!assetUrls&&extras.assets){try{const r=await extras.assets.list();assetUrls={};(r.assets||[]).forEach(a=>{if(a&&a.id)assetUrls[a.id]=a.url})}catch(e){assetUrls={}}}
   return (assetUrls&&assetUrls[id])||("/_blob/"+id);
 }
+/* 설치판(휴대폰)에서는 첨부 파일을 이 기기 안(IndexedDB)에 보관. 백업 파일에서 복원하면 채워짐 */
+const IDB="myapps-insurance-files";
+function idb(){return new Promise((ok,no)=>{try{const r=indexedDB.open(IDB,1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}})}
+async function idbGet(id){const d=await idb();return new Promise((ok,no)=>{const q=d.transaction("files").objectStore("files").get(id);q.onsuccess=()=>ok(q.result||null);q.onerror=()=>no(q.error)})}
+async function idbPut(id,v){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction("files","readwrite");t.objectStore("files").put(v,id);t.oncomplete=()=>ok();t.onerror=()=>no(t.error)})}
+async function getFileBlob(id,me){
+  if(extras.assets){const u=await assetUrl(id);if(me)me.url=u;const r=await fetch(u,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};return r.blob()}
+  let v=null;try{v=await idbGet(id)}catch(e){}
+  if(v&&v.blob)return v.blob;
+  throw{code:"local_missing"};
+}
 const errTxt=e=>{if(!e)return"?";if(typeof e==="string")return e;return [e.code,e.name,e.message].filter(Boolean).join(" · ").slice(0,120)||"?"};
 async function openFile(pid,fid){
   const p=state.recs[pid];const f=p&&(p.files||[]).find(x=>x.id===fid);if(!f)return;
@@ -561,15 +572,15 @@ async function openFile(pid,fid){
     `<button class="btn" type="button" data-backpol="${pid}">보험으로</button><button class="btn pri" type="button" id="fvSave">파일 저장</button>`);
   let step="주소";
   try{
-    me.url=await assetUrl(fid);step="내려받기";
-    const r=await fetch(me.url,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};
-    const blob=await r.blob();if(fv!==me)return;me.blob=blob;step="형식";
+    step="내려받기";
+    const blob=await getFileBlob(fid,me);if(fv!==me)return;me.blob=blob;step="형식";
     const head=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
     if(head==="%PDF-"){step="PDF";await fvPdf(me)}
     else{$("fvMsg").hidden=true;$("fvPages").innerHTML=`<img class="fvpage" alt="${esc(f.name||"자료")}" src="${URL.createObjectURL(blob)}">`}
   }catch(e){if(fv===me)fvErr(e,step)}
 }
 function fvErr(e,step){const m=$("fvMsg");if(!m)return;m.hidden=false;m.className="note warn";
+  if(e&&e.code==="local_missing"){m.innerHTML=`이 휴대폰에는 첨부 파일이 아직 없습니다. 첨부 파일은 Claude판(보험관리)에 저장되어 있습니다.<br>Claude판에서 받은 <b>백업 파일</b>을 이 앱의 가족 탭 → <b>'파일에서 복원'</b>으로 불러오면 이 휴대폰에서도 볼 수 있습니다.`;return}
   m.innerHTML=`자료를 열지 못했습니다(${esc(step||"")} 단계). '파일 저장'으로 받아 휴대폰·PC에서 열어 보세요.<br><small>오류: ${esc(errTxt(e))}</small>${fv&&fv.url?`<br><a href="${esc(fv.url)}" target="_blank" rel="noopener" style="font-weight:600">원본 새 창으로 열기</a>`:""}`}
 /* PDF는 화면에 가까워진 쪽만 그리고, 그린 뒤 그림(JPEG)으로 바꿔 메모리를 아낌. 쪽마다 실패해도 나머지는 표시 */
 async function fvPdf(me,pw){
@@ -601,7 +612,7 @@ async function fvPdf(me,pw){
 }
 async function saveAsset(){
   const me=fv;if(!me)return;
-  try{if(!me.blob){me.url=me.url||await assetUrl(me.fid);const r=await fetch(me.url,{credentials:"same-origin"});if(!r.ok)throw{code:"http_"+r.status};me.blob=await r.blob()}}catch(e){fvErr(e,"저장");return}
+  try{if(!me.blob)me.blob=await getFileBlob(me.fid,me)}catch(e){fvErr(e,"저장");return}
   const name=me.f.name||"보험자료.pdf";
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
   if(dl){try{await dl.save({filename:name,data:me.blob});toast("파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다")}return}
@@ -797,7 +808,7 @@ function bkProg(t){const el=$("bkProg");if(!el)return;el.hidden=!t;el.textConten
 async function backupFull(){
   const fm=[...allFiles().entries()],files={};let miss=[];
   for(let i=0;i<fm.length;i++){const [id,f]=fm[i];bkProg(`첨부 파일 담는 중… ${i+1}/${fm.length}`);
-    try{const r=await fetch("/_blob/"+id);if(!r.ok)throw 0;const bl=await r.blob();files[id]={name:f.name||"",type:f.type||bl.type||"",size:bl.size,data:await toB64(bl)}}catch(e){miss.push(f.name||id)}}
+    try{const bl=await getFileBlob(id);files[id]={name:f.name||"",type:f.type||bl.type||"",size:bl.size,data:await toB64(bl)}}catch(e){miss.push(f.name||id)}}
   bkProg("");
   return {text:JSON.stringify({app:"우리 가족 보험관리",v:2,exportedAt:new Date().toISOString(),recs:state.recs,files}),count:Object.keys(files).length,miss};
 }
@@ -807,7 +818,10 @@ async function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 �
   let n=0;Object.values(o.recs).forEach(r=>{if(take(r)){n++;push(r.id)}});lsSave();render();
   /* 첨부 파일: 저장소에 없는 것만 다시 올리고, 새 번호로 보험 기록을 고침 */
   const fs=o.files&&typeof o.files==="object"?Object.entries(o.files):[];let up=0,keep=0,fail=0;
-  if(fs.length&&!extras.assets){toast(`${n}건 복원 · 첨부 파일 ${fs.length}개는 이 화면에서 올릴 수 없습니다 (Claude 앱 PC에서 다시 복원해 주세요)`);return}
+  if(fs.length&&!extras.assets){let saved=0,had=0,bad=0;
+    for(let i=0;i<fs.length;i++){const [id,f]=fs[i];bkProg(`첨부 파일을 이 휴대폰에 저장 중… ${i+1}/${fs.length}`);
+      try{const cur=await idbGet(id);if(cur&&cur.blob){had++;continue}await idbPut(id,{blob:fromB64(f.data,f.type||"application/pdf"),name:f.name||"",type:f.type||"",savedAt:Date.now()});saved++}catch(e){bad++}}
+    bkProg("");toast(`기록 ${n}건 복원 · 첨부 파일 ${saved}개를 이 휴대폰에 저장${had?`, ${had}개는 이미 있음`:""}${bad?`, ${bad}개 실패`:""}`.replace(/^기록 0건 복원/,"기록은 이미 최신"));return}
   const map={};
   for(let i=0;i<fs.length;i++){const [id,f]=fs[i];bkProg(`첨부 파일 복원 중… ${i+1}/${fs.length}`);
     try{if(await assetExists(id)){keep++;continue}
@@ -884,7 +898,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();if(e.ke
 async function saveFile(){
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
   const d=new Date(),name=`MY미니앱_보험관리_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
-  if(!dl){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backup()],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast("백업 파일을 저장했습니다")}catch(e){toast((await copyText(backup()))?"파일 저장이 안 되어 백업 코드를 복사했습니다":"백업 코드 복사를 이용해 주세요")}return}
+  if(!dl){try{const b=await backupFull();const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([b.text],{type:"application/json"}));a.download=b.count?name.replace(".json",`_자료${b.count}개.json`):name;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);toast(`백업 파일을 저장했습니다${b.count?` (첨부 파일 ${b.count}개 포함)`:""}`)}catch(e){toast((await copyText(backup()))?"파일 저장이 안 되어 백업 코드를 복사했습니다":"백업 코드 복사를 이용해 주세요")}return}
   const btn=$("bkSave");if(btn)btn.disabled=true;
   try{const b=await backupFull();const fname=b.count?name.replace(".json",`_자료${b.count}개.json`):name;
     await dl.save({filename:fname,data:new Blob([b.text],{type:"application/json"})});
