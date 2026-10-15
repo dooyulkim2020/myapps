@@ -1,0 +1,353 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2B3A55"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MY 미니앱"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style><script>window.SEED_APPS=[{"id": "stamp-pwa", "name": "우리 둘의 국내여행 도장", "url": "https://dooyulkim2020.github.io/myapps/stamp/", "desc": "휴대폰 설치판 · 한국관광 100선·걷기 길 도장", "cat": "여행", "color": "#8C2A2A", "status": "ready", "order": 1, "createdAt": 1791676800000, "updatedAt": 1791676800000, "deleted": false}, {"id": "stamp", "name": "여행 도장 (Claude판)", "url": "https://claude.ai/artifact/RYoS7Nixf6i8kKERDJbv64", "desc": "기존 기록이 있는 Claude 버전", "cat": "여행", "color": "#8C2A2A", "status": "ready", "order": 3, "createdAt": 1791676800000, "updatedAt": 1791676800000, "deleted": false}, {"id": "realestate", "name": "부동산(재개발)", "url": "https://claude.ai/artifact/BUwcDT6CV8DNtZLM8tvSUg", "desc": "재개발 매물 검토", "cat": "자산", "color": "#1D5E54", "status": "ready", "order": 4, "createdAt": 1791676800000, "updatedAt": 1791676800000, "deleted": false}, {"id": "pension", "name": "연금관리", "url": "", "desc": "부부 연금 수령 계획", "cat": "자산", "color": "#24456E", "status": "soon", "order": 5, "createdAt": 1791676800000, "updatedAt": 1791676800000, "deleted": false}, {"id": "insurance", "name": "우리 가족 보험관리", "url": "https://dooyulkim2020.github.io/myapps/insurance/", "desc": "휴대폰 설치판 · 가족 보험·보장·납입·청구", "cat": "자산", "color": "#2E6B4F", "status": "ready", "order": 6, "createdAt": 1791676800000, "updatedAt": 1791936000000, "deleted": false}]</script></head><body><title>MY 미니앱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: MY 미니앱 기본 체계 v1 — 폭 560 한 줄, 상단 고정 바(제목·가±), 카드 목록, 하단 고정 탭. 모든 개인 미니앱이 이 틀을 따름 */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#2B3A55; --accent-soft:#E6EAF1; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#9DB2D6; --accent-soft:#232C3B; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#9DB2D6; --accent-soft:#232C3B; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted)}
+
+/* 앱 카드 */
+.apps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.app{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;color:inherit;min-width:0}
+.app:active{background:var(--accent-soft)}
+.mono{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#fff;font:700 22px/1 var(--display)}
+.app .nm{font-weight:600;font-size:17px;line-height:1.35}
+.app .ds{font-size:14px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.app .mt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.tagx.soon{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.go{color:var(--muted);font-size:20px}
+.app.soon{border-style:dashed;cursor:default}
+.app.soon .mono{opacity:.55}
+.empty{margin-top:12px;padding:28px 12px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+
+/* 상자 */
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;white-space:nowrap;font-weight:600}
+.ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ol li::marker{color:var(--accent);font-weight:600}
+.note{margin-top:8px;font-size:14px;padding:8px 10px;border-radius:8px}
+.note.tip{background:var(--accent-soft)}
+.meta2{font-size:13.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.vstack{display:flex;flex-direction:column;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:72px;resize:vertical}
+.mrow{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mrow .mono{width:36px;height:36px;border-radius:10px;font-size:16px}
+.mrow b{font-weight:600;font-size:15px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow small{font-size:13px;color:var(--muted)}
+.mrow .acts{display:flex;gap:4px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:36px;height:36px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.spec{display:flex;flex-direction:column;gap:6px}
+.spec div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-top:1px solid var(--line);padding-top:6px}
+.spec div:first-child{border-top:0;padding-top:0}
+.spec small{color:var(--muted);font-size:13px;white-space:nowrap}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display)}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;margin-top:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="tb-title">MY 미니앱</div>
+    <span class="pill" id="tbPill">앱 0개</span>
+    <button class="save" type="button" id="saveState" data-s="local" aria-label="저장 상태">저장 상태</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+
+  <main id="vApps">
+    <div class="note" id="fileMode" hidden style="margin-top:12px;background:var(--warn-soft);color:var(--warn)">지금 휴대폰 파일로 열려 있어 공유 저장소에 연결되지 않았습니다. 등록된 앱과 기록이 보이지 않을 수 있으니, Claude 앱의 허브 링크(또는 홈 화면 바로가기)로 열어 주세요.</div>
+    <div class="dayhead"><h2>나의 미니앱</h2><div class="meta" id="today"></div></div>
+    <div class="chips" id="cats"></div>
+    <div class="tl-h"><h3 id="listHead">전체</h3><span id="listCount"></span></div>
+    <ul class="apps" id="apps"></ul>
+  </main>
+
+  <main id="vManage" hidden>
+    <div class="dayhead"><h2>앱 관리</h2><div class="meta">등록·수정·순서 바꾸기·백업</div></div>
+    <section class="box"><h3>등록된 앱</h3><div id="mlist"></div>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="addBtn" style="flex:1">＋ 새 미니앱 등록</button></div></section>
+    <section class="box"><h3>목록 백업</h3>
+      <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt"></span></div>
+      <p class="meta2" style="margin-top:6px">앱 목록은 허브의 공유 저장소와 이 기기에 함께 저장됩니다. 백업 파일을 휴대폰 'MY' 폴더에 받아 두면 더 안전합니다.</p>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><button class="btn line" type="button" id="bkCopy" style="flex:1">백업 코드 복사</button></div>
+      <div class="vstack"><label class="fld">백업 코드로 복원<textarea id="bkText" placeholder="복사해 둔 백업 코드를 붙여넣으세요"></textarea></label>
+        <button class="btn line" type="button" id="bkRestore">붙여넣은 코드로 복원</button></div>
+    </section>
+  </main>
+
+  <main id="vRules" hidden>
+    <div class="dayhead"><h2>기본 규칙</h2><div class="meta">모든 미니앱이 따르는 디자인과 데이터 원칙 · v1</div></div>
+    <section class="box"><h3>데이터 보존 5원칙</h3>
+      <ol class="ol">
+        <li>앱을 고칠 때는 <b>항상 같은 주소</b>에 덮어씁니다. 주소가 바뀌면 저장소가 새로 생깁니다.</li>
+        <li>항목의 <b>고유번호는 한 번 정하면 바꾸지 않습니다</b>.</li>
+        <li>저장 형식이 바뀌면 <b>옛 데이터를 새 형식으로 옮기는 코드</b>를 넣고, 지우지 않습니다.</li>
+        <li>공유 저장소와 기기에 <b>이중 저장</b>하고, 앱마다 <b>백업 파일 저장·복원</b>을 둡니다.</li>
+        <li>수정할 때마다 <b>현재 데이터 확인 → 수정 → 데이터 그대로인지 재확인</b>합니다.</li>
+      </ol>
+    </section>
+    <section class="box"><h3>디자인 기준</h3>
+      <div class="spec">
+        <div><span style="font:700 21px/1.3 var(--display)">화면 제목</span><small>명조 21 굵게</small></div>
+        <div><span style="font-weight:600;font-size:17.5px">카드 제목</span><small>고딕 17.5 중간</small></div>
+        <div><span style="font-size:16px">본문 글자</span><small>고딕 16</small></div>
+        <div><span style="font-size:14px;color:var(--muted)">보조 설명</span><small>고딕 14</small></div>
+        <div><span style="font-size:13px;color:var(--muted)">날짜·출처</span><small>고딕 13</small></div>
+      </div>
+      <p class="note tip">폭 560 한 줄 · 회색 바탕에 흰 카드 · 강조색 1개(앱마다 다름) · 상단 바에 '가±' 글자 크기 · 하단 고정 탭 · 누르는 곳은 높이 40 이상</p>
+    </section>
+    <section class="box"><h3>새 미니앱 만드는 순서</h3>
+      <ol class="ol">
+        <li>Claude에게 "MY 미니앱으로 ○○ 만들어줘"라고 요청합니다.</li>
+        <li>완성되면 이 허브 '관리'에 이름·주소를 등록합니다. Claude가 등록할 수도 있습니다.</li>
+        <li>각 앱의 '백업 파일 저장'으로 휴대폰 MY 폴더에 데이터를 보관합니다.</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="apps" aria-selected="true"><b>앱</b><span id="tApps"></span></button>
+  <button type="button" role="tab" data-view="manage" aria-selected="false"><b>관리</b><span>등록·백업</span></button>
+  <button type="button" role="tab" data-view="rules" aria-selected="false"><b>기본 규칙</b><span>디자인·데이터</span></button>
+</div></nav>
+
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="앱 편집"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const CATS=["여행","재무","생활","업무"];
+const COLORS=["#7A1F2B","#8C2A2A","#1D5E54","#24456E","#2E6B4F","#6B4A8E","#9A6400","#2B3A55"];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=t=>{if(!t)return"";const d=new Date(t);return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`};
+const isArt=u=>/^https:\/\/claude\.ai\/(code\/)?artifact\/[A-Za-z0-9-]+\/?$/.test(String(u||"").trim());
+const okUrl=u=>/^(https?:\/\/|content:\/\/|file:\/\/)\S+$/i.test(String(u||"").trim());
+const isFile=u=>/^(content|file):\/\//i.test(String(u||"").trim());
+const state={apps:{},view:"apps",cat:null,edit:null};
+const LSK="myapps-hub-v1";
+let db=null,canWrite=true;
+
+/* 저장: 공유 저장소 + 이 기기 (최근 고친 쪽 우선, 지움은 표시만) */
+const ts=r=>(r&&r.updatedAt)||0;
+function take(a){if(!a||!a.id)return false;const c=state.apps[a.id];if(!c||ts(a)>ts(c)){state.apps[a.id]={...a};return true}return false}
+function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:1,apps:state.apps}))}catch(e){}}
+function lsLoad(){try{const o=JSON.parse(localStorage.getItem(LSK)||"null");if(o&&o.apps)Object.values(o.apps).forEach(take)}catch(e){}}
+const q=[];let busy=false;
+function push(id){if(!db||!canWrite)return;const a=state.apps[id];if(!a)return;q.push(()=>db.collection("apps").doc(id).set({...a}));if(!busy)run()}
+async function run(){busy=true;while(q.length){const f=q.shift();try{await f();setSave("ok")}catch(e){if(e&&e.code==="invalid_argument"){canWrite=false;setSave("local","보기 전용 권한이라 이 기기에만 저장됩니다")}else setSave("local","저장 실패 · 이 기기에만 저장됨");q.length=0}}busy=false}
+function setSave(s,m){const el=$("saveState");el.dataset.s=s;const t=m||(s==="ok"?"공유 저장소에 저장됨":"이 기기에 저장됨");el.title=t;el.setAttribute("aria-label","저장 상태: "+t);$("saveTxt").textContent=t}
+let first=true;
+async function connect(){
+  try{db=window.claude&&window.claude.use?await window.claude.use("db"):null}catch(e){db=null}
+  if(!db){setSave(window.claude?"local":"ok",window.claude?"이 기기에 저장됨 · 공유 저장소 연결 안 됨":"이 휴대폰에 저장됨");return}
+  setSave("ok");
+  db.collection("apps").onSnapshot(snap=>{
+    const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()});
+    Object.entries(remote).forEach(([id,a])=>take({...a,id}));
+    const up=first?Object.keys(state.apps).filter(id=>!remote[id]||ts(state.apps[id])>ts(remote[id])):[];
+    first=false;lsSave();render();if(up.length)setTimeout(()=>up.forEach(push),0);
+  },()=>setSave("local","불러오지 못했습니다"));
+  loadPref();
+}
+
+/* 화면 */
+/* 같은 주소의 카드는 하나만(설치판 카드가 예전 카드와 겹치는 경우) */
+const live=()=>{const seen=new Set();return Object.values(state.apps).filter(a=>!a.deleted).sort((a,b)=>(a.order??999)-(b.order??999)||ts(a)-ts(b)).filter(a=>{const u=String(a.url||"").trim().replace(/\/$/,"");if(!u)return true;if(seen.has(u))return false;seen.add(u);return true})};
+function render(){
+  const all=live();
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
+  $("vApps").hidden=state.view!=="apps";$("vManage").hidden=state.view!=="manage";$("vRules").hidden=state.view!=="rules";
+  const ready=all.filter(a=>a.status!=="soon").length;
+  $("tbPill").textContent=`앱 ${all.length}개`;$("tApps").textContent=`${ready}개 사용 중`;
+  const d=new Date();$("today").textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 · 사용 중 ${ready}개, 준비 중 ${all.length-ready}개`;
+  const cats=CATS.filter(c=>all.some(a=>a.cat===c));
+  $("cats").innerHTML=[[null,"전체",all.length],...cats.map(c=>[c,c,all.filter(a=>a.cat===c).length])].map(([k,l,n])=>`<button class="chip" type="button" data-cat="${k??""}" aria-pressed="${state.cat===k}">${l} ${n}</button>`).join("");
+  const list=all.filter(a=>!state.cat||a.cat===state.cat);
+  $("listHead").textContent=state.cat||"전체";$("listCount").textContent=`${list.length}개`;
+  $("apps").innerHTML=list.length?list.map(appCard).join(""):`<li class="empty">아직 등록된 앱이 없습니다. '관리'에서 첫 앱을 등록해 주세요.</li>`;
+  $("mlist").innerHTML=all.length?all.map((a,i)=>`<div class="mrow"><span class="mono" style="background:${esc(a.color||"#2B3A55")}">${esc((a.name||"?").slice(0,1))}</span><div style="min-width:0"><b>${esc(a.name)}</b><small>${esc(a.cat||"")} · ${a.status==="soon"?"준비 중":"사용 중"}</small></div><div class="acts"><button class="btn sm" type="button" data-up="${a.id}" ${i===0?"disabled":""} aria-label="위로">↑</button><button class="btn sm" type="button" data-down="${a.id}" ${i===all.length-1?"disabled":""} aria-label="아래로">↓</button><button class="btn sm" type="button" data-edit="${a.id}">수정</button></div></div>`).join(""):`<p class="meta2">등록된 앱이 없습니다.</p>`;
+}
+function appCard(a){
+  const soon=a.status==="soon"||!okUrl(a.url);
+  const inner=`<span class="mono" style="background:${esc(a.color||"#2B3A55")}">${esc((a.name||"?").slice(0,1))}</span>
+    <div style="min-width:0"><div class="nm">${esc(a.name)}</div><div class="ds">${esc(a.desc||"")}</div>
+    <div class="mt"><span class="tagx">${esc(a.cat||"기타")}</span>${soon?`<span class="tagx soon">준비 중</span>`:""}${!soon&&isFile(a.url)?`<span class="tagx soon">휴대폰 파일</span>`:""}${a.updatedAt&&!soon?`<span>수정 ${fmt(a.appUpdated||a.updatedAt)}</span>`:""}</div></div>
+    <span class="go" aria-hidden="true">${soon?"":"›"}</span>`;
+  if(!soon&&isFile(a.url))return `<li><button type="button" class="app" data-fileapp="${esc(a.id)}" style="width:100%;text-align:left;font:inherit;cursor:pointer">${inner}</button></li>`;
+  /* 같은 사이트(설치판) 앱은 같은 창에서 열어 뒤로가기로 허브에 돌아오게 함. 다른 사이트는 새 창 */
+  let same=false;try{same=new URL(a.url.trim(),location.href).origin===location.origin}catch(e){}
+  return soon?`<li><div class="app soon">${inner}</div></li>`:`<li><a class="app" href="${esc(a.url.trim())}"${same?"":` target="_blank" rel="noopener"`}>${inner}</a></li>`;
+}
+function openEdit(id){
+  const a=id?state.apps[id]:{name:"",url:"",desc:"",cat:"생활",color:COLORS[3],status:"ready"};
+  state.edit={...a};
+  $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>${id?"앱 수정":"새 미니앱 등록"}</h2><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>
+  <form id="ef" class="vstack" style="margin-top:12px">
+    <label class="fld">앱 이름<input id="eName" required maxlength="30" value="${esc(a.name)}" placeholder="예: 연금관리"></label>
+    <label class="fld">앱 주소<input id="eUrl" inputmode="url" value="${esc(a.url)}" placeholder="claude.ai 링크 권장 · 비워 두면 '준비 중'"></label>
+    <p class="meta2" id="eWarn">Claude 앱에서 앱을 연 뒤 공유 → 링크 복사로 받은 주소를 붙여넣으세요.</p>
+    <label class="fld">한 줄 설명<input id="eDesc" maxlength="60" value="${esc(a.desc)}" placeholder="이 앱으로 하는 일"></label>
+    <div class="frow"><label class="fld" style="flex:1">분류<select id="eCat">${CATS.map(c=>`<option ${c===a.cat?"selected":""}>${c}</option>`).join("")}</select></label>
+    <label class="fld" style="flex:1">상태<select id="eSt"><option value="ready" ${a.status!=="soon"?"selected":""}>사용 중</option><option value="soon" ${a.status==="soon"?"selected":""}>준비 중</option></select></label></div>
+    <div class="fld">강조색<div class="swatches">${COLORS.map(c=>`<button type="button" class="sw" data-color="${c}" style="background:${c}" aria-pressed="${c===a.color}" aria-label="색 ${c}"></button>`).join("")}</div></div>
+    ${id?`<button class="btn" type="button" data-del="${id}">목록에서 빼기</button>`:""}
+  </form>
+  <div class="sact"><button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="eSave">저장</button></div>`;
+  $("sheetBg").hidden=false;
+}
+document.addEventListener("input",e=>{if(e.target.id==="eUrl"){const u=e.target.value.trim();$("eWarn").textContent=isFile(u)?"휴대폰 파일 주소(content://)는 다시 켜면 열리지 않는 임시 주소라 등록할 수 없습니다. claude.ai 링크를 넣어 주세요.":""}});
+function saveEdit(){
+  const e=state.edit,name=$("eName").value.trim(),url=$("eUrl").value.trim();
+  if(!name){toast("앱 이름을 적어 주세요");return}
+  if(url&&isFile(url)){$("eWarn").textContent="휴대폰 파일 주소(content://)는 브라우저를 다시 켜면 열리지 않는 임시 주소라 등록할 수 없습니다. Claude 앱에서 해당 앱을 열고 공유 → 링크 복사로 받은 https://claude.ai/artifact/… 주소를 넣어 주세요.";toast("휴대폰 파일 주소는 등록할 수 없습니다");return}
+  if(url&&!okUrl(url)){toast("주소는 https:// 로 시작해야 합니다");return}
+  const id=e.id||("a"+Date.now().toString(36));
+  const order=e.order??(live().length?Math.max(...live().map(a=>a.order??0))+1:0);
+  state.apps[id]={...e,id,name,url,desc:$("eDesc").value.trim(),cat:$("eCat").value,status:url?$("eSt").value:"soon",color:e.color||COLORS[3],order,updatedAt:Date.now(),createdAt:e.createdAt||Date.now(),deleted:false};
+  lsSave();push(id);$("sheetBg").hidden=true;render();toast(e.id?"수정했습니다":"등록했습니다");
+}
+function move(id,dir){
+  const all=live(),i=all.findIndex(a=>a.id===id),j=i+dir;if(j<0||j>=all.length)return;
+  [all[i],all[j]]=[all[j],all[i]];const now=Date.now();
+  all.forEach((a,k)=>{if(a.order!==k){state.apps[a.id]={...a,order:k,updatedAt:now};push(a.id)}});lsSave();render();
+}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},2400)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
+const backup=()=>JSON.stringify({app:"MY 미니앱 허브",v:1,exportedAt:new Date().toISOString(),apps:state.apps},null,1);
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.view){state.view=d.view;try{localStorage.setItem("myapps-view",d.view)}catch(_){}render();window.scrollTo({top:0});return}
+  if("cat" in d){state.cat=d.cat||null;render();return}
+  if(d.close){$("sheetBg").hidden=true;return}
+  if(d.edit){openEdit(d.edit);return}
+  if(d.up){move(d.up,-1);return}
+  if(d.down){move(d.down,1);return}
+  if(d.color){state.edit.color=d.color;document.querySelectorAll(".sw").forEach(s=>s.setAttribute("aria-pressed",String(s.dataset.color===d.color)));return}
+  if(d.del){const a=state.apps[d.del];state.apps[d.del]={...a,deleted:true,updatedAt:Date.now()};lsSave();push(d.del);$("sheetBg").hidden=true;render();toast("목록에서 뺐습니다");return}
+  if(d.fileapp){toast("휴대폰 파일 주소는 임시 주소라 열 수 없습니다. '관리'에서 claude.ai 링크로 바꿔 주세요");openEdit(d.fileapp);return}
+  if(t.id==="addBtn"){openEdit(null);return}
+  if(t.id==="eSave"){saveEdit();return}
+});
+document.addEventListener("submit",e=>{e.preventDefault();if(e.target.id==="ef")saveEdit()});
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))$("sheetBg").hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("sheetBg").hidden=true});
+$("bkSave").addEventListener("click",async()=>{
+  let dl=null;try{dl=await window.claude?.use?.("downloads")}catch(e){}
+  if(!dl){toast((await copyText(backup()))?"파일 저장이 안 되는 화면이라 백업 코드를 복사했습니다":"백업 코드 복사를 이용해 주세요");return}
+  const d=new Date(),ymd=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`;
+  try{await dl.save({filename:`MY미니앱_허브_백업_${ymd}.json`,data:backup()});toast("백업 파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다. 백업 코드 복사를 이용해 주세요")}
+});
+$("bkCopy").addEventListener("click",async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}});
+$("bkRestore").addEventListener("click",()=>{
+  let o;try{o=JSON.parse($("bkText").value)}catch(e){toast("백업 코드를 읽지 못했습니다");return}
+  if(!o||!o.apps){toast("허브 백업이 아닙니다");return}
+  let n=0;Object.values(o.apps).forEach(a=>{if(take(a)){n++;push(a.id)}});lsSave();render();toast(n?`${n}건을 복원했습니다`:"이미 최신이라 바뀐 것이 없습니다");
+});
+
+/* 글자 크기 (기기 + 내 설정) */
+const FS=["s","m","l","xl"];let fs="m",prefRef=null;
+try{const v=localStorage.getItem("myapps-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("myapps-fs",fs)}catch(e){}}
+async function loadPref(){try{const u=await window.claude.use("user");const uid=u&&await u.id();if(!uid||!db)return;prefRef=db.doc("data/users/"+uid+"/prefs");const s=await prefRef.get();const v=s.exists&&s.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}}catch(e){}}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+
+try{const v=localStorage.getItem("myapps-view");if(["apps","manage","rules"].includes(v))state.view=v}catch(e){}
+if(/^(content|file):/i.test(location.protocol))$("fileMode").hidden=false;
+applyFs();lsLoad();
+(window.SEED_APPS||[]).forEach(take);lsSave();render();connect();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>

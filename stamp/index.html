@@ -1,0 +1,727 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#8C2A2A"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="여행 도장"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style></head><body><title>우리 둘의 국내여행 도장</title>
+<meta name="apple-mobile-web-app-title" content="여행 도장">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: 오사카 여행 수첩과 같은 체계 — 폭 560 한 줄, 상단 고정 바, 진행 카드, 권역 타일, 카드 목록, 하단 고정 탭 */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#8C2A2A; --accent-soft:#F6E8E6; --done:#FBF4F2; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC; --gold:#B07C1F;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#E6929C; --accent-soft:#3A2329; --done:#241D22; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --gold:#E0B65C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#E6929C; --accent-soft:#3A2329; --done:#241D22; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --gold:#E0B65C; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.pill.plain{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}.save[data-s="err"]::before{background:var(--accent)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+.tb-home{flex:none;display:grid;place-items:center;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--accent)}
+.tb-home[hidden]{display:none}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.now{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.now-k{font-size:13px;color:var(--accent);font-weight:600;letter-spacing:.03em}
+.now-t{font-weight:600;font-size:16px}
+.now-t b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.bar{display:block;height:8px;border-radius:4px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .4s}
+.now-acts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.now-b{min-height:40px;border:1px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:8px;padding:0 12px;font-size:14px;font-weight:600;cursor:pointer}
+.now-b.pri{background:var(--accent);color:var(--surface)}
+.now-sub{font-size:14px;padding-top:8px;margin-top:2px;border-top:1px solid var(--line)}
+
+/* 권역 타일 (3열) */
+.dtools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.dt{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 6px;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;text-align:center}
+.dt b{font-size:15px;font-weight:600}
+.dt span{font-size:12.5px;color:var(--muted);line-height:1.3;font-variant-numeric:tabular-nums}
+.dt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+.dt[aria-pressed="true"] b,.dt[aria-pressed="true"] span{color:var(--surface)}
+
+/* 검색·칩 */
+.srow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+.tk-q{width:100%;box-sizing:border-box;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;text-decoration:none;cursor:pointer;white-space:nowrap;position:relative}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sf{background:var(--surface)}
+.badge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--accent);color:var(--surface);font-size:12px;font-weight:600;display:grid;place-items:center}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:10px 2px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:24px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.chips.wrapc{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:0}
+
+/* 목록 머리 */
+.tl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tl-h select{width:auto;min-height:36px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:14px}
+.gh{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0;cursor:pointer}
+.gh h3{font:700 17px/1.3 var(--display)}
+.gh span{font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sub2{font-size:13px;color:var(--muted);letter-spacing:.04em;margin:10px 0 -2px}
+
+/* 카드 */
+.tl{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;cursor:pointer}
+.it.done .card{background:var(--done);border-color:var(--accent)}
+.chead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.kind{font-size:13.5px;color:var(--muted);margin-bottom:2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-variant-numeric:tabular-nums}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px}
+.tagx.season{background:var(--accent-soft);color:var(--accent)}
+.tagx.lv{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.tagx.fav{color:var(--accent)}
+.ctitle{font-weight:600;font-size:17.5px;line-height:1.35}
+.chk{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px dashed var(--muted);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer;font-size:12.5px;font-weight:600;line-height:1}
+.it.done .chk{background:var(--accent);border:1.5px solid var(--accent);color:var(--surface);font-size:18px}
+.desc{margin-top:6px;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cost{margin-top:6px;font-size:14px;color:var(--muted)}
+.note{margin-top:8px;font-size:14px;padding:6px 8px;border-radius:8px}
+.note.tip{background:var(--accent-soft);color:var(--ink)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.stars{color:var(--gold);letter-spacing:1px}
+.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(1.5);opacity:0}60%{transform:scale(.92);opacity:1}100%{transform:scale(1)}}
+.empty{margin-top:12px;padding:28px 12px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+
+/* 상자 (기록·추가) */
+section.box,details.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+details.box summary{cursor:pointer;color:var(--accent);font-size:15px;font-weight:600;min-height:28px;display:flex;align-items:center}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;white-space:nowrap;font-weight:600}
+.m-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.m-list li{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;cursor:pointer}
+.m-list .l{min-width:0}
+.m-list .l b{display:block;font-weight:600;font-size:15px}
+.m-list .l small{display:block;color:var(--muted);font-size:13.5px;overflow-wrap:anywhere}
+.m-list .r{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--muted);text-align:right}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0;flex:1 1 140px}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:84px;resize:vertical;line-height:1.5}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.vstack>.fld{flex:none}
+.vstack{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.meta2{font-size:13.5px;color:var(--muted)}
+.foot{font-size:13px;color:var(--muted);text-align:center;margin-top:20px}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer;font-variant-numeric:tabular-nums}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display);margin-top:4px}
+.shead .meta{color:var(--muted);font-size:14px}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sbody{padding-block:4px 12px}
+.intro{margin-top:12px;line-height:1.7}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{all:unset;cursor:pointer;color:var(--accent);font-weight:600;display:block;padding:6px 0}
+.rate{display:flex;gap:2px}
+.rate button{min-width:44px;min-height:44px;padding:0;border:0;background:none;font-size:28px;line-height:1;color:var(--line);cursor:pointer}
+.rate button.on{color:var(--gold)}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:8px;height:14px;border-radius:2px;animation:fall 2.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="tb-home" id="homeBtn" href="../" hidden aria-label="MY 미니앱 허브로">MY</a>
+    <div class="tb-title" id="tbTitle">우리 둘의 국내여행 도장</div>
+    <span class="pill" id="tbPill"></span>
+    <button class="save" type="button" id="saveState" data-s="local">불러오는 중</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+
+  <main id="viewList">
+    <div class="dayhead"><h2 id="headTitle"></h2><div class="meta" id="headMeta"></div></div>
+    <div class="now" id="nowBox"></div>
+    <div class="dtools" id="regions" aria-label="권역 선택"></div>
+    <div class="srow" id="searchRow">
+      <input class="tk-q" id="q" type="search" enterkeyhint="search" placeholder="장소·지역·특징 검색 (단풍, 평지…)">
+      <button class="btn sf" type="button" id="filterBtn">필터<span class="badge" id="fBadge" hidden>0</span></button>
+    </div>
+    <div class="chips" id="rowStatus" aria-label="상태 선택"></div>
+    <div class="tl-h">
+      <h3>목록 <span id="shownN">0</span><span>곳</span> <button class="btn" type="button" id="resetF" hidden style="min-height:32px;padding:0 10px;margin-left:4px">초기화</button></h3>
+      <select id="sortSel" aria-label="정렬">
+        <option value="base">공식 순서</option>
+        <option value="season">지금 제철 먼저</option>
+        <option value="fav">찜한 곳 먼저</option>
+        <option value="todo">안 가본 곳 먼저</option>
+        <option value="recent">최근 다녀온 순</option>
+        <option value="rating">별점 높은 순</option>
+        <option value="name">이름순</option>
+      </select>
+    </div>
+    <div id="list"></div>
+    <details class="box" id="addBox">
+      <summary id="addSum">＋ 목록 밖, 우리만의 장소 추가</summary>
+      <form id="addForm" class="vstack">
+        <label class="fld">장소 이름<input id="addName" required maxlength="40" placeholder="예: 우리 첫 데이트 장소"></label>
+        <label class="fld">권역<select id="addRegion"></select></label>
+        <button class="btn pri" type="submit">추가하기</button>
+      </form>
+    </details>
+    <p class="foot">출처: 문화체육관광부·한국관광공사 「한국관광 100선」, 산림청 「걷기 좋은 명품숲길 50선」<br>운영 시간·요금·통제 여부는 출발 전에 확인하세요.</p>
+  </main>
+
+  <main id="viewRec" hidden>
+    <div class="dayhead"><h2>우리의 기록</h2><div class="meta">함께 모은 도장과 추억</div></div>
+    <section class="box"><h3>한눈에</h3><div id="stats"></div>
+      <div class="frow" style="margin-top:10px"><button class="btn line" type="button" id="shareBtn" style="flex:1">기록 문구 복사 (카톡 공유용)</button></div></section>
+    <section class="box"><h3>다녀온 곳</h3><ul class="m-list" id="timeline"></ul></section>
+    <section class="box"><h3>기록 보관</h3>
+      <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt"></span></div>
+      <p class="meta2" style="margin-top:6px">기록은 이 앱의 공유 저장소와 이 기기에 함께 저장됩니다. 앱을 고쳐 다시 올려도 그대로 남습니다.</p>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><button class="btn line" type="button" id="bkCopy" style="flex:1">백업 코드 복사</button></div>
+      <details style="margin-top:10px"><summary style="color:var(--accent);font-weight:600;font-size:15px;cursor:pointer;min-height:40px;display:flex;align-items:center">백업에서 복원하기</summary>
+        <div class="vstack">
+          <label class="fld">백업 파일 고르기<input type="file" id="bkFile" accept=".json,application/json"></label>
+          <label class="fld">또는 백업 코드 붙여넣기<textarea id="bkText" placeholder="복사해 둔 백업 코드를 붙여넣으세요"></textarea></label>
+          <button class="btn line" type="button" id="bkRestore">붙여넣은 코드로 복원</button>
+          <p class="meta2">복원은 기존 기록을 지우지 않고 합칩니다. 같은 곳의 기록이 둘이면 더 최근에 고친 쪽을 남깁니다.</p>
+        </div></details>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="tour" aria-selected="true"><b>관광 100선</b><span id="tabTour"></span></button>
+  <button type="button" role="tab" data-view="walk" aria-selected="false"><b>걷기·산책</b><span id="tabWalk"></span></button>
+  <button type="button" role="tab" data-view="rec" aria-selected="false"><b>우리 기록</b><span id="tabRec"></span></button>
+</div></nav>
+
+<div class="sheetBg" id="filterBg" hidden><div class="sheet" id="fsheet" role="dialog" aria-modal="true" aria-label="필터와 보기"></div></div>
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="상세 정보"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script type="application/json" id="placeData">{"places":[{"id":"t001","list":"tour","src":"100선","region":"수도권","area":"서울","name":"5대 고궁","th":["역사"],"intro":"경복궁·창덕궁·창경궁·덕수궁·경희궁, 조선의 다섯 궁궐입니다. 창덕궁은 유네스코 세계유산입니다.","when":"봄·가을","dur":"궁마다 1~2시간","pros":["도심 한복판이라 지하철로 바로 갑니다","한복을 입으면 입장료가 면제됩니다","창덕궁 후원 특별관람이 고즈넉합니다"],"cons":["주말과 단풍철에는 매우 붐빕니다","그늘이 적어 한여름에는 덥습니다","궁마다 휴궁일(월요일 또는 화요일)이 다릅니다"],"tip":"여러 궁을 볼 계획이면 통합관람권이 유리하고, 야간 특별관람은 사전 예매가 필요합니다."},{"id":"t002","list":"tour","src":"100선","region":"수도권","area":"서울","name":"N서울타워","th":["도심"],"intro":"남산 정상의 전망 타워입니다. 서울 전역을 한눈에 내려다봅니다.","when":"사계절, 해질녘","dur":"2~3시간","pros":["서울 야경이 가장 잘 보이는 곳 중 하나입니다","남산 둘레길 산책과 묶기 좋습니다"],"cons":["일반 승용차는 정상까지 못 올라갑니다","주말 케이블카 대기가 깁니다","전망대는 유료입니다"],"tip":"순환버스로 정상까지 오르고, 해 지기 30분 전에 도착하면 낮과 밤을 모두 봅니다."},{"id":"t003","list":"tour","src":"100선","region":"수도권","area":"서울","name":"광화문광장&청계광장","th":["도심","역사"],"intro":"세종대왕·이순신 동상이 있는 광장과 도심 하천 청계천입니다.","when":"봄·가을, 저녁","dur":"1~2시간","pros":["무료이고 지하철로 바로 연결됩니다","경복궁·서촌과 걸어서 이어집니다"],"cons":["집회가 있는 날은 시끄럽고 혼잡합니다","볼거리 자체는 단순합니다"],"tip":"청계천을 따라 광장시장까지 걸어 빈대떡으로 마무리하는 동선이 좋습니다."},{"id":"t004","list":"tour","src":"100선","region":"수도권","area":"서울","name":"국립중앙박물관","th":["도심","역사"],"intro":"국내 최대 박물관으로 상설전시가 무료입니다. 반가사유상 두 점을 전시한 '사유의 방'이 유명합니다.","when":"사계절(날씨 무관)","dur":"3시간 이상","pros":["상설전시 무료입니다","실내라 비·더위·추위와 상관없습니다","정원과 연못 산책도 좋습니다"],"cons":["너무 넓어서 다 보려면 지칩니다","인기 기획전은 유료이며 매진되기도 합니다"],"tip":"이촌역에서 지하 통로로 연결됩니다. 관심 있는 관 2~3곳만 골라 보시길 권합니다."},{"id":"t005","list":"tour","src":"100선","region":"수도권","area":"서울","name":"서울스카이&롯데월드&석촌호수","th":["도심","체험"],"intro":"123층 롯데월드타워 전망대, 실내외 놀이공원, 석촌호수 산책로입니다.","when":"봄(석촌호수 벚꽃)","dur":"반나절","pros":["초고층 전망대 경험이 특별합니다","호수 둘레 산책이 평탄합니다","쇼핑·식사 선택지가 많습니다"],"cons":["전망대와 놀이공원 요금이 비쌉니다","놀이공원은 젊은 층 위주이고 붐빕니다","벚꽃철에는 인파가 극심합니다"],"tip":"부부라면 석촌호수 산책 후 해질녘 서울스카이 코스가 무난합니다."},{"id":"t006","list":"tour","src":"100선","region":"수도권","area":"서울","name":"성수동 거리&서울숲","th":["도심","정원"],"intro":"옛 공장을 개조한 카페·편집숍·팝업 거리와 대형 공원 서울숲입니다.","when":"봄·가을","dur":"반나절","pros":["서울숲은 넓고 평탄해 산책에 좋습니다","요즘 유행을 한 번에 볼 수 있습니다"],"cons":["젊은 층 중심이라 분위기가 맞지 않을 수 있습니다","인기 매장은 줄이 깁니다"],"tip":"평일 오전 서울숲을 먼저 걷고 카페 한두 곳만 들르면 덜 지칩니다."},{"id":"t007","list":"tour","src":"100선","region":"수도권","area":"서울","name":"청와대 앞길&서촌마을","th":["역사","도심"],"intro":"청와대 주변 길과 한옥 골목 서촌(통인시장, 수성동 계곡)입니다.","when":"봄·가을","dur":"반나절","pros":["한옥 골목이 아기자기합니다","통인시장 기름떡볶이·엽전도시락이 명물입니다","경복궁과 붙어 있습니다"],"cons":["골목이 좁고 주말에 붐빕니다","청와대 내부 관람은 운영 여부가 바뀔 수 있습니다"],"tip":"청와대 관람 가능 여부는 방문 전 공식 누리집에서 꼭 확인하세요."},{"id":"t008","list":"tour","src":"100선","region":"수도권","area":"서울","name":"한강공원","th":["정원","강호"],"intro":"여의도·반포·뚝섬 등 한강 변 공원들입니다.","when":"봄·가을, 저녁","dur":"1~3시간","pros":["무료이고 언제든 갈 수 있습니다","자전거를 빌려 달리기 좋습니다","반포대교 달빛무지개분수(봄~가을)가 볼만합니다"],"cons":["여름에는 그늘이 부족합니다","주말 저녁에는 매우 붐빕니다"],"tip":"해질녘 여의도나 반포에서 노을과 야경을 함께 보시길 권합니다."},{"id":"t009","list":"tour","src":"100선","region":"수도권","area":"서울","name":"홍대 레드로드(홍대문화예술관광특구)","th":["도심"],"intro":"홍대 앞 문화예술관광특구의 중심 거리입니다. 거리 공연이 많습니다.","when":"사계절, 저녁","dur":"1~2시간","pros":["활기와 거리 공연을 즐길 수 있습니다","맛집이 많습니다"],"cons":["젊은 층 위주라 소란스럽게 느낄 수 있습니다","밤에는 매우 붐빕니다"],"tip":"가까운 연남동 경의선숲길 산책과 묶으면 차분하게 즐길 수 있습니다."},{"id":"t010","list":"tour","src":"100선","region":"수도권","area":"인천","name":"개항장문화지구-인천차이나타운(송월동 동화마을)","th":["역사","미식"],"intro":"1883년 개항 이후의 근대 건축 거리와 차이나타운, 동화 벽화마을입니다. 짜장면박물관이 있습니다.","when":"봄·가을","dur":"반나절","pros":["지하철 인천역 바로 앞입니다","짜장면·공갈빵 등 먹거리가 많습니다","근대 건축이 잘 남아 있습니다"],"cons":["동화마을은 다소 상업적이고 낡았다는 평이 있습니다","언덕길이 있습니다"],"tip":"자유공원에 오르면 인천항이 내려다보입니다."},{"id":"t011","list":"tour","src":"100선","region":"수도권","area":"인천","name":"교동도","th":["바다","역사"],"intro":"강화도 북쪽 섬으로 2014년 교동대교로 육지와 이어졌습니다. 대룡시장에 1960~70년대 풍경이 남아 있습니다.","when":"봄·가을","dur":"반나절~하루","pros":["옛 시장 골목이 정겹고 한적합니다","북한 땅이 가깝게 보입니다"],"cons":["대중교통이 불편합니다","볼거리는 많지 않습니다","교동대교 진입 시 군 검문이 있습니다"],"tip":"신분증을 꼭 챙기고, 강화도 본섬과 묶어 하루로 다녀오세요."},{"id":"t012","list":"tour","src":"100선","region":"수도권","area":"인천","name":"송도 센트럴파크","th":["정원","도심"],"intro":"바닷물을 끌어들인 수로가 있는 신도시 공원입니다.","when":"봄·가을, 저녁","dur":"1~2시간","pros":["평탄하고 깔끔해 걷기 편합니다","고층 빌딩 야경이 좋습니다","수상택시·카누를 탈 수 있습니다"],"cons":["인공적인 공간이라 감흥이 적을 수 있습니다"],"tip":"저녁 산책 후 근처 식당가를 이용하면 좋습니다."},{"id":"t013","list":"tour","src":"100선","region":"수도권","area":"경기","name":"아침고요수목원","th":["정원"],"intro":"가평의 정원형 수목원입니다. 겨울밤 '오색별빛정원전' 조명이 유명합니다.","when":"가을 단풍, 겨울 야간 조명","dur":"2~3시간","pros":["계절마다 정원 모습이 달라집니다","겨울 야간 조명이 화려합니다"],"cons":["주말 진입로 정체가 심합니다","경사로가 있습니다","입장료가 있습니다"],"tip":"평일에 가시거나, 겨울에는 해 지기 직전 입장해 낮과 밤을 모두 보세요."},{"id":"t014","list":"tour","src":"100선","region":"수도권","area":"경기","name":"서울대공원(서울랜드)&국립현대미술관 과천&국립과천과학관","th":["체험","도심"],"intro":"과천의 서울대공원(동물원·서울랜드), 국립현대미술관 과천관, 국립과천과학관이 모인 곳입니다.","when":"봄·가을","dur":"하루","pros":["한 곳에서 동물원·미술관·과학관을 모두 즐깁니다","미술관 주변 숲이 좋습니다"],"cons":["넓어서 이동 거리가 깁니다","아이 동반 가족이 많습니다"],"tip":"부부라면 미술관과 대공원 호수 둘레길 산책 위주로 계획하세요."},{"id":"t015","list":"tour","src":"100선","region":"수도권","area":"경기","name":"광명동굴","th":["체험"],"intro":"옛 가학광산을 개발한 동굴 테마파크입니다. 동굴 안은 연중 서늘합니다.","when":"여름(피서)","dur":"1~2시간","pros":["한여름에도 시원합니다","조명 연출과 와인동굴이 독특합니다"],"cons":["계단이 많고 바닥이 젖어 있습니다","입장료가 있습니다"],"tip":"얇은 겉옷과 미끄럽지 않은 신발을 챙기세요."},{"id":"t016","list":"tour","src":"100선","region":"수도권","area":"경기","name":"수원화성","th":["역사"],"intro":"정조가 쌓은 성곽으로 1997년 유네스코 세계유산에 올랐습니다. 성곽길 둘레는 약 5.7km입니다.","when":"봄·가을, 야경","dur":"반나절","pros":["성곽을 따라 걸으며 도시를 내려다봅니다","화성행궁과 수원 통닭거리가 가깝습니다","야경이 아름답습니다"],"cons":["팔달산 구간은 오르막입니다","그늘이 적습니다"],"tip":"화성어차로 일부 구간을 타고, 방화수류정 야경은 꼭 보세요."},{"id":"t017","list":"tour","src":"100선","region":"수도권","area":"경기","name":"두물머리","th":["강호"],"intro":"남한강과 북한강이 만나는 양평의 물가입니다. 큰 느티나무와 새벽 물안개로 유명합니다.","when":"봄·가을, 이른 아침","dur":"1~2시간","pros":["새벽 물안개 풍경이 아름답습니다","세미원(연꽃 정원)과 이어집니다"],"cons":["주말 주차와 도로 정체가 심합니다","볼거리 시간이 짧습니다"],"tip":"해 뜰 무렵 도착하면 물안개와 한산함을 함께 누립니다."},{"id":"t018","list":"tour","src":"100선","region":"수도권","area":"경기","name":"한국민속촌","th":["역사","체험"],"intro":"용인에 조선 시대 마을을 재현한 민속 테마파크입니다.","when":"봄·가을","dur":"반나절","pros":["전통 공연과 체험이 다양합니다","사극 촬영지 분위기가 납니다"],"cons":["입장료가 있습니다","넓어서 많이 걷습니다"],"tip":"도착하면 공연 시간표부터 확인해 동선을 짜세요."},{"id":"t019","list":"tour","src":"100선","region":"수도권","area":"경기","name":"에버랜드&캐리비안베이","th":["체험"],"intro":"용인의 대형 놀이공원과 워터파크입니다. 판다월드와 계절 꽃축제가 있습니다.","when":"봄(튤립·장미), 가을","dur":"하루","pros":["정원과 꽃축제 규모가 큽니다","판다를 볼 수 있습니다"],"cons":["요금이 비싸고 붐빕니다","놀이기구 위주라 취향을 탑니다"],"tip":"부부라면 꽃축제 시즌에 정원·판다월드 위주로 즐기시길 권합니다."},{"id":"t020","list":"tour","src":"100선","region":"수도권","area":"경기","name":"임진각&파주 DMZ","th":["역사"],"intro":"파주 임진각 평화누리공원과 비무장지대(DMZ) 안보관광지입니다.","when":"봄·가을","dur":"반나절","pros":["분단의 역사를 직접 느낄 수 있습니다","임진강을 건너는 곤돌라가 있습니다"],"cons":["DMZ 안쪽 투어는 신분증과 사전 신청이 필요합니다","정세에 따라 운영이 중단되기도 합니다"],"tip":"신분증을 지참하고 투어 운영 여부를 미리 확인하세요."},{"id":"t021","list":"tour","src":"100선","region":"수도권","area":"경기","name":"헤이리 예술마을","th":["도심"],"intro":"파주의 갤러리·박물관·공방·카페가 모인 예술인 마을입니다.","when":"봄·가을","dur":"반나절","pros":["독특한 건축물 산책이 즐겁습니다","조용한 카페가 많습니다"],"cons":["월요일 휴관 시설이 많습니다","시설마다 입장료가 따로 있습니다"],"tip":"파주출판도시와 묶으면 하루 코스가 됩니다."},{"id":"t022","list":"tour","src":"100선","region":"수도권","area":"경기","name":"제부도&제부도해상케이블카","th":["바다"],"intro":"화성의 섬으로 물때에 따라 바닷길이 열립니다. 해상케이블카로도 건너갈 수 있습니다.","when":"봄·가을, 해질녘","dur":"반나절","pros":["하루 두 번 열리는 바닷길이 신기합니다","서해 낙조가 좋습니다"],"cons":["물때를 모르면 들어가지 못합니다","갯벌 위주라 맑은 바다는 아닙니다"],"tip":"출발 전 물때표를 확인하고, 케이블카로 들어가 바닷길로 나오는 방법도 있습니다."},{"id":"t023","list":"tour","src":"100선","region":"강원권","area":"강원","name":"정동심곡 바다부채길","th":["바다"],"intro":"강릉 정동진~심곡 사이 해안단구를 따라 놓인 약 2.9km 탐방로입니다.","when":"사계절(맑은 날)","dur":"1~1.5시간(편도)","pros":["바다 바로 옆을 걷는 경험이 특별합니다","기암괴석 풍경이 멋집니다"],"cons":["계단이 꽤 있습니다","파도·강풍 때는 통제됩니다","편도 코스라 차량 회수가 번거롭습니다"],"tip":"방문 당일 개방 여부를 확인하고, 택시로 출발점에 돌아오는 방법을 미리 정하세요."},{"id":"t024","list":"tour","src":"100선","region":"강원권","area":"강원","name":"도째비골 스카이밸리&해랑전망대","th":["바다"],"intro":"동해 묵호의 스카이워크·전망 시설과 바다 위로 뻗은 해랑전망대입니다.","when":"사계절","dur":"1~2시간","pros":["동해 전망이 시원합니다","묵호등대·논골담길과 걸어서 이어집니다"],"cons":["주차가 혼잡합니다","일부 시설은 유료입니다"],"tip":"묵호항에서 회나 물회로 식사하면 좋습니다."},{"id":"t025","list":"tour","src":"100선","region":"강원권","area":"강원","name":"무릉계곡&무릉별유천지","th":["산숲"],"intro":"동해 두타산 자락 계곡과, 석회석 폐광지를 바꾼 체험 공원 무릉별유천지입니다.","when":"여름·가을","dur":"반나절","pros":["넓은 무릉반석과 쌍폭포 풍경이 좋습니다","쌍폭포까지 길이 비교적 완만합니다"],"cons":["용추폭포까지 왕복하면 꽤 걷습니다","성수기에 붐빕니다"],"tip":"계곡은 오전에, 별유천지는 오후에 둘러보는 순서가 편합니다."},{"id":"t026","list":"tour","src":"100선","region":"강원권","area":"강원","name":"설악산국립공원","th":["산숲"],"intro":"속초·인제·양양에 걸친 명산입니다. 권금성 케이블카, 비선대, 울산바위가 대표 코스입니다.","when":"가을(10월 단풍)","dur":"반나절~하루","pros":["케이블카로 쉽게 절경을 봅니다","비선대까지 길이 평탄합니다"],"cons":["단풍철 주차·케이블카 대기가 매우 깁니다","정상(대청봉)은 고된 산행입니다"],"tip":"케이블카는 이른 시간에 타고, 체력에 맞춰 비선대 코스를 추천합니다."},{"id":"t027","list":"tour","src":"100선","region":"강원권","area":"강원","name":"속초관광수산시장","th":["미식","바다"],"intro":"속초의 대표 전통시장입니다. 닭강정, 오징어순대, 회가 유명합니다.","when":"사계절","dur":"1~2시간","pros":["먹거리가 풍부합니다","포장해 숙소에서 먹기 좋습니다"],"cons":["주말에 매우 붐비고 주차가 어렵습니다"],"tip":"청초호와 아바이마을 갯배 체험을 함께 하세요."},{"id":"t028","list":"tour","src":"100선","region":"강원권","area":"강원","name":"뮤지엄산&간현관광지(소금산 그랜드밸리)","th":["도심","산숲"],"intro":"원주의 미술관 뮤지엄산(안도 다다오 설계)과 소금산 출렁다리·울렁다리·잔도가 있는 간현관광지입니다.","when":"봄·가을","dur":"하루","pros":["건축과 자연이 어우러진 미술관이 인상적입니다","협곡 위 다리가 스릴 있습니다"],"cons":["뮤지엄산 입장료가 높은 편입니다","소금산은 계단이 많습니다"],"tip":"두 곳은 차로 이동해야 하니 하루를 통째로 잡으세요."},{"id":"t029","list":"tour","src":"100선","region":"강원권","area":"강원","name":"원대리 자작나무숲","th":["산숲"],"intro":"인제 원대리의 자작나무 숲입니다. 입구에서 숲까지 임도를 걸어 올라갑니다.","when":"겨울(설경), 가을","dur":"2~3시간","pros":["하얀 자작나무 숲 풍경이 이국적입니다","사진이 잘 나옵니다"],"cons":["숲까지 오르막을 한참 걷습니다","산불조심기간에는 입산이 통제됩니다"],"tip":"운영 요일과 통제 기간을 미리 확인하고, 겨울엔 아이젠을 챙기세요.","rel":["w010"]},{"id":"t030","list":"tour","src":"100선","region":"강원권","area":"강원","name":"철원 한탄강 주상절리길(잔도)","th":["산숲","강호"],"intro":"철원 한탄강 절벽에 매단 잔도(약 3.6km)입니다. 주상절리 협곡을 가까이 봅니다.","when":"봄·가을","dur":"2~3시간(편도)","pros":["협곡 절경이 압도적입니다","데크라 길이 잘 정비되어 있습니다"],"cons":["편도라 셔틀·택시로 돌아와야 합니다","기상에 따라 통제됩니다","높은 곳이 무섭다면 부담됩니다"],"tip":"고석정과 함께 보시고, 겨울에는 강 위를 걷는 물윗길이 열립니다."},{"id":"t031","list":"tour","src":"100선","region":"강원권","area":"강원","name":"남이섬","th":["강호","산숲"],"intro":"북한강의 섬으로 배를 타고 들어갑니다. 메타세쿼이아·은행나무 길이 유명합니다.","when":"가을(단풍·은행)","dur":"반나절","pros":["가로수길 풍경이 아름답습니다","섬 안이 평탄해 걷기 쉽습니다"],"cons":["단체·외국인 관광객이 많아 붐빕니다","입장료(배편 포함)가 있습니다"],"tip":"이른 시간 입도하고, 춘천 닭갈비·막국수로 마무리하세요."},{"id":"t032","list":"tour","src":"100선","region":"강원권","area":"강원","name":"대관령","th":["산숲"],"intro":"평창·강릉 경계의 고원입니다. 양떼목장, 삼양목장, 선자령 트레킹이 대표적입니다.","when":"여름(피서), 가을","dur":"반나절","pros":["한여름에도 서늘합니다","넓은 초원 풍경이 시원합니다"],"cons":["바람이 강하고 겨울은 매우 춥습니다","목장마다 입장료가 있습니다"],"tip":"삼양목장은 셔틀버스로 정상 전망대까지 오를 수 있습니다.","rel":["w012","w013","w016","w017"]},{"id":"t033","list":"tour","src":"100선","region":"강원권","area":"강원","name":"발왕산(천년주목숲길)","th":["산숲"],"intro":"용평리조트의 해발 1,458m 산입니다. 관광케이블카로 정상에 오르고 주목 숲 데크길을 걷습니다.","when":"여름·가을·겨울","dur":"2~3시간","pros":["걷지 않고 정상에 오릅니다","무장애 데크길이라 편합니다","스카이워크 전망이 좋습니다"],"cons":["케이블카 요금이 있습니다","정상은 바람이 차갑습니다"],"tip":"여름에도 얇은 겉옷을 챙기세요."},{"id":"t034","list":"tour","src":"100선","region":"충청권","area":"대전","name":"장태산자연휴양림","th":["산숲"],"intro":"대전의 메타세쿼이아 숲 휴양림입니다. 숲 위로 스카이웨이와 출렁다리가 있습니다.","when":"가을(단풍)","dur":"1~2시간","pros":["숲 산책이 평탄합니다","숲 위를 걷는 스카이웨이가 이색적입니다"],"cons":["숙박 시설 예약이 치열합니다","주말 주차가 혼잡합니다"],"tip":"가을 메타세쿼이아가 붉게 물들 때 가장 아름답습니다."},{"id":"t035","list":"tour","src":"100선","region":"충청권","area":"세종","name":"국립세종수목원","th":["정원"],"intro":"도심형 국립수목원으로 대형 사계절 전시온실이 있습니다.","when":"봄·가을","dur":"2~3시간","pros":["온실이 커서 날씨와 상관없이 즐깁니다","관리가 깔끔합니다"],"cons":["야외는 그늘이 적습니다","휴관일이 있습니다"],"tip":"세종호수공원과 묶으면 반나절 코스가 됩니다."},{"id":"t036","list":"tour","src":"100선","region":"충청권","area":"충북","name":"도담삼봉","th":["강호"],"intro":"단양 남한강 위 세 봉우리로 단양팔경의 첫째입니다.","when":"사계절, 이른 아침","dur":"30분~1시간","pros":["짧은 시간에 단양 대표 풍경을 봅니다","근처 석문도 볼 만합니다"],"cons":["머무는 시간이 짧습니다"],"tip":"새벽 물안개 낀 모습이 가장 좋고, 단양 마늘 요리를 맛보세요."},{"id":"t037","list":"tour","src":"100선","region":"충청권","area":"충북","name":"만천하스카이워크&단양강 잔도","th":["강호","체험"],"intro":"남한강 절벽 위 전망대와, 강변 절벽을 따라 놓인 단양강 잔도(약 1.2km)입니다.","when":"봄·가을","dur":"1~2시간","pros":["단양 시내와 남한강이 한눈에 보입니다","잔도는 평탄하고 무료입니다"],"cons":["스카이워크 주말 대기가 있습니다","셔틀로만 올라갑니다"],"tip":"잔도는 저녁 조명이 켜질 때 걸으면 운치 있습니다."},{"id":"t038","list":"tour","src":"100선","region":"충청권","area":"충북","name":"보은 법주사&속리산테마파크","th":["역사","산숲"],"intro":"속리산의 천년 고찰 법주사(목조 5층탑 팔상전, 국보)와 주변 테마파크입니다. 2018년 '산사, 한국의 산지승원'으로 유네스코 세계유산에 올랐습니다.","when":"가을(단풍)","dur":"반나절","pros":["오리숲·세조길이 평탄해 걷기 좋습니다","팔상전·대형 미륵불이 볼만합니다"],"cons":["문장대 등 정상 산행은 힘듭니다","단풍철 혼잡합니다"],"tip":"세조길을 따라 세심정까지 다녀오는 산책을 권합니다.","rel":["w028"]},{"id":"t039","list":"tour","src":"100선","region":"충청권","area":"충북","name":"청풍호","th":["강호"],"intro":"제천의 큰 인공 호수입니다. 청풍호반케이블카, 청풍문화재단지, 유람선이 있습니다.","when":"봄·가을","dur":"반나절","pros":["케이블카 정상에서 호수 조망이 훌륭합니다","호반 드라이브가 좋습니다"],"cons":["케이블카 대기가 있습니다","유람선은 수위에 따라 운항이 달라집니다"],"tip":"해질녘 케이블카 전망을 추천합니다.","rel":["w026"]},{"id":"t040","list":"tour","src":"100선","region":"충청권","area":"충북","name":"청남대","th":["정원","역사"],"intro":"청주 대청호변의 옛 대통령 별장으로 2003년 일반에 개방되었습니다.","when":"봄(영춘제)·가을(국화축제)","dur":"2~3시간","pros":["호숫가 정원 산책이 여유롭습니다","역대 대통령 관련 전시가 흥미롭습니다"],"cons":["대중교통으로 가기 어렵습니다","휴관일이 있습니다"],"tip":"축제 기간에 가면 꽃과 행사를 함께 즐깁니다."},{"id":"t041","list":"tour","src":"100선","region":"충청권","area":"충남","name":"공주 백제유적지구(공산성, 공주 무령왕릉과 왕릉원)","th":["역사"],"intro":"공주의 공산성과 무령왕릉·왕릉원입니다. 2015년 백제역사유적지구로 유네스코 세계유산에 올랐습니다.","when":"가을(백제문화제)","dur":"반나절","pros":["성곽에서 금강이 내려다보입니다","무령왕릉 이야기가 흥미롭습니다"],"cons":["공산성은 오르막이 있습니다"],"tip":"가을 백제문화제 기간에는 야간 행사가 볼만합니다."},{"id":"t042","list":"tour","src":"100선","region":"충청권","area":"충남","name":"대천해수욕장","th":["바다"],"intro":"보령의 서해 대표 해수욕장입니다. 여름 머드축제로 유명합니다.","when":"여름, 비수기 낙조","dur":"반나절","pros":["백사장이 넓습니다","해산물 식당이 많습니다","짚트랙·스카이바이크가 있습니다"],"cons":["여름 성수기에 매우 붐빕니다","상업적인 분위기입니다"],"tip":"비수기 해질녘 산책이 오히려 여유롭습니다. 보령해저터널 드라이브도 해보세요."},{"id":"t043","list":"tour","src":"100선","region":"충청권","area":"충남","name":"부여 백제유적지구(궁남지, 부소산성)","th":["역사","정원"],"intro":"부여의 궁남지(연꽃 연못)와 부소산성·낙화암입니다. 백제역사유적지구에 속합니다.","when":"여름(7월 연꽃)·가을","dur":"반나절","pros":["궁남지 연꽃이 장관입니다","고즈넉한 분위기입니다"],"cons":["볼거리가 흩어져 있어 이동이 필요합니다"],"tip":"백마강 유람선을 타고 낙화암을 보면 좋습니다."},{"id":"t044","list":"tour","src":"100선","region":"충청권","area":"충남","name":"서산 해미읍성","th":["역사"],"intro":"조선 시대 읍성이 원형에 가깝게 남은 곳입니다. 천주교 순교 성지이기도 합니다.","when":"봄·가을","dur":"1~2시간","pros":["입장 무료이고 평지라 걷기 편합니다","성곽이 잘 보존되어 있습니다"],"cons":["규모가 작아 금방 둘러봅니다"],"tip":"간월암, 개심사(봄 왕벚꽃)와 묶어 하루 코스로 만드세요."},{"id":"t045","list":"tour","src":"100선","region":"충청권","area":"충남","name":"현충사","th":["역사"],"intro":"아산의 이순신 장군 사당입니다.","when":"가을(은행나무)","dur":"1~2시간","pros":["입장 무료이고 경내가 단정합니다","가을 곡교천 은행나무길이 아름답습니다"],"cons":["볼거리가 단순합니다"],"tip":"외암민속마을과 온양온천을 함께 묶으면 좋습니다."},{"id":"t046","list":"tour","src":"100선","region":"충청권","area":"충남","name":"예당관광지(예당호 출렁다리&음악분수, 예당호 모노레일)","th":["강호"],"intro":"예산 예당호의 출렁다리(길이 402m)와 음악분수, 모노레일입니다.","when":"봄·가을, 저녁","dur":"1~2시간","pros":["출렁다리가 길고 호수 경관이 시원합니다","저녁 음악분수가 볼만합니다"],"cons":["분수·모노레일은 계절별 운영 시간이 다릅니다"],"tip":"분수 운영 시간을 확인하고 해질 무렵 맞춰 가세요."},{"id":"t047","list":"tour","src":"100선","region":"충청권","area":"충남","name":"독립기념관","th":["역사"],"intro":"천안의 독립운동 역사 전시관입니다. 입장 무료입니다.","when":"가을(단풍나무숲길)","dur":"2~3시간","pros":["역사적 의미가 큽니다","단풍나무숲길 산책이 좋습니다"],"cons":["매우 넓습니다","전시 내용이 무겁게 느껴질 수 있습니다"],"tip":"가을 단풍나무숲길을 꼭 걸어 보세요."},{"id":"t048","list":"tour","src":"100선","region":"충청권","area":"충남","name":"꽃지해수욕장","th":["바다"],"intro":"태안 안면도의 해수욕장입니다. 할미·할아비 바위 사이로 지는 낙조가 유명합니다.","when":"사계절, 해질녘","dur":"1~2시간","pros":["서해 대표 낙조 명소입니다","백사장이 넓습니다"],"cons":["여름에는 붐빕니다","흐린 날은 낙조를 못 봅니다"],"tip":"간조 때는 바위 가까이 걸어갈 수 있으니 물때를 확인하세요."},{"id":"t049","list":"tour","src":"100선","region":"전라권","area":"광주","name":"국립아시아문화전당","th":["도심"],"intro":"옛 전남도청 자리에 들어선 대형 복합문화시설입니다.","when":"사계절","dur":"2~3시간","pros":["무료로 둘러볼 공간이 많습니다","5·18민주광장과 이어집니다"],"cons":["전시가 실험적이라 취향을 탑니다"],"tip":"양림동 근대거리와 함께 둘러보세요."},{"id":"t050","list":"tour","src":"100선","region":"전라권","area":"광주","name":"무등산국립공원","th":["산숲"],"intro":"광주의 국립공원(2013년 지정)입니다. 서석대·입석대 주상절리가 유명합니다.","when":"가을(억새·단풍)","dur":"반나절~하루","pros":["웅장한 주상절리를 볼 수 있습니다","증심사 쪽 짧은 코스도 있습니다"],"cons":["정상부까지는 힘든 산행입니다"],"tip":"체력에 맞게 증심사 계곡 코스부터 시작하세요."},{"id":"t051","list":"tour","src":"100선","region":"전라권","area":"전북","name":"남원관광단지&광한루원","th":["역사","정원"],"intro":"춘향전의 무대 남원 광한루원과 주변 관광단지입니다.","when":"봄(5월 춘향제)","dur":"1~2시간","pros":["오작교와 연못 정원이 아름답습니다","야간 조명이 좋습니다"],"cons":["관광단지 시설은 다소 낡았다는 평이 있습니다"],"tip":"남원 추어탕을 꼭 드셔 보세요."},{"id":"t052","list":"tour","src":"100선","region":"전라권","area":"전북","name":"반디랜드&태권도원","th":["체험"],"intro":"무주의 반딧불이 테마 공간(곤충박물관·천문대)과 태권도 전용 공간 태권도원입니다.","when":"여름(반딧불축제)","dur":"반나절","pros":["무주의 깨끗한 자연을 느낍니다","태권도 시범 공연이 박진감 있습니다"],"cons":["아이 대상 시설이 많습니다","수도권에서 멉니다"],"tip":"덕유산 곤돌라와 묶으면 부부 여행으로 알찹니다."},{"id":"t053","list":"tour","src":"100선","region":"전라권","area":"전북","name":"변산반도국립공원","th":["바다","산숲"],"intro":"부안의 바다와 산을 아우르는 국립공원입니다. 채석강·적벽강, 내소사가 대표적입니다.","when":"봄·가을","dur":"하루","pros":["책을 쌓은 듯한 채석강 절벽이 독특합니다","내소사 전나무길이 아름답습니다"],"cons":["채석강은 물때에 따라 보는 범위가 다릅니다"],"tip":"곰소항 젓갈백반과 함께 즐기세요."},{"id":"t054","list":"tour","src":"100선","region":"전라권","area":"전북","name":"강천산군립공원","th":["산숲"],"intro":"순창의 계곡형 군립공원입니다. 맨발 산책로와 구름다리, 단풍이 유명합니다.","when":"가을(단풍)","dur":"2~3시간","pros":["계곡 길이 평탄하고 맨발로 걷기 좋습니다","단풍 색이 곱습니다"],"cons":["단풍철 주말 정체가 심합니다"],"tip":"순창 고추장마을에서 한정식을 드셔 보세요."},{"id":"t055","list":"tour","src":"100선","region":"전라권","area":"전북","name":"오성한옥마을","th":["역사"],"intro":"완주 종남산 아래의 작은 한옥 마을입니다. 아원고택이 유명합니다.","when":"봄·가을","dur":"1~2시간","pros":["고즈넉하고 조용합니다","한옥 카페가 운치 있습니다"],"cons":["규모가 작고 주민이 사는 곳이라 조심해야 합니다","대중교통이 불편합니다"],"tip":"위봉사·위봉폭포와 묶어 드라이브 코스로 가세요."},{"id":"t056","list":"tour","src":"100선","region":"전라권","area":"전북","name":"전주한옥마을","th":["역사","미식"],"intro":"도심 속 700여 채 한옥이 모인 마을입니다. 경기전과 전동성당이 있습니다.","when":"사계절","dur":"반나절~1박","pros":["먹거리가 풍부합니다","한옥 숙박을 체험할 수 있습니다"],"cons":["상업화되어 붐빕니다","주말 주차가 어렵습니다"],"tip":"한옥에서 1박 하며 이른 아침 한산한 골목을 걸어 보세요."},{"id":"t057","list":"tour","src":"100선","region":"전라권","area":"전북","name":"내장산국립공원","th":["산숲"],"intro":"정읍의 단풍 명소 국립공원입니다. 우화정과 단풍 터널이 유명합니다.","when":"가을(11월 초)","dur":"반나절","pros":["국내 손꼽히는 단풍 명소입니다","케이블카로 전망대에 오를 수 있습니다"],"cons":["단풍 절정기 도로 정체가 매우 심합니다"],"tip":"새벽에 출발하고, 근처 백양사도 함께 보세요."},{"id":"t058","list":"tour","src":"100선","region":"전라권","area":"전북","name":"마이산도립공원","th":["산숲"],"intro":"진안의 말 귀 모양 두 봉우리 산입니다. 탑사의 돌탑이 신비롭습니다.","when":"봄(벚꽃)·가을","dur":"2~3시간","pros":["독특한 지형과 돌탑이 인상적입니다","남부 쪽 호숫길은 평탄합니다"],"cons":["북부 주차장 쪽은 계단이 많습니다"],"tip":"평탄하게 걸으려면 남부 주차장에서 출발하세요."},{"id":"t059","list":"tour","src":"100선","region":"전라권","area":"전남","name":"섬진강기차마을","th":["체험"],"intro":"곡성의 옛 기차역을 활용한 테마 마을입니다. 증기기관차와 레일바이크가 있습니다.","when":"봄(5월 장미축제)","dur":"반나절","pros":["섬진강 따라 기차 타는 낭만이 있습니다","장미공원이 화려합니다"],"cons":["아이 동반 가족 위주입니다"],"tip":"5월 장미축제 시기에 맞추면 좋습니다."},{"id":"t060","list":"tour","src":"100선","region":"전라권","area":"전남","name":"광양 매화마을&청매실농원","th":["정원"],"intro":"섬진강 변 매화 마을입니다. 3월 매화가 산비탈을 덮습니다.","when":"봄(3월 매화)","dur":"2~3시간","pros":["섬진강과 매화 풍경이 장관입니다"],"cons":["개화 기간이 짧습니다","축제철 정체가 극심합니다"],"tip":"평일에 가시고, 강 건너 하동 화개장터와 묶으세요."},{"id":"t061","list":"tour","src":"100선","region":"전라권","area":"전남","name":"죽녹원&관방제림","th":["산숲","정원"],"intro":"담양의 대나무 숲 죽녹원과 천연기념물 제방 숲 관방제림입니다.","when":"여름·가을","dur":"반나절","pros":["대숲 바람이 시원합니다","관방제림 산책이 평탄합니다"],"cons":["여름에는 모기가 있습니다","죽녹원 일부는 경사가 있습니다"],"tip":"메타세쿼이아길과 떡갈비·대통밥을 함께 즐기세요."},{"id":"t062","list":"tour","src":"100선","region":"전라권","area":"전남","name":"목포근대역사문화공간&목포해상케이블카","th":["역사","바다"],"intro":"목포 원도심의 근대 건축 거리와 유달산~고하도를 잇는 해상케이블카입니다.","when":"사계절","dur":"반나절","pros":["케이블카에서 바다와 다도해 전망이 훌륭합니다","근대 건축 산책이 흥미롭습니다"],"cons":["케이블카 대기가 있을 수 있습니다"],"tip":"목포 민어회와 세발낙지를 꼭 맛보세요."},{"id":"t063","list":"tour","src":"100선","region":"전라권","area":"전남","name":"순천만국가정원&순천만습지","th":["정원"],"intro":"국내 첫 국가정원과 갈대밭 순천만습지입니다.","when":"가을(10~11월 갈대)","dur":"하루","pros":["정원 규모가 크고 다채롭습니다","습지 갈대와 용산전망대 낙조가 장관입니다"],"cons":["넓어서 많이 걷습니다","여름엔 덥습니다"],"tip":"두 곳 사이는 스카이큐브로 이동하고, 해질녘 용산전망대에 오르세요."},{"id":"t064","list":"tour","src":"100선","region":"전라권","area":"전남","name":"퍼플섬","th":["바다"],"intro":"신안 반월도·박지도로, 섬 전체를 보라색으로 꾸몄습니다.","when":"봄·가을","dur":"2~3시간","pros":["섬과 다리가 독특하고 사진이 잘 나옵니다","한적합니다"],"cons":["수도권에서 매우 멉니다","그늘이 적습니다"],"tip":"보라색 옷이나 소품을 착용하면 입장료가 면제됩니다."},{"id":"t065","list":"tour","src":"100선","region":"전라권","area":"전남","name":"엑스포해양공원","th":["바다","체험"],"intro":"2012 여수세계박람회 부지입니다. 빅오쇼와 아쿠아플라넷이 있습니다.","when":"봄~가을, 저녁","dur":"2~3시간","pros":["밤바다와 쇼가 볼만합니다","오동도와 가깝습니다"],"cons":["쇼는 운영 기간·시간이 정해져 있습니다"],"tip":"오동도 산책, 여수 해상케이블카와 묶어 하루를 보내세요."},{"id":"t066","list":"tour","src":"100선","region":"전라권","area":"전남","name":"정남진 편백숲 우드랜드","th":["산숲"],"intro":"장흥 억불산의 편백나무 숲 휴양지입니다.","when":"사계절","dur":"2~3시간","pros":["편백 숲길 산책이 상쾌합니다","숲속 숙박이 가능합니다"],"cons":["수도권에서 멉니다"],"tip":"장흥 삼합(한우·키조개·표고)을 함께 드셔 보세요."},{"id":"t067","list":"tour","src":"100선","region":"경상권","area":"부산","name":"감천문화마을","th":["역사"],"intro":"산비탈에 계단식으로 들어선 부산 사하구의 마을입니다.","when":"사계절","dur":"1~2시간","pros":["알록달록한 마을 풍경이 이색적입니다","전망이 좋습니다"],"cons":["경사와 계단이 많습니다","주민이 사는 곳이라 조용히 다녀야 합니다"],"tip":"버스로 위까지 올라가 내려오면서 둘러보면 편합니다."},{"id":"t068","list":"tour","src":"100선","region":"경상권","area":"부산","name":"광안리해변&SUP존","th":["바다"],"intro":"광안대교 야경이 펼쳐지는 해변입니다. 패들보드(SUP) 체험 구역이 있습니다.","when":"사계절, 저녁","dur":"1~2시간","pros":["광안대교 야경이 아름답습니다","해변 카페·식당이 많습니다"],"cons":["주말 저녁 매우 붐빕니다"],"tip":"드론 라이트쇼 운영 일정이 있으니 미리 확인하세요."},{"id":"t069","list":"tour","src":"100선","region":"경상권","area":"부산","name":"부산엑스더스카이&그린레일웨이","th":["바다","도심"],"intro":"해운대 엘시티 상층부 전망대와, 옛 동해남부선 철길을 산책로로 바꾼 그린레일웨이입니다.","when":"사계절","dur":"2~3시간","pros":["해운대 해변 전망이 압도적입니다","산책로가 평탄합니다"],"cons":["전망대 요금이 높은 편입니다"],"tip":"해운대 블루라인파크 해변열차와 묶으면 좋습니다."},{"id":"t070","list":"tour","src":"100선","region":"경상권","area":"부산","name":"태종대유원지","th":["바다"],"intro":"영도 끝자락의 해안 절벽 공원입니다.","when":"사계절","dur":"1~2시간","pros":["탁 트인 바다와 절벽 풍경이 시원합니다","다누비 순환열차가 있습니다"],"cons":["걸으면 오르막이 꽤 있습니다"],"tip":"다누비열차를 타고, 영도 흰여울문화마을과 함께 보세요."},{"id":"t071","list":"tour","src":"100선","region":"경상권","area":"부산","name":"해동용궁사&오시리아관광단지","th":["바다","역사"],"intro":"바닷가 바위 위의 사찰 해동용궁사와 기장 오시리아관광단지입니다.","when":"사계절, 이른 아침","dur":"2~3시간","pros":["바다 위 사찰 풍경이 독특합니다"],"cons":["계단이 많고 붐빕니다"],"tip":"이른 아침이 한산합니다. 해운대와 묶어 하루 코스로 만드세요."},{"id":"t072","list":"tour","src":"100선","region":"경상권","area":"부산","name":"해운대&송정해수욕장","th":["바다"],"intro":"부산 대표 해변 해운대와 한적한 송정해수욕장입니다.","when":"사계절","dur":"2~3시간","pros":["해변이 넓고 주변 시설이 많습니다","송정은 조용하고 서핑을 즐길 수 있습니다"],"cons":["여름 해운대는 매우 붐빕니다"],"tip":"해운대에서 달맞이길을 거쳐 송정까지 가는 길이 좋습니다."},{"id":"t073","list":"tour","src":"100선","region":"경상권","area":"대구","name":"사유원","th":["정원"],"intro":"대구 군위의 수목원 겸 건축 정원입니다. 국내외 유명 건축가의 작품이 있습니다.","when":"봄·가을","dur":"3~4시간","pros":["자연과 건축이 어우러진 사색의 공간입니다","조용합니다"],"cons":["입장료가 높은 편입니다","경사로가 많습니다","예약이 필요합니다"],"tip":"편한 신발을 신고 예약 일정을 미리 확인하세요."},{"id":"t074","list":"tour","src":"100선","region":"경상권","area":"대구","name":"서문시장&동성로","th":["미식","도심"],"intro":"대구 최대 전통시장 서문시장과 번화가 동성로입니다.","when":"사계절, 저녁","dur":"2~3시간","pros":["납작만두 등 먹거리가 많습니다","야시장이 활기찹니다"],"cons":["붐비고 주차가 어렵습니다"],"tip":"근대골목(청라언덕·계산성당)과 묶으면 좋습니다."},{"id":"t075","list":"tour","src":"100선","region":"경상권","area":"대구","name":"팔공산국립공원","th":["산숲"],"intro":"2023년 국립공원으로 승격한 대구의 명산입니다. 갓바위와 동화사가 유명합니다.","when":"가을(단풍)","dur":"반나절","pros":["케이블카로 쉽게 전망을 봅니다","팔공산 순환도로 단풍 드라이브가 좋습니다"],"cons":["갓바위 가는 길은 가파른 돌계단입니다"],"tip":"체력이 부담되면 동화사와 케이블카 위주로 계획하세요."},{"id":"t076","list":"tour","src":"100선","region":"경상권","area":"울산","name":"대왕암공원","th":["바다","산숲"],"intro":"울산 동구의 해송 숲과 기암 해안 공원입니다. 출렁다리가 있습니다.","when":"사계절, 일출","dur":"1~2시간","pros":["해송림 산책과 바위 해안 풍경이 훌륭합니다","입장 무료입니다"],"cons":["주말에 붐빕니다"],"tip":"해 뜰 무렵 방문하면 동해 일출을 볼 수 있습니다."},{"id":"t077","list":"tour","src":"100선","region":"경상권","area":"울산","name":"영남알프스(간월재)","th":["산숲"],"intro":"해발 1,000m 넘는 산들이 모인 영남알프스의 억새 평원 간월재입니다.","when":"가을(9~10월 억새)","dur":"3~4시간","pros":["넓은 억새 평원이 장관입니다"],"cons":["왕복 산행이 깁니다","바람이 강합니다"],"tip":"배내골 쪽 임도가 비교적 완만합니다. 따뜻한 옷을 챙기세요."},{"id":"t078","list":"tour","src":"100선","region":"경상권","area":"울산","name":"태화강국가정원","th":["정원","강호"],"intro":"울산 태화강 변의 국가정원(2019년 지정)입니다. 십리대숲이 유명합니다.","when":"봄·가을","dur":"1~2시간","pros":["평탄하고 무료입니다","대숲 산책이 시원합니다"],"cons":["여름 낮에는 덥습니다"],"tip":"저녁에 십리대숲 조명길(은하수길)을 걸어 보세요."},{"id":"t079","list":"tour","src":"100선","region":"경상권","area":"경북","name":"경주대릉원(동궁과 월지, 첨성대)&황리단길&월정교","th":["역사"],"intro":"경주 대릉원·첨성대·동궁과 월지와 황리단길, 월정교입니다.","when":"사계절, 야경","dur":"하루","pros":["걸어서 유적을 이어 볼 수 있습니다","동궁과 월지·월정교 야경이 아름답습니다"],"cons":["황리단길은 붐비고 상업적입니다"],"tip":"낮엔 대릉원·첨성대, 밤엔 동궁과 월지 순서를 추천합니다."},{"id":"t080","list":"tour","src":"100선","region":"경상권","area":"경북","name":"불국사&석굴암","th":["역사"],"intro":"1995년 유네스코 세계유산에 오른 신라 불교 유산입니다.","when":"봄·가을","dur":"반나절","pros":["한국 대표 문화유산을 직접 봅니다"],"cons":["단체 관광객이 많습니다","석굴암까지 이동이 필요합니다"],"tip":"아침 일찍 석굴암, 이어서 불국사 순서가 한산합니다."},{"id":"t081","list":"tour","src":"100선","region":"경상권","area":"경북","name":"국립백두대간수목원","th":["정원","산숲"],"intro":"봉화의 대형 국립수목원입니다. 호랑이숲에서 백두산호랑이를 볼 수 있습니다.","when":"봄·가을","dur":"반나절","pros":["규모가 크고 자연이 깨끗합니다","호랑이를 직접 봅니다"],"cons":["수도권에서 멉니다","넓어서 많이 걷습니다"],"tip":"원내 트램을 이용하고, 분천 산타마을과 묶어 보세요."},{"id":"t082","list":"tour","src":"100선","region":"경상권","area":"경북","name":"안동하회마을","th":["역사"],"intro":"2010년 유네스코 세계유산에 오른 안동의 전통 마을입니다.","when":"가을","dur":"반나절","pros":["실제 주민이 사는 살아 있는 마을입니다","하회별신굿탈놀이 공연이 있습니다"],"cons":["입구에서 셔틀로 이동해야 합니다"],"tip":"부용대에 올라 마을 전경을 보고, 안동찜닭·간고등어를 드세요."},{"id":"t083","list":"tour","src":"100선","region":"경상권","area":"경북","name":"울릉도&독도","th":["바다"],"intro":"동해의 섬 울릉도와 독도입니다.","when":"봄~가을(뱃길 안정기)","dur":"2박 3일 이상","pros":["육지와 다른 비경이 펼쳐집니다","독도를 직접 볼 수 있습니다"],"cons":["뱃멀미가 있을 수 있습니다","기상 악화로 결항이 잦습니다"],"tip":"일정을 넉넉히 잡고, 독도는 기상에 따라 접안 여부가 달라집니다."},{"id":"t084","list":"tour","src":"100선","region":"경상권","area":"경북","name":"주왕산국립공원&주산지","th":["산숲","강호"],"intro":"청송의 국립공원과 왕버들 저수지 주산지입니다. 유네스코 세계지질공원입니다.","when":"가을(단풍), 새벽","dur":"반나절","pros":["주산지 새벽 물안개가 신비롭습니다","주왕산 계곡길(용추폭포)이 비교적 평탄합니다"],"cons":["수도권에서 멉니다"],"tip":"청송 사과와 달기약수 닭백숙을 함께 즐기세요."},{"id":"t085","list":"tour","src":"100선","region":"경상권","area":"경북","name":"스페이스워크","th":["체험","바다"],"intro":"포항 환호공원의 체험형 조형물입니다. 철제 트랙을 따라 직접 걸어 오릅니다.","when":"사계절","dur":"1시간","pros":["영일만 전망이 시원합니다","입장 무료입니다"],"cons":["강풍·우천 시 통제됩니다","고소감이 있습니다"],"tip":"영일대 해수욕장과 함께 둘러보세요."},{"id":"t086","list":"tour","src":"100선","region":"경상권","area":"경남","name":"거제식물원","th":["정원"],"intro":"거제의 대형 유리온실 정글돔이 있는 식물원입니다.","when":"사계절","dur":"1~2시간","pros":["실내 열대 정원이 이색적입니다","날씨와 상관없습니다"],"cons":["규모에 비해 관람 시간이 짧습니다"],"tip":"바람의 언덕, 외도와 묶어 거제 하루 코스로 가세요."},{"id":"t087","list":"tour","src":"100선","region":"경상권","area":"경남","name":"독일마을","th":["역사","바다"],"intro":"남해의 파독 광부·간호사 정착촌입니다. 바다가 내려다보이는 독일식 주택이 모여 있습니다.","when":"봄·가을(10월 맥주축제)","dur":"1~2시간","pros":["바다 전망과 이국적 풍경이 좋습니다"],"cons":["규모가 작습니다","주말 주차가 어렵습니다"],"tip":"원예예술촌, 다랭이마을과 함께 남해 드라이브를 즐기세요."},{"id":"t088","list":"tour","src":"100선","region":"경상권","area":"경남","name":"사천바다케이블카&아라마루 아쿠아리움","th":["바다","체험"],"intro":"사천의 바다·섬·산을 잇는 케이블카와 수족관 아라마루입니다.","when":"사계절","dur":"2~3시간","pros":["한려해상 바다 위를 지나는 경치가 훌륭합니다"],"cons":["강풍 시 운행이 중단됩니다"],"tip":"삼천포 수산시장에서 회를 드셔 보세요."},{"id":"t089","list":"tour","src":"100선","region":"경상권","area":"경남","name":"동의보감촌","th":["체험","산숲"],"intro":"산청 지리산 자락의 한방 테마 마을입니다.","when":"봄·가을","dur":"2~3시간","pros":["한방 체험과 지리산 전망이 좋습니다"],"cons":["일부 시설이 낡았다는 평이 있습니다"],"tip":"약초 요리를 맛보고 기체험장을 둘러보세요."},{"id":"t090","list":"tour","src":"100선","region":"경상권","area":"경남","name":"통도사","th":["역사","산숲"],"intro":"양산의 삼보사찰(불보사찰)로 2018년 유네스코 세계유산(산사)에 올랐습니다.","when":"봄(2~3월 홍매화)","dur":"2~3시간","pros":["소나무길 무풍한송로가 아름답습니다","경내가 웅장합니다"],"cons":["경내가 넓습니다"],"tip":"이른 봄 홍매화 시기에 가면 특히 좋습니다."},{"id":"t091","list":"tour","src":"100선","region":"경상권","area":"경남","name":"진주성","th":["역사"],"intro":"진주 남강 변의 성곽과 촉석루입니다. 10월 남강유등축제가 유명합니다.","when":"가을(10월 유등축제)","dur":"1~2시간","pros":["남강과 성곽 야경이 아름답습니다"],"cons":["축제 기간에는 매우 붐빕니다"],"tip":"진주냉면이나 진주비빔밥을 함께 드세요."},{"id":"t092","list":"tour","src":"100선","region":"경상권","area":"경남","name":"우포늪","th":["강호"],"intro":"창녕의 국내 최대 내륙 습지입니다. 람사르 습지로 등록되어 있습니다.","when":"봄·가을, 새벽","dur":"2~3시간","pros":["새벽 물안개와 철새 풍경이 좋습니다","자전거로 둘러볼 수 있습니다"],"cons":["그늘이 적어 여름 낮엔 힘듭니다"],"tip":"가까운 부곡온천에서 1박 하며 새벽에 가세요."},{"id":"t093","list":"tour","src":"100선","region":"경상권","area":"경남","name":"디피랑","th":["체험"],"intro":"통영 남망산공원의 야간 디지털 테마파크입니다.","when":"사계절, 밤","dur":"1~1.5시간","pros":["밤 산책길의 빛 연출이 독특합니다"],"cons":["야간에만 운영합니다","경사가 있습니다"],"tip":"낮에는 통영 케이블카, 밤에는 디피랑 순서로 계획하세요."},{"id":"t094","list":"tour","src":"100선","region":"경상권","area":"경남","name":"하동 쌍계사&화개장터","th":["역사","미식"],"intro":"하동 쌍계사와 화개장터입니다. 봄 십리벚꽃길이 유명합니다.","when":"봄(4월 초 벚꽃)","dur":"반나절","pros":["벚꽃 터널과 섬진강 풍경이 아름답습니다","하동 녹차를 맛볼 수 있습니다"],"cons":["벚꽃철 정체가 심합니다"],"tip":"최참판댁(평사리)과 함께 둘러보세요."},{"id":"t095","list":"tour","src":"100선","region":"제주권","area":"제주","name":"머체왓숲길","th":["산숲"],"intro":"서귀포 한남리의 원시림 숲길입니다.","when":"봄·가을","dur":"2~3시간","pros":["관광객이 적어 한적합니다","숲이 깊고 고요합니다"],"cons":["화장실·편의시설이 적습니다","비 온 뒤 미끄럽습니다"],"tip":"체력에 맞게 짧은 코스를 고르세요."},{"id":"t096","list":"tour","src":"100선","region":"제주권","area":"제주","name":"비자림","th":["산숲"],"intro":"천연기념물 비자나무 숲입니다. 붉은 화산송이 길이 평탄합니다.","when":"사계절","dur":"1~1.5시간","pros":["길이 평탄해 걷기 쉽습니다","숲 향이 좋습니다"],"cons":["비가 많이 오면 일부 구간이 통제됩니다"],"tip":"아침에 가시고 월정리 해변과 묶으세요."},{"id":"t097","list":"tour","src":"100선","region":"제주권","area":"제주","name":"성산일출봉","th":["바다"],"intro":"2007년 유네스코 세계자연유산에 오른 분화구 봉우리입니다.","when":"사계절, 일출","dur":"1~1.5시간","pros":["정상 분화구와 바다 전망이 훌륭합니다","일출 명소입니다"],"cons":["계단 오르막이 이어집니다","붐빕니다"],"tip":"광치기해변에서 성산일출봉을 바라보는 풍경도 좋습니다."},{"id":"t098","list":"tour","src":"100선","region":"제주권","area":"제주","name":"우도","th":["바다"],"intro":"성산항에서 배로 약 15분 거리의 섬입니다.","when":"봄~가을","dur":"반나절","pros":["에메랄드빛 바다와 하얀 해변이 아름답습니다","땅콩아이스크림이 명물입니다"],"cons":["성수기에 붐빕니다","렌터카 반입이 제한됩니다"],"tip":"섬 안에서는 순환버스나 전기자전거를 이용하세요."},{"id":"t099","list":"tour","src":"100선","region":"제주권","area":"제주","name":"제주올레길","th":["바다"],"intro":"제주를 한 바퀴 잇는 도보 여행길로 여러 코스로 나뉩니다.","when":"봄·가을","dur":"코스당 4~6시간","pros":["원하는 코스만 골라 걷습니다","바다·오름·마을을 다양하게 봅니다"],"cons":["코스마다 난이도와 길이가 다릅니다"],"tip":"외돌개가 있는 7코스처럼 해안 경치가 좋은 코스부터 시작하세요."},{"id":"t100","list":"tour","src":"100선","region":"제주권","area":"제주","name":"한라산국립공원","th":["산숲"],"intro":"남한 최고봉(1,947m) 한라산입니다. 정상 코스는 사전 탐방예약제입니다.","when":"봄(철쭉)·가을·겨울(설경)","dur":"4시간~하루","pros":["국내 최고봉 정상의 성취감이 큽니다","영실 코스는 비교적 수월합니다"],"cons":["정상 왕복은 8~9시간 걸립니다","날씨 변화가 큽니다"],"tip":"무리하지 말고 영실 코스로 윗세오름까지 다녀오는 것을 권합니다.","rel":["w048"]},{"id":"w001","list":"walk","src":"50선","region":"수도권","area":"서울","name":"안산 순환형 무장애 자락길","th":["무장애","숲길"],"lv":"쉬움","sf":"데크","intro":"서대문구 안산을 한 바퀴 도는 전국 최초 순환형 무장애 숲길입니다. 데크길이라 경사가 완만합니다.","when":"봄(벚꽃)·가을","dur":"약 7km 순환 · 약 2시간 30분 · 쉬움","pros":["지하철 독립문·무악재·홍제역에서 바로 오릅니다","계단 없는 데크라 무릎 부담이 적습니다","서울 도심과 인왕산 전망이 좋습니다"],"cons":["주말에는 산책객이 많습니다","그늘 없는 구간이 일부 있습니다"],"tip":"서대문형무소역사관과 묶으면 반나절 코스가 됩니다."},{"id":"w002","list":"walk","src":"50선","region":"수도권","area":"인천","name":"만수산 무장애 숲길","th":["무장애","숲길"],"lv":"쉬움","sf":"데크","intro":"인천 남동구 만수산의 계단 없는 무장애 숲길입니다. 잣나무 숲과 정상 전망대가 있습니다.","when":"사계절, 해질녘","dur":"약 2.7km · 1시간 안팎 · 쉬움","pros":["계단이 없어 편하게 걷습니다","전망대에서 서해와 인천대교가 보입니다"],"cons":["짧아서 여행 목적지로는 아쉽습니다"],"tip":"일몰 시간에 맞춰 전망대에 오르면 좋습니다."},{"id":"w003","list":"walk","src":"50선","region":"수도권","area":"경기","name":"연인산 명품 계곡길","th":["계곡길"],"lv":"보통","sf":"흙길·징검다리","intro":"가평 연인산 용추계곡을 따라가는 계곡길입니다. 징검다리 11개와 출렁다리가 있습니다. 2023년 명품숲길 평가에서 1위에 올랐습니다.","when":"여름(계곡)·가을(10월 말 단풍)","dur":"약 4.7km · 보통","pros":["맑은 계곡 옆을 걷는 시원함이 큽니다","용추곡·선녀탕 등 볼거리가 많습니다","단풍이 아름답습니다"],"cons":["징검다리를 건너야 해 비 온 뒤엔 위험합니다","주말 주차가 혼잡합니다"],"tip":"미끄럽지 않은 등산화를 신고, 비 온 직후는 피하세요."},{"id":"w004","list":"walk","src":"50선","region":"수도권","area":"경기","name":"소리향기길·명언읽고가길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"가평 강씨봉자연휴양림 안의 숲길입니다. 길 곳곳에 손글씨 명언과 시가 적혀 있습니다.","when":"봄·여름","dur":"약 3km · 쉬움","pros":["평탄하고 짧아 부담이 없습니다","읽을거리가 있어 지루하지 않습니다"],"cons":["아이 동반 가족이 많습니다"],"tip":"휴양림 숙박을 잡고 아침 일찍 걸으면 한적합니다."},{"id":"w005","list":"walk","src":"50선","region":"수도권","area":"경기","name":"잣향기 피톤치드길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"가평 축령산·서리산 자락 잣향기푸른숲의 잣나무 숲길입니다. 숲 해설과 산림치유 프로그램이 있습니다.","when":"봄·여름","dur":"약 6.6km · 평탄하나 긴 편","pros":["잣나무 향이 짙습니다","평지길·하늘호수길 등 코스를 골라 걷습니다"],"cons":["전 코스는 길게 느껴질 수 있습니다"],"tip":"산림치유 프로그램을 미리 예약해 보세요."},{"id":"w006","list":"walk","src":"50선","region":"수도권","area":"경기","name":"문수산 숲길","th":["옛길","숲길"],"lv":"보통","sf":"흙길","intro":"김포 문수산 숲길로, 조선 숙종 때 쌓은 문수산성 성곽을 따라갑니다.","when":"가을","dur":"총 약 14km · 4개 코스(2~5시간) · 오르막 있음","pros":["산성 성곽과 소나무 숲을 함께 봅니다","정상에서 강화도와 북녘 땅이 보입니다"],"cons":["오르막·내리막이 섞여 있습니다"],"tip":"체력에 맞춰 2시간짜리 코스부터 고르세요."},{"id":"w007","list":"walk","src":"50선","region":"수도권","area":"경기","name":"청년 김대건길","th":["옛길"],"lv":"보통","sf":"흙길","intro":"용인 은이성지와 안성 미리내성지 사이, 김대건 신부가 걸었던 길입니다. '한국의 산티아고 길'이라 불립니다.","when":"봄·가을","dur":"편도 · 평탄하나 긴 편","pros":["순례의 의미가 있는 조용한 길입니다","숲이 한적합니다"],"cons":["편도라 차량 회수가 번거롭습니다","중간 편의시설이 적습니다"],"tip":"도착 지점에서 출발지로 돌아올 택시를 미리 알아 두세요."},{"id":"w008","list":"walk","src":"50선","region":"강원권","area":"강원","name":"오유밭길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"양구군의 숲길입니다","when":"사계절","dur":"공식 누리집 확인","pros":["산림청이 걷기 좋은 숲길로 선정했습니다","관광객이 적어 한적합니다"],"cons":["알려진 정보가 적어 사전 확인이 필요합니다"],"tip":"숲나들e 누리집에서 코스 길이와 출발점을 확인하고 가세요."},{"id":"w009","list":"walk","src":"50선","region":"강원권","area":"강원","name":"산수길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"춘천의 숲길입니다","when":"사계절","dur":"공식 누리집 확인","pros":["산림청이 걷기 좋은 숲길로 선정했습니다","관광객이 적어 한적합니다"],"cons":["알려진 정보가 적어 사전 확인이 필요합니다"],"tip":"숲나들e 누리집에서 코스 길이와 출발점을 확인하고 가세요."},{"id":"w010","list":"walk","src":"50선","region":"강원권","area":"강원","name":"인제 자작나무숲 달맞이숲길","th":["숲길"],"lv":"보통","sf":"임도","intro":"인제 원대리 자작나무숲 안의 탐방 코스 중 하나입니다. 하얀 자작나무 사이를 걷습니다.","when":"겨울(설경)·가을","dur":"숲 입구에서 임도 오르막 포함 2~3시간","pros":["자작나무 숲 풍경이 이국적입니다"],"cons":["입구에서 숲까지 오르막을 걸어야 합니다","산불조심기간에는 입산이 통제됩니다"],"tip":"운영 요일과 통제 기간을 미리 확인하세요.","rel":["t029"]},{"id":"w011","list":"walk","src":"50선","region":"강원권","area":"강원","name":"아침가리 숲길","th":["계곡길"],"lv":"어려움","sf":"계곡·흙길","intro":"인제 방태산 자락 아침가리골을 따라 걷는 오지 계곡길입니다.","when":"여름(계곡)","dur":"하루 · 보통 이상","pros":["때 묻지 않은 오지 계곡을 걷습니다","여름에도 시원합니다"],"cons":["계곡물을 여러 번 건너야 합니다","휴대전화가 잘 안 터지는 구간이 있습니다"],"tip":"여럿이 함께 가고, 물을 건널 신발을 따로 챙기세요."},{"id":"w012","list":"walk","src":"50선","region":"강원권","area":"강원","name":"대관령옛길","th":["옛길","숲길"],"lv":"보통","sf":"흙길","intro":"강릉 대관령 반정에서 옛 영동 사람들이 넘던 고갯길을 따라 내려오는 길입니다.","when":"가을(단풍)","dur":"약 6km 안팎 · 2~3시간 · 내리막 위주","pros":["내리막 위주라 비교적 편합니다","옛길의 정취와 계곡이 좋습니다"],"cons":["무릎에 내리막 부담이 있습니다","편도라 차량 회수가 필요합니다"],"tip":"스틱을 챙기면 무릎 부담이 줄어듭니다.","rel":["t032"]},{"id":"w013","list":"walk","src":"50선","region":"강원권","area":"강원","name":"국민의 숲 트레킹길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"평창 대관령의 '국민의 숲' 안을 걷는 길입니다. 곧게 뻗은 침엽수림이 울창합니다.","when":"여름(피서)·가을","dur":"1~2시간 · 쉬움","pros":["평탄한 숲길이라 걷기 쉽습니다","여름에도 서늘합니다"],"cons":["대중교통으로 가기 어렵습니다"],"tip":"선자령, 대관령 양떼목장과 묶어 하루로 계획하세요.","rel":["t032"]},{"id":"w014","list":"walk","src":"50선","region":"강원권","area":"강원","name":"노추산 모정탑길","th":["계곡길"],"lv":"쉬움","sf":"흙길","intro":"강릉 노추산 계곡의 돌탑 길입니다. 한 어머니가 가족의 안녕을 빌며 오랜 세월 쌓은 돌탑 3,000여 개가 늘어서 있습니다.","when":"봄·가을","dur":"1시간 안팎 · 쉬움","pros":["길이 평탄하고 짧습니다","돌탑에 얽힌 사연이 깊은 울림을 줍니다"],"cons":["볼거리가 한 가지에 집중됩니다"],"tip":"강릉 시내 여행 일정에 한 시간 정도 끼워 넣기 좋습니다."},{"id":"w015","list":"walk","src":"50선","region":"강원권","area":"강원","name":"항골숨바우길","th":["계곡길"],"lv":"확인 필요","sf":"흙길","intro":"정선 항골계곡을 따라 걷는 숲길입니다.","when":"사계절","dur":"공식 누리집 확인","pros":["산림청이 걷기 좋은 숲길로 선정했습니다","관광객이 적어 한적합니다"],"cons":["알려진 정보가 적어 사전 확인이 필요합니다"],"tip":"숲나들e 누리집에서 코스 길이와 출발점을 확인하고 가세요."},{"id":"w016","list":"walk","src":"50선","region":"강원권","area":"강원","name":"선자령 등산로","th":["숲길"],"lv":"보통","sf":"임도·흙길","intro":"대관령휴게소에서 선자령 정상(1,157m)까지 다녀오는 길입니다. 능선에 풍력발전기가 늘어서 있습니다.","when":"겨울(눈꽃)·가을","dur":"순환 약 10km · 3~4시간 · 완만","pros":["출발점이 높아 정상까지 완만합니다","탁 트인 능선 풍경이 장관입니다"],"cons":["바람이 매우 강합니다","겨울엔 혹한입니다"],"tip":"방풍 옷을 꼭 챙기고, 겨울엔 아이젠이 필요합니다.","rel":["t032"]},{"id":"w017","list":"walk","src":"50선","region":"강원권","area":"강원","name":"대관령 소나무숲길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"강릉 성산면 대관령 자락의 금강소나무 숲길입니다. 대관령 치유의 숲과 이어집니다.","when":"사계절","dur":"1~2시간 · 쉬움","pros":["곧게 뻗은 금강소나무가 장관입니다","숲 향이 짙습니다"],"cons":["대중교통이 불편합니다"],"tip":"산림치유 프로그램을 함께 예약하면 좋습니다.","rel":["t032"]},{"id":"w018","list":"walk","src":"50선","region":"강원권","area":"강원","name":"원주 중앙근린공원 숲속둘레길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"원주 도심 공원의 숲속 둘레길입니다.","when":"사계절","dur":"1시간 안팎 · 쉬움","pros":["도심에서 가깝고 평탄합니다"],"cons":["여행 목적지로는 규모가 작습니다"],"tip":"뮤지엄산 등 원주 여행 중에 가볍게 들르기 좋습니다."},{"id":"w019","list":"walk","src":"50선","region":"강원권","area":"강원","name":"준경 옛길","th":["옛길","숲길"],"lv":"보통","sf":"흙길","intro":"삼척 준경묘(조선 왕실 선조의 묘)로 가는 금강소나무 숲길입니다.","when":"봄·가을","dur":"1~2시간 · 보통","pros":["아름드리 금강소나무가 압도적입니다","조용합니다"],"cons":["초입에 가파른 시멘트 오르막이 있습니다"],"tip":"천천히 오르고, 삼척 바다 여행과 묶으세요."},{"id":"w020","list":"walk","src":"50선","region":"강원권","area":"강원","name":"응봉산 등산로","th":["계곡길"],"lv":"어려움","sf":"등산로","intro":"삼척·울진 경계 응봉산의 등산로입니다. 덕구온천 쪽 계곡 코스가 알려져 있습니다.","when":"가을","dur":"반나절 이상 · 보통 이상","pros":["계곡 경치가 좋습니다","산행 뒤 온천을 즐길 수 있습니다"],"cons":["정상까지는 등산 수준입니다"],"tip":"덕구온천 계곡길만 걷고 온천욕으로 마무리하는 방법도 있습니다."},{"id":"w021","list":"walk","src":"50선","region":"강원권","area":"강원","name":"하늘길 둘레길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"영월의 산길 둘레길입니다.","when":"사계절","dur":"공식 누리집 확인","pros":["산림청이 걷기 좋은 숲길로 선정했습니다","관광객이 적어 한적합니다"],"cons":["알려진 정보가 적어 사전 확인이 필요합니다"],"tip":"숲나들e 누리집에서 코스 길이와 출발점을 확인하고 가세요."},{"id":"w022","list":"walk","src":"50선","region":"강원권","area":"강원","name":"김삿갓문학길","th":["옛길"],"lv":"확인 필요","sf":"흙길","intro":"영월 김삿갓면 일대, 방랑 시인 김삿갓의 흔적을 따라 걷는 길입니다.","when":"봄·가을","dur":"공식 누리집 확인","pros":["김삿갓 유적지와 문학관이 함께 있습니다","한적한 산골 풍경입니다"],"cons":["대중교통이 불편합니다"],"tip":"김삿갓문학관을 먼저 들르면 길이 더 의미 있습니다."},{"id":"w023","list":"walk","src":"50선","region":"충청권","area":"대전","name":"계족산 황톳길","th":["숲길"],"lv":"쉬움","sf":"황톳길","intro":"대전 계족산의 약 14.5km 맨발 황톳길입니다.","when":"봄~가을","dur":"구간 선택 가능 · 쉬움","pros":["맨발로 걷는 특별한 경험을 합니다","임도라 경사가 완만합니다"],"cons":["비 온 뒤엔 미끄럽습니다","주말 주차가 혼잡합니다"],"tip":"발 씻는 곳이 있으니 수건만 챙기세요. 전 구간보다 일부만 걸어도 충분합니다."},{"id":"w024","list":"walk","src":"50선","region":"충청권","area":"대전","name":"계족산성길","th":["옛길"],"lv":"보통","sf":"흙길","intro":"대전 계족산 정상부의 삼국시대 산성(계족산성)으로 이어지는 길입니다.","when":"가을","dur":"1~2시간 · 보통","pros":["복원된 산성 위에서 대전 시내가 내려다보입니다"],"cons":["산성까지 오르막입니다"],"tip":"황톳길과 묶어 반나절 코스로 걸으세요."},{"id":"w025","list":"walk","src":"50선","region":"충청권","area":"충북","name":"의림지 한방치유숲길","th":["호수길","숲길"],"lv":"쉬움","sf":"흙길","intro":"제천 의림지 주변의 숲길입니다. 의림지는 삼한시대에 만든 것으로 알려진 오래된 저수지입니다.","when":"봄·가을","dur":"1~2시간 · 쉬움","pros":["호숫가 소나무 숲이 운치 있습니다","평탄합니다"],"cons":["의림지 주변은 주말에 붐빕니다"],"tip":"제천 약채락(한방 음식)으로 식사하세요."},{"id":"w026","list":"walk","src":"50선","region":"충청권","area":"충북","name":"청풍호 자드락길","th":["호수길"],"lv":"보통","sf":"흙길·데크","intro":"제천 청풍호를 따라 이어진 7개 코스의 호숫가 길입니다.","when":"봄·가을","dur":"코스별 2~4시간","pros":["호수와 산이 어우러진 풍경이 아름답습니다","옥순봉 출렁다리와 이어집니다"],"cons":["코스마다 오르막 정도가 다릅니다"],"tip":"짧은 코스를 고르고, 청풍호반케이블카와 함께 즐기세요.","rel":["t039"]},{"id":"w027","list":"walk","src":"50선","region":"충청권","area":"충북","name":"산막이 옛길","th":["호수길"],"lv":"쉬움","sf":"데크·흙길","intro":"괴산호를 따라 이어진 약 4km의 옛길입니다. 대부분 데크와 흙길입니다.","when":"봄·가을","dur":"약 4km · 1.5~2시간 · 쉬움","pros":["호숫가를 따라 걷는 경치가 뛰어납니다","길이 잘 정비되어 있습니다"],"cons":["주말에 매우 붐빕니다"],"tip":"돌아올 때 유람선을 타면 왕복 걷기 부담이 줄어듭니다."},{"id":"w028","list":"walk","src":"50선","region":"충청권","area":"충북","name":"속리산둘레길(보은)","th":["숲길"],"lv":"보통","sf":"흙길","intro":"상주·문경·보은·괴산을 잇는 국가숲길(제9호, 208.6km) 중 보은 구간입니다.","when":"가을","dur":"구간 선택","pros":["속리산 자락의 깊은 숲을 걷습니다","법주사와 가깝습니다"],"cons":["전체 길이가 길어 구간 선택이 필요합니다"],"tip":"법주사 세조길과 묶어 짧게 걷기를 권합니다.","rel":["t038"]},{"id":"w029","list":"walk","src":"50선","region":"충청권","area":"충남","name":"백제부흥군길 3코스","th":["옛길"],"lv":"확인 필요","sf":"흙길","intro":"예산 임존성 일대, 백제 부흥운동의 흔적을 따라 걷는 길입니다.","when":"가을","dur":"공식 누리집 확인","pros":["역사 이야기가 있는 길입니다","한적합니다"],"cons":["산성 쪽은 오르막이 있습니다"],"tip":"예당호 출렁다리와 묶어 예산 하루 여행으로 만드세요."},{"id":"w030","list":"walk","src":"50선","region":"전라권","area":"전북","name":"장수 방화동 생태길","th":["계곡길"],"lv":"쉬움","sf":"흙길","intro":"장수 방화동자연휴양림 일대 계곡을 따라 걷는 생태 탐방길입니다.","when":"여름(계곡)·가을","dur":"1~2시간 · 쉬움","pros":["계곡 물소리가 좋습니다","휴양림 숙박과 연계됩니다"],"cons":["수도권에서 멉니다"],"tip":"휴양림 숙박을 미리 예약하세요."},{"id":"w031","list":"walk","src":"50선","region":"전라권","area":"전북","name":"지리산둘레길 산동~주천","th":["옛길"],"lv":"보통","sf":"흙길·마을길","intro":"지리산둘레길의 마지막 구간으로 구례 산동과 남원 주천을 잇습니다. 산수유 군락과 천 년 안팎의 산수유 '할머니나무'가 있습니다.","when":"봄(3월 산수유)","dur":"약 15.9km · 하루 · 오르막 있음","pros":["봄 산수유가 노랗게 물듭니다","지리산 자락 마을 풍경이 정겹습니다"],"cons":["길이가 길고 오르내림이 있습니다"],"tip":"구례 산수유축제 시기에 맞추고, 일부 구간만 걸어도 좋습니다."},{"id":"w032","list":"walk","src":"50선","region":"전라권","area":"전남","name":"도초 팽나무 숲길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"신안 도초도의 팽나무 가로숲길입니다.","when":"여름·가을","dur":"1시간 안팎 · 쉬움","pros":["평탄하고 한적합니다","섬 여행의 정취가 있습니다"],"cons":["배를 타고 들어가야 합니다"],"tip":"도초도 수국공원(6월)과 함께 들러 보세요."},{"id":"w033","list":"walk","src":"50선","region":"경상권","area":"경북","name":"대티골 아름다운 숲길","th":["숲길"],"lv":"보통","sf":"흙길","intro":"영양 일월산 자락 대티골의 숲길입니다. 옛 국도를 숲길로 바꾼 구간이 있습니다.","when":"가을","dur":"공식 누리집 확인 · 쉬움~보통","pros":["오지 마을의 깊은 숲을 걷습니다","매우 한적합니다"],"cons":["수도권에서 매우 멉니다","편의시설이 적습니다"],"tip":"영양 반딧불이 생태공원과 묶어 1박 하세요."},{"id":"w034","list":"walk","src":"50선","region":"경상권","area":"경북","name":"청옥산 생태경영림 숲길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"봉화 청옥산자연휴양림 일대의 숲길입니다.","when":"여름·가을","dur":"공식 누리집 확인","pros":["해발이 높아 여름에도 시원합니다","숲이 잘 가꿔져 있습니다"],"cons":["수도권에서 멉니다"],"tip":"국립백두대간수목원과 묶으면 좋습니다."},{"id":"w035","list":"walk","src":"50선","region":"경상권","area":"경북","name":"울진금강소나무숲길","th":["숲길"],"lv":"보통","sf":"흙길","intro":"울진 금강소나무 군락지를 걷는 국가숲길입니다. 구간별로 사전 예약을 해야 걸을 수 있습니다.","when":"봄·가을","dur":"구간별 하루 · 보통","pros":["아름드리 금강소나무 숲이 국내 최고 수준입니다","숲해설가와 함께 걷습니다"],"cons":["예약이 필수이고 하루 인원이 제한됩니다","휴식년·운영 기간이 있습니다"],"tip":"운영 기간과 예약 오픈일을 미리 확인하세요."},{"id":"w036","list":"walk","src":"50선","region":"경상권","area":"대구","name":"비슬산둘레길","th":["숲길"],"lv":"보통","sf":"흙길","intro":"대구 달성 비슬산을 둘러 걷는 길입니다. 비슬산은 봄 참꽃(진달래) 군락으로 유명합니다.","when":"봄(4월 참꽃)·가을","dur":"구간 선택","pros":["봄꽃 풍경이 화려합니다","휴양림·자연사찰과 이어집니다"],"cons":["정상 쪽은 오르막이 있습니다"],"tip":"참꽃 시기에는 전기차(셔틀)로 정상 가까이 오를 수 있는지 확인하세요."},{"id":"w037","list":"walk","src":"50선","region":"경상권","area":"울산","name":"솔마루길(울산대공원 코스)","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"울산 도심을 가로지르는 산줄기 숲길 중 울산대공원 구간입니다.","when":"사계절","dur":"1~2시간 · 쉬움","pros":["도심에서 가깝고 평탄합니다","울산대공원과 이어집니다"],"cons":["여행지로서는 생활형 산책로입니다"],"tip":"태화강국가정원 십리대숲과 묶어 울산 산책 여행을 하세요."},{"id":"w038","list":"walk","src":"50선","region":"경상권","area":"울산","name":"큰마을저수지 둘레길","th":["호수길"],"lv":"쉬움","sf":"흙길","intro":"울산 동구 큰마을저수지를 도는 둘레길입니다. 편백나무가 길게 늘어서 있습니다.","when":"사계절","dur":"약 2.2km 순환 · 쉬움","pros":["짧고 평탄합니다","편백 향이 좋습니다"],"cons":["규모가 작습니다"],"tip":"대왕암공원과 같은 동구에 있으니 함께 들르세요."},{"id":"w039","list":"walk","src":"50선","region":"경상권","area":"경남","name":"상림숲길","th":["숲길"],"lv":"쉬움","sf":"흙길","intro":"함양 상림공원의 숲길입니다. 신라 최치원이 홍수를 막으려 조성했다고 전하는 천년 숲으로 천연기념물입니다.","when":"가을(꽃무릇·단풍)","dur":"1시간 안팎 · 쉬움","pros":["평지라 누구나 편히 걷습니다","천년 숲의 역사가 깊습니다","입장 무료입니다"],"cons":["볼거리가 숲에 집중됩니다"],"tip":"9월 꽃무릇 시기와 11월 단풍 시기가 가장 아름답습니다."},{"id":"w040","list":"walk","src":"50선","region":"경상권","area":"경남","name":"가좌산 망진산 숲길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"진주 가좌산과 망진산을 잇는 숲길입니다.","when":"사계절","dur":"공식 누리집 확인","pros":["도심에서 가깝습니다","남강과 진주 시내 전망이 있습니다"],"cons":["여행지로서는 생활형 숲길입니다"],"tip":"진주성·남강과 묶어 진주 여행 중에 걸으세요."},{"id":"w041","list":"walk","src":"50선","region":"경상권","area":"경남","name":"남해바래길 7코스","th":["바다길"],"lv":"확인 필요","sf":"해안길","intro":"남해 섬을 한 바퀴 잇는 바래길의 7코스입니다. '바래'는 바닷가에서 해산물을 채취하던 일을 뜻하는 남해 말입니다.","when":"봄·가을","dur":"공식 누리집 확인","pros":["바다와 마을을 함께 보는 길입니다","한적합니다"],"cons":["그늘 없는 구간이 있을 수 있습니다"],"tip":"독일마을, 다랭이마을과 함께 남해 1박 여행으로 계획하세요."},{"id":"w042","list":"walk","src":"50선","region":"경상권","area":"부산","name":"회동호 치유숲길","th":["호수길","숲길"],"lv":"쉬움","sf":"흙길","intro":"부산 금정구 회동수원지 주변의 치유 숲길입니다.","when":"사계절","dur":"공식 누리집 확인 · 쉬움","pros":["호수 옆 숲길이 고요합니다","부산 도심에서 가깝습니다"],"cons":["대중교통 연결을 확인해야 합니다"],"tip":"해운대·광안리 여행 중 반나절 들르기 좋습니다."},{"id":"w043","list":"walk","src":"50선","region":"경상권","area":"부산","name":"금정산 대천천 누리길","th":["계곡길"],"lv":"쉬움","sf":"데크·흙길","intro":"부산 북구 대천천 계곡을 따라 금정산성과 화명수목원으로 이어지는 약 8km 숲길입니다.","when":"여름·가을","dur":"약 8km · 쉬움","pros":["계곡·데크·수목원이 다양하게 이어집니다","부산 첫 수목원인 화명수목원이 있습니다"],"cons":["전 구간은 꽤 깁니다"],"tip":"화명수목원까지만 걸어도 충분히 좋습니다."},{"id":"w044","list":"walk","src":"50선","region":"경상권","area":"부산","name":"구포 무장애 숲길","th":["무장애","숲길"],"lv":"쉬움","sf":"데크","intro":"부산 북구 구포의 무장애 숲길입니다.","when":"사계절","dur":"1시간 안팎 · 쉬움","pros":["계단 없이 편하게 걷습니다","낙동강 전망이 있습니다"],"cons":["규모가 작습니다"],"tip":"구포시장 국수와 함께 즐기세요."},{"id":"w045","list":"walk","src":"50선","region":"경상권","area":"부산","name":"백양산 나들숲길","th":["숲길"],"lv":"확인 필요","sf":"흙길","intro":"부산진구 백양산 자락의 숲길입니다.","when":"사계절","dur":"공식 누리집 확인","pros":["도심 가까이에서 숲을 즐깁니다"],"cons":["여행지로서는 생활형 숲길입니다"],"tip":"부산 시내 여행 중 아침 산책으로 좋습니다."},{"id":"w046","list":"walk","src":"50선","region":"제주권","area":"제주","name":"교래자연휴양림 곶자왈 숲길","th":["숲길"],"lv":"쉬움","sf":"돌길·흙길","intro":"제주 교래자연휴양림 안의 약 3km 곶자왈 숲길입니다. 곶자왈은 화산 바위 위에 자란 제주 특유의 숲입니다.","when":"사계절","dur":"약 3km · 1~1.5시간 · 쉬움","pros":["원시림 같은 곶자왈을 짧게 체험합니다","2023년 명품숲길 평가 2위입니다"],"cons":["바위와 나무뿌리가 많아 발밑을 조심해야 합니다"],"tip":"휴양림 숙박이나 야영과 함께 즐기세요."},{"id":"w047","list":"walk","src":"50선","region":"제주권","area":"제주","name":"숫모르 편백 숲길","th":["숲길"],"lv":"보통","sf":"흙길","intro":"제주시 용강동 한라생태숲 일대의 편백나무 숲길입니다.","when":"사계절","dur":"편도 약 8km · 2~3시간","pros":["편백 숲이 울창합니다","한라생태숲·절물휴양림과 이어집니다"],"cons":["편도라 돌아오는 방법을 정해야 합니다"],"tip":"짧게 걷고 싶으면 일부 구간만 다녀오세요."},{"id":"w048","list":"walk","src":"50선","region":"제주권","area":"제주","name":"사려니숲길(한라산둘레길 7구간)","th":["숲길"],"lv":"쉬움","sf":"화산송이 흙길","intro":"한라산둘레길 7구간인 사려니숲길입니다. 붉은 화산송이 길과 삼나무 숲이 유명합니다.","when":"여름(피서)·가을","dur":"약 4.8km · 쉬움","pros":["평탄한 붉은 흙길과 삼나무 숲이 아름답습니다","여름에도 시원합니다"],"cons":["비가 많이 오면 통제됩니다","주차장이 혼잡합니다"],"tip":"일부 구간은 특정 기간에만 개방되니 출발 전 확인하세요.","rel":["t100"]},{"id":"w049","list":"walk","src":"50선","region":"제주권","area":"제주","name":"머체왓 숲길","th":["숲길"],"lv":"보통","sf":"흙길","intro":"서귀포 한남리의 원시림 숲길입니다. 여러 코스로 나뉩니다.","when":"봄·가을","dur":"코스별 2~3시간","pros":["관광객이 적어 한적합니다","숲이 깊고 고요합니다"],"cons":["화장실·편의시설이 적습니다","비 온 뒤 미끄럽습니다"],"tip":"체력에 맞게 짧은 코스를 고르세요.","alias":"t095"},{"id":"w050","list":"walk","src":"50선","region":"제주권","area":"제주","name":"산양 큰엉곶자왈 숲길","th":["숲길"],"lv":"쉬움","sf":"돌길","intro":"제주시 한경면 청수리의 약 5km 곶자왈 숲길입니다.","when":"여름(반딧불이 시기)·사계절","dur":"약 5km · 쉬움","pros":["곶자왈 원시림이 잘 남아 있습니다","서쪽 제주 여행과 묶기 좋습니다"],"cons":["돌길이라 발밑을 조심해야 합니다"],"tip":"청수리 곶자왈은 초여름 반딧불이로도 알려져 있으니 시기를 확인해 보세요."},{"id":"p001","list":"walk","src":"추천","region":"강원권","area":"강원","name":"경포호수 산책로","th":["호수길"],"lv":"쉬움","sf":"포장","intro":"강릉 경포호를 한 바퀴 도는 약 4.3km 평지 산책로입니다. 경포대와 경포해변이 가깝습니다.","when":"봄(4월 벚꽃)·가을","dur":"약 4.3km 순환 · 1~1.5시간","pros":["거의 평지라 무릎 부담이 적습니다","벚꽃철 호숫가 풍경이 아름답습니다","벤치와 화장실이 많습니다"],"cons":["자전거와 함께 쓰는 구간이 있습니다","여름 낮에는 그늘이 부족합니다"],"tip":"전부 돌기 부담되면 경포대 쪽 벚꽃길만 걸어도 충분합니다."},{"id":"p002","list":"walk","src":"추천","region":"강원권","area":"강원","name":"외옹치 바다향기로","th":["바다길"],"lv":"쉬움","sf":"데크","intro":"속초 외옹치항과 속초해수욕장을 잇는 약 1.7km 해안 데크길입니다. 군 경계 철책이 걷히며 2018년에 열렸습니다.","when":"봄·가을","dur":"약 1.7km 편도 · 40분~1시간","pros":["바다 바로 옆을 걷습니다","데크가 잘 정비되어 있습니다"],"cons":["파도가 높으면 통제됩니다","주말에 붐빕니다"],"tip":"속초관광수산시장(100선)과 묶어 반나절 코스로 좋습니다."},{"id":"p003","list":"walk","src":"추천","region":"강원권","area":"강원","name":"초곡용굴 촛대바위길","th":["바다길"],"lv":"쉬움","sf":"데크","intro":"삼척 초곡항의 해안 절벽을 따라 놓인 짧은 데크길과 출렁다리입니다. 바다색이 맑기로 유명합니다.","when":"봄~가을","dur":"1km 안팎 · 40분","pros":["짧고 평탄합니다","바다색과 기암이 아름답습니다"],"cons":["주차장이 좁습니다","강풍·높은 파도 때 통제됩니다"],"tip":"출발 전 개방 여부를 확인하세요."},{"id":"p004","list":"walk","src":"추천","region":"경상권","area":"경북","name":"경주 보문호반길","th":["호수길"],"lv":"쉬움","sf":"포장·데크","intro":"경주 보문호를 따라 도는 약 8km 순환 산책로입니다. 봄 벚꽃 명소입니다.","when":"봄(벚꽃)·가을","dur":"약 8km 순환 · 구간 선택","pros":["평지라 걷기 편합니다","벚꽃과 호수 풍경이 좋습니다","숙소와 카페가 가깝습니다"],"cons":["전 구간은 깁니다","벚꽃철 매우 붐빕니다"],"tip":"물너울교 주변 2~3km만 걸어도 충분합니다. 대릉원·불국사(100선)와 묶으세요."},{"id":"p005","list":"walk","src":"추천","region":"경상권","area":"경북","name":"안동 월영교","th":["호수길"],"lv":"쉬움","sf":"데크","intro":"안동댐 아래 낙동강을 가로지르는 길이 387m 목책 인도교입니다. 밤 조명이 아름답습니다.","when":"사계절, 저녁","dur":"40분~1시간","pros":["평지라 편합니다","야경과 물 위 반영이 아름답습니다"],"cons":["강바람이 차갑습니다"],"tip":"하회마을(100선)과 같은 날 들르고, 저녁은 안동찜닭으로 하세요."},{"id":"p006","list":"walk","src":"추천","region":"충청권","area":"세종","name":"세종호수공원","th":["호수길"],"lv":"쉬움","sf":"포장","intro":"세종시 중심의 대형 인공호수 공원입니다. 호수 둘레를 평지 산책로가 감쌉니다.","when":"봄·가을, 저녁","dur":"1~1.5시간","pros":["평지라 누구나 걷기 쉽습니다","야간 조명이 있습니다"],"cons":["그늘이 적습니다","바람이 강한 날이 있습니다"],"tip":"국립세종수목원(100선)과 바로 붙어 있어 함께 보기 좋습니다."},{"id":"p007","list":"walk","src":"추천","region":"충청권","area":"충남","name":"태안 천리포수목원","th":["숲길","바다길"],"lv":"쉬움","sf":"흙길","intro":"1970년 민병갈(칼 페리스 밀러) 원장이 만든 바닷가 수목원입니다. 일반 공개 구역은 밀러가든입니다.","when":"봄(목련)·가을","dur":"1~1.5시간","pros":["바다와 정원을 함께 걷습니다","평탄합니다"],"cons":["입장료가 있습니다","바닷바람이 셉니다"],"tip":"꽃지해수욕장(100선) 낙조와 묶으면 좋습니다."},{"id":"p008","list":"walk","src":"추천","region":"수도권","area":"서울","name":"한양도성 백악구간","th":["옛길"],"lv":"보통","sf":"돌계단·흙길","intro":"북악산을 넘는 한양도성 성곽길입니다. 창의문~숙정문~말바위 구간이 대표적입니다.","when":"봄·가을","dur":"약 4.7km · 2~3시간","pros":["서울 도심과 성곽 풍경이 압도적입니다","도심에서 바로 오릅니다"],"cons":["돌계단이 많아 무릎 부담이 있습니다","여름엔 덥습니다"],"tip":"힘들면 와룡공원~말바위 구간만 걸으세요. 출입 시간이 정해져 있으니 확인하세요."},{"id":"p009","list":"walk","src":"추천","region":"수도권","area":"인천","name":"소래습지생태공원","th":["바다길"],"lv":"쉬움","sf":"데크·흙길","intro":"옛 염전을 생태공원으로 만든 곳입니다. 갯골과 풍차, 갈대밭이 있습니다.","when":"가을(갈대)·해질녘","dur":"1~1.5시간","pros":["평지라 편합니다","노을과 갈대가 아름답습니다","소래포구 어시장과 가깝습니다"],"cons":["그늘이 거의 없습니다","바람이 셉니다"],"tip":"해질녘에 걷고 소래포구에서 저녁을 드세요."},{"id":"p010","list":"walk","src":"추천","region":"제주권","area":"제주","name":"송악산 둘레길","th":["바다길"],"lv":"쉬움","sf":"흙길·데크","intro":"서귀포 대정읍 송악산 해안 절벽을 도는 둘레길입니다. 마라도와 형제섬이 보입니다.","when":"봄·가을","dur":"약 2.8km · 1시간","pros":["경사가 완만합니다","바다 전망이 탁 트였습니다"],"cons":["그늘이 적습니다","정상부는 통제 중일 수 있습니다"],"tip":"산방산·용머리해안과 같은 날 묶으세요."},{"id":"p011","list":"walk","src":"추천","region":"제주권","area":"제주","name":"함덕 서우봉 산책로","th":["바다길"],"lv":"보통","sf":"흙길","intro":"함덕해수욕장 동쪽 오름 서우봉을 오르는 산책로입니다. 봄 유채꽃과 에메랄드빛 바다가 유명합니다.","when":"봄(유채)","dur":"40분~1시간","pros":["해변과 바다 전망이 아름답습니다","짧습니다"],"cons":["오르막이 조금 있습니다","바람이 셉니다"],"tip":"해변 산책 후 서우봉 중턱까지만 올라도 충분합니다."},{"id":"p012","list":"walk","src":"추천","region":"수도권","area":"서울","name":"서울로7017","th":["무장애"],"lv":"쉬움","sf":"포장","intro":"옛 서울역 고가도로를 보행길로 바꾼 약 1km 공중 정원입니다. 2017년 개장했습니다.","when":"봄·가을, 저녁","dur":"30분~1시간","pros":["계단 없이 엘리베이터로 오릅니다","도심 야경이 좋습니다"],"cons":["여름 낮엔 덥습니다","규모가 작습니다"],"tip":"남대문시장, 남산(N서울타워)으로 이어 걸을 수 있습니다."},{"id":"p013","list":"walk","src":"추천","region":"수도권","area":"경기","name":"남한산성 성곽길","th":["옛길","숲길"],"lv":"보통","sf":"흙길·돌길","intro":"2014년 유네스코 세계유산에 오른 남한산성의 성곽을 따라 걷는 길입니다. 코스가 여러 개로 나뉩니다.","when":"가을(단풍)","dur":"코스별 1~3시간","pros":["성곽과 소나무 숲이 아름답습니다","서울 근교라 가깝습니다"],"cons":["오르내림이 있습니다","주말 주차가 혼잡합니다"],"tip":"남문~수어장대 구간이 무난하고, 내려와 백숙이나 닭죽을 드세요."}],"legacy":{"achim":"t013","suwon":"t016","seorak":"t026","jajak":"t029","nami":"t031","danyang":"t036","beopju":"t038","kkotji":"t048","jeonju":"t056","naejang":"t057","damyang":"t061","suncheon":"t063","mokpo":"t062","gyeongju":"t080","hahoe":"t082","ulleung":"t083","hadong":"t094","busan":"t072","hallasan":"t100","seongsan":"t097","udo":"t098","olle7":"t099","bijarim":"t096","baekje":"t041","namhan":"p013","ganghwa":["강화도","수도권"],"gangneung":["강릉 안목·경포","강원권"],"naksan":["양양 낙산사","강원권"],"woljeong":["평창 월정사 전나무숲","강원권"],"mindung":["정선 민둥산 억새","강원권"],"onyang":["아산 온양온천","충청권"],"seonun":["고창 선운사","전라권"],"gunsan":["군산 근대문화거리","전라권"],"yeosu":["여수 밤바다","전라권"],"boseong":["보성 녹차밭","전라권"],"haein":["합천 해인사","경상권"],"tongyeong":["통영 케이블카·동피랑","경상권"],"namhae":["남해 다랭이마을·독일마을","경상권"],"oedo":["거제 외도 보타니아","경상권"],"bugok":["창녕 부곡온천","경상권"]}}</script>
+<script>
+(function(){
+"use strict";
+const DATA=JSON.parse(document.getElementById("placeData").textContent);
+const PLACES=DATA.places, LEGACY=DATA.legacy;
+const REGIONS=[["수도권","궁궐과 도심"],["강원권","산과 동해"],["충청권","호수와 백제"],["전라권","정원과 맛"],["경상권","신라와 바다"],["제주권","섬과 오름"]];
+const THEMES={tour:[["바다","바다·섬"],["산숲","산·숲"],["강호","강·호수"],["역사","역사·마을"],["정원","정원·공원"],["도심","도심·문화"],["체험","체험·테마"],["미식","시장·미식"]],
+  walk:[["숲길","숲길"],["계곡길","계곡길"],["바다길","바다길"],["호수길","호수길"],["옛길","옛길·역사"],["무장애","무장애"]]};
+const TH_LABEL={};for(const t in THEMES)for(const [k,v] of THEMES[t])TH_LABEL[k]=v;
+const LEVELS=["쉬움","보통","어려움","확인 필요"];
+const SEASON=(m=>m>=3&&m<=5?"봄":m>=6&&m<=8?"여름":m>=9&&m<=11?"가을":"겨울")(new Date().getMonth()+1);
+const SUB={tour:"문화체육관광부·한국관광공사 선정 한국관광 100선 완주 도전",walk:"산림청 명품숲길 50선과 부부 추천 산책로 13곳"};
+const byId=new Map(PLACES.map(p=>[p.id,p]));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=d=>d?d.slice(2).replace(/-/g,"."):"";
+const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+
+const state={tab:"tour",visits:{},custom:{},f:{region:null,status:"all",theme:null,level:null,src:null,q:"",season:false},open:null,pick:null,sort:"base",grouped:true,folded:{}};
+try{const v=JSON.parse(localStorage.getItem("kr-bucket-view")||"null");if(v){state.sort=v.sort||"base";state.grouped=v.grouped!==false;state.folded=v.folded||{}}}catch(e){}
+const saveView=()=>{try{localStorage.setItem("kr-bucket-view",JSON.stringify({sort:state.sort,grouped:state.grouped,folded:state.folded}))}catch(e){}};
+state.view="tour";
+try{const t=localStorage.getItem("kr-bucket-tab");if(t==="tour"||t==="walk"){state.tab=t;state.view=t}else if(t==="rec")state.view="rec"}catch(e){}
+
+/* ---------- 장소 ---------- */
+const keyOf=p=>p.alias||p.id;
+const customPlaces=()=>Object.values(state.custom).filter(c=>c&&!c.deleted).map(c=>({id:c.id,list:c.list||"tour",src:"우리",region:c.region||"수도권",area:"우리만의 장소",name:c.name,th:[],custom:true}));
+const placesOf=t=>PLACES.filter(p=>p.list===t).concat(customPlaces().filter(c=>c.list===t));
+const findPlace=id=>byId.get(id)||customPlaces().find(c=>c.id===id);
+const visitOf=p=>state.visits[keyOf(p)];
+const isDone=p=>!!visitOf(p)?.done;
+
+/* ---------- 저장: 공유 저장소 + 이 기기 이중 저장 ---------- */
+const LSK="kr-bucket-data-v2";
+let db=null, canWrite=true, synced={visits:false,custom:false};
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:2,visits:state.visits,custom:state.custom,savedAt:Date.now()}))}catch(e){}}
+const ts=r=>(r&&r.updatedAt)||0;
+
+function normalizeId(id){
+  const m=LEGACY[id];
+  if(!m)return id;
+  if(typeof m==="string")return m;
+  const cid="legacy-"+id;
+  if(!state.custom[cid])state.custom[cid]={id:cid,name:m[0],region:m[1],list:"tour",updatedAt:1};
+  return cid;
+}
+function takeVisit(id,rec){
+  if(!rec||typeof rec!=="object")return false;
+  const nid=normalizeId(id), cur=state.visits[nid];
+  if(!cur||ts(rec)>ts(cur)){state.visits[nid]={done:!!rec.done,date:rec.date||"",rating:+rec.rating||0,memo:String(rec.memo||""),fav:!!rec.fav,updatedAt:ts(rec)};return true}
+  return false;
+}
+function takeCustom(c){
+  if(!c||!c.id||!c.name)return false;
+  const cur=state.custom[c.id];
+  if(!cur||ts(c)>ts(cur)){state.custom[c.id]={id:c.id,name:String(c.name),region:c.region||"수도권",list:c.list==="walk"?"walk":"tour",updatedAt:ts(c),deleted:!!c.deleted};return true}
+  return false;
+}
+function loadLocal(){
+  const cur=lsGet(LSK);
+  if(cur){for(const c of Object.values(cur.custom||{}))takeCustom(c);for(const [k,v] of Object.entries(cur.visits||{}))takeVisit(k,v)}
+  for(const k of ["kr-bucket-100-v1","kr-bucket-v1"]){   // 예전 버전이 이 기기에 남긴 기록
+    const o=lsGet(k);if(!o)continue;
+    for(const c of (o.custom||[]))takeCustom({id:c.id,name:c.name,region:c.region,list:c.list||"tour",updatedAt:1});
+    for(const [id,v] of Object.entries(o.visits||{}))takeVisit(id,{...v,updatedAt:1});
+  }
+  lsSave();
+}
+
+/* 쓰기는 한 번에 하나씩, 실패하면 이 기기에 남겨 다음 접속 때 다시 올림 */
+const queue=[];let busy=false;
+function enqueue(fn){queue.push(fn);if(!busy)runQueue()}
+async function runQueue(){
+  busy=true;
+  while(queue.length){
+    const fn=queue.shift();
+    try{await fn();if(!queue.length)setSave(canWrite?"ok":"local")}
+    catch(e){
+      if(e&&(e.code==="invalid_argument"||e.code==="not_granted")){canWrite=false;setSave("local","보기 전용 권한이라 이 기기에만 저장됩니다");queue.length=0;break}
+      setSave("err");queue.length=0;break;
+    }
+  }
+  busy=false;
+}
+function pushVisit(id){if(!db||!canWrite)return;const r=state.visits[id];if(!r)return;enqueue(()=>db.collection("visits").doc(id).set({...r}))}
+function pushCustom(id){if(!db||!canWrite)return;const c=state.custom[id];if(!c)return;enqueue(()=>db.collection("custom").doc(id).set({...c}))}
+
+function setSave(s,msg){
+  const el=$("saveState");el.dataset.s=s;
+  const m=msg||({ok:"공유 저장소에 저장됨",local:"이 기기에 저장됨",err:"저장 실패 · 눌러서 다시 시도"}[s]);
+  el.textContent=m;el.title=m;el.setAttribute("aria-label","저장 상태: "+m);if($("saveTxt"))$("saveTxt").textContent=m;
+  el.style.cursor=s==="err"?"pointer":"";
+}
+$("saveState").addEventListener("click",()=>{if($("saveState").dataset.s==="err")resync();else toast($("saveState").title)});
+function resync(){for(const id of Object.keys(state.visits))pushVisit(id);for(const id of Object.keys(state.custom))pushCustom(id)}
+
+function onRemoteVisits(snap){
+  const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()});
+  const toPush=new Set(), toDelete=[];
+  for(const [id,r] of Object.entries(remote)){
+    const nid=normalizeId(id);
+    if(nid!==id){toDelete.push(id);const cur=state.visits[nid];if(!remote[nid]&&(!cur||ts(r)>=ts(cur))){takeVisit(nid,r);toPush.add(nid)}continue}
+    takeVisit(id,r);
+  }
+  if(!synced.visits){ // 첫 동기화: 이 기기에만 있거나 더 최근인 기록을 올림
+    for(const [id,l] of Object.entries(state.visits)){const r=remote[id];if(!r||ts(l)>ts(r))toPush.add(id)}
+    synced.visits=true;
+  }
+  lsSave();render();
+  if(toPush.size||toDelete.length)setTimeout(()=>{
+    for(const id of Object.keys(state.custom))if(id.startsWith("legacy-"))pushCustom(id);
+    toPush.forEach(pushVisit);
+    toDelete.forEach(id=>enqueue(()=>db.collection("visits").doc(id).delete()));
+  },0);
+  else if(!busy)setSave(canWrite?"ok":"local");
+}
+function onRemoteCustom(snap){
+  const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()});
+  for(const r of Object.values(remote))takeCustom(r);
+  const toPush=[];
+  if(!synced.custom){for(const [id,l] of Object.entries(state.custom)){const r=remote[id];if(!r||ts(l)>ts(r))toPush.push(id)}synced.custom=true}
+  lsSave();render();
+  if(toPush.length)setTimeout(()=>toPush.forEach(pushCustom),0);
+}
+async function connect(){
+  try{db=window.claude&&window.claude.use?await window.claude.use("db"):null}catch(e){db=null}
+  if(!db){setSave(window.claude?"local":"ok",window.claude?"이 기기에 저장됨 · 공유 저장소 연결 안 됨":"이 휴대폰에 저장됨");return}
+  try{const user=await window.claude.use("user");if(user&&user.can){const c=await user.can("data.write");if(c===false){canWrite=false}}}catch(e){}
+  setSave(canWrite?"ok":"local",canWrite?"공유 저장소 연결됨":"보기 전용 권한이라 이 기기에만 저장됩니다");
+  db.collection("visits").onSnapshot(onRemoteVisits,()=>setSave("err","기록을 불러오지 못했습니다"));
+  db.collection("custom").onSnapshot(onRemoteCustom,()=>{});
+  loadPref();
+}
+
+/* ---------- 기록 변경 ---------- */
+function milestoneCheck(before,after){
+  const marks=state.tab==="tour"?[1,10,25,50,75,100]:[1,10,25,50];
+  const m=marks.find(x=>before<x&&after>=x);
+  if(m){toast(m===1?"첫 도장을 찍었습니다. 시작이 반입니다":`${m}곳 달성! 도장이 쌓이고 있습니다`);confetti()}
+  else toast("도장을 찍었습니다");
+}
+function saveVisit(p,rec,quiet){
+  const k=keyOf(p), before=placesOf(state.tab).filter(isDone).length, was=isDone(p);
+  state.visits[k]={...(state.visits[k]||{}),...rec,updatedAt:Date.now()};
+  lsSave();render();
+  if(!quiet){
+    if(rec.done&&!was){milestoneCheck(before,placesOf(state.tab).filter(isDone).length);const s=document.querySelector(`#r-${CSS.escape(p.id)} .chk`);s&&s.classList.add("pop")}
+    else if("done" in rec)toast(rec.done?"기록을 고쳤습니다":"도장을 지웠습니다");
+  }
+  pushVisit(k);
+}
+function toggleFav(p){const v=visitOf(p)||{};saveVisit(p,{fav:!v.fav},true);toast(v.fav?"찜을 풀었습니다":"찜했습니다. '찜한 곳'에서 모아 볼 수 있습니다")}
+function addCustom(name,region){
+  const id="c"+Date.now().toString(36);
+  state.custom[id]={id,name,region,list:state.tab,updatedAt:Date.now(),deleted:false};
+  lsSave();render();toast("우리만의 장소를 추가했습니다");pushCustom(id);
+}
+function delCustom(id){
+  const c=state.custom[id];if(!c)return;
+  state.custom[id]={...c,deleted:true,updatedAt:Date.now()};
+  if(state.visits[id])state.visits[id]={...state.visits[id],done:false,updatedAt:Date.now()};
+  lsSave();render();toast("장소를 목록에서 뺐습니다");pushCustom(id);if(state.visits[id])pushVisit(id);
+}
+
+/* ---------- 화면 ---------- */
+function cheer(n,t){
+  const r=t?n/t:0;
+  if(state.tab==="tour")return n===0?"첫 도장을 찍어 보세요":r<.1?"좋은 출발입니다":r<.25?"차곡차곡 쌓이는 중":r<.5?"절반을 향해 갑니다":r<.75?"절반을 넘었습니다":r<1?"거의 다 왔습니다":"완주를 축하합니다";
+  return n===0?"가벼운 산책부터 시작해요":r<.2?"다리가 풀리는 중":r<.5?"숲길이 익숙해졌습니다":r<1?"산책 고수 부부":"완주를 축하합니다";
+}
+function matches(p){
+  const f=state.f;
+  if(f.region&&p.region!==f.region)return false;
+  if(f.status==="todo"&&isDone(p))return false;
+  if(f.status==="done"&&!isDone(p))return false;
+  if(f.status==="fav"&&!visitOf(p)?.fav)return false;
+  if(f.theme&&!(p.th||[]).includes(f.theme))return false;
+  if(f.level&&p.lv!==f.level)return false;
+  if(f.src&&p.src!==f.src)return false;
+  if(f.season&&!(p.when||"").match(new RegExp(SEASON+"|사계절")))return false;
+  if(f.q){const q=f.q.trim();if(q&&!(p.name+p.area+p.region+(p.intro||"")+(p.when||"")+(p.th||[]).map(t=>TH_LABEL[t]).join("")+(p.lv||"")+(p.sf||"")).includes(q))return false}
+  return true;
+}
+function render(){
+  const tab=state.tab, places=placesOf(tab), done=places.filter(isDone), rec=state.view==="rec";
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
+  for(const t of ["tour","walk"]){const l=placesOf(t);$(t==="tour"?"tabTour":"tabWalk").textContent=`${l.filter(isDone).length} / ${l.length}`}
+  const allKeys=new Set();PLACES.concat(customPlaces()).forEach(p=>{if(isDone(p))allKeys.add(keyOf(p))});
+  $("tabRec").textContent=`도장 ${allKeys.size}개`;
+  $("viewList").hidden=rec;$("viewRec").hidden=!rec;
+  $("tbPill").textContent=rec?`도장 ${allKeys.size}개`:`${done.length} / ${places.length}`;
+  renderRecords();
+  if(rec)return;
+  const f=state.f;
+  $("headTitle").textContent=tab==="tour"?"한국관광 100선":"걷기·산책";
+  $("headMeta").textContent=tab==="tour"?"문화체육관광부·한국관광공사 선정":"산림청 명품숲길 50선 + 부부 추천 산책로 13곳";
+  const pct=places.length?done.length/places.length*100:0;
+  let sub="";
+  if(tab==="walk"){const d50=PLACES.filter(p=>p.src==="50선"&&isDone(p)).length;
+    sub=`<div class="now-sub"><b>명품숲길 50선 ${d50} / 50</b> · 모두 걸으면 산림청 완주 인증서와 기념품을 받습니다(2026년은 11월 15일까지, 숲나들e '모바일 스탬프 투어' 앱).</div>`}
+  $("nowBox").innerHTML=`<div class="now-k">우리 진행</div>
+    <div class="now-t"><b>${done.length}</b> / ${places.length}곳 다녀옴 · ${cheer(done.length,places.length)}</div>
+    <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
+    <div class="now-acts"><button class="now-b pri" type="button" id="pickBtn">다음 갈 곳 추천 뽑기</button><button class="now-b" type="button" data-status="fav">♥ 찜한 곳 ${places.filter(p=>visitOf(p)?.fav).length}</button></div>${sub}`;
+
+  // 권역 타일 3×2
+  $("regions").innerHTML=REGIONS.map(([r])=>{
+    const t=places.filter(p=>p.region===r).length,dn=done.filter(p=>p.region===r).length;
+    return `<button class="dt" type="button" data-region="${r}" aria-pressed="${f.region===r}"><b>${r}</b><span>${dn} / ${t}</span></button>`;
+  }).join("");
+
+  const cnt={all:places.length,todo:places.length-done.length,done:done.length,fav:places.filter(p=>visitOf(p)?.fav).length};
+  $("rowStatus").innerHTML=[["all","전체"],["todo","안 가본 곳"],["done","다녀온 곳"],["fav","♥ 찜"]].map(([k,l])=>`<button class="chip" type="button" data-status="${k}" aria-pressed="${f.status===k}">${l} ${cnt[k]}</button>`).join("")
+    +`<button class="chip" type="button" data-season="1" aria-pressed="${f.season}">${SEASON} 제철</button>`;
+  const nf=[f.theme,f.level,f.src].filter(Boolean).length;
+  $("fBadge").hidden=!nf;$("fBadge").textContent=nf;
+  if(!$("filterBg").hidden)renderFilterSheet();
+
+  const list=sortList(places.filter(matches));
+  $("shownN").textContent=list.length;
+  $("resetF").hidden=!(f.region||f.status!=="all"||f.theme||f.level||f.src||f.q||f.season);
+  $("sortSel").value=state.sort;
+  if(!list.length){$("list").innerHTML=`<p class="empty">조건에 맞는 곳이 없습니다. 필터를 바꿔 보세요.</p>`}
+  else if(!state.grouped){$("list").innerHTML=`<ul class="tl">${list.map(card).join("")}</ul>`}
+  else{
+    const groups=REGIONS.map(([r])=>[r,list.filter(p=>p.region===r)]).filter(g=>g[1].length);
+    $("list").innerHTML=groups.map(([r,items])=>{
+      const tot=places.filter(p=>p.region===r),dn=tot.filter(isDone).length,fold=!!state.folded[tab+r];
+      let body="";
+      if(tab==="walk"&&state.sort==="base"){
+        for(const [k,l] of [["50선","산림청 명품숲길 50선"],["추천","부부 추천 산책로"],["우리","우리가 추가한 곳"]]){const it=items.filter(p=>p.src===k);if(it.length)body+=`<div class="sub2">${l}</div><ul class="tl">${it.map(card).join("")}</ul>`}
+      }else body=`<ul class="tl">${items.map(card).join("")}</ul>`;
+      return `<section><button class="gh" type="button" data-fold="${r}" aria-expanded="${!fold}"><h3>${r}</h3><span>${dn} / ${tot.length} 다녀옴 · ${fold?"펼치기 ▾":"접기 ▴"}</span></button>${fold?"":body}</section>`;
+    }).join("");
+  }
+  $("addSum").textContent=tab==="tour"?"＋ 100선 밖, 우리만의 여행지 추가":"＋ 우리 동네 산책길 추가";
+}
+function renderFilterSheet(){
+  const tab=state.tab,f=state.f,n=placesOf(tab).filter(matches).length;
+  const anyOpen=REGIONS.some(([r])=>!state.folded[tab+r]);
+  const sec=(t,h)=>`<section class="box"><h3>${t}</h3><div class="chips wrapc">${h}</div></section>`;
+  $("fsheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>필터와 보기</h2><button class="x" type="button" data-fclose="1" aria-label="닫기">✕</button></div></div>
+  <div class="sbody">
+  ${sec("테마",THEMES[tab].map(([k,l])=>`<button class="chip" type="button" data-theme-f="${k}" aria-pressed="${f.theme===k}">${l}</button>`).join(""))}
+  ${tab==="walk"?sec("난이도",LEVELS.map(l=>`<button class="chip" type="button" data-level="${l}" aria-pressed="${f.level===l}">${l}</button>`).join(""))
+    +sec("출처",[["50선","명품숲길 50선"],["추천","부부 추천"],["우리","우리가 추가"]].map(([k,l])=>`<button class="chip" type="button" data-src="${k}" aria-pressed="${f.src===k}">${l}</button>`).join("")):""}
+  ${sec("목록 보기",`<button class="chip" type="button" id="groupBtn" aria-pressed="${state.grouped}">권역별로 묶기</button>${state.grouped?`<button class="chip" type="button" id="foldBtn">${anyOpen?"권역 모두 접기":"권역 모두 펼치기"}</button>`:""}`)}
+  </div>
+  <div class="sact" style="grid-template-columns:1fr 2fr"><button class="btn sf" type="button" id="resetF2">초기화</button><button class="btn pri" type="button" data-fclose="1">${n}곳 보기</button></div>`;
+}
+const inSeason=p=>/사계절/.test(p.when||"")||(p.when||"").includes(SEASON);
+const firstSentence=t=>{const m=String(t||"").match(/^.*?(?:니다\.|다\.|\.)(?=\s|$)/);return m?m[0]:String(t||"")};
+function shortDur(d){if(!d)return"";const parts=d.split("·").map(x=>x.trim());return parts.find(x=>/시간|분|하루|반나절|박/.test(x))||parts[0]}
+function numOf(p){if(p.custom)return"—";const n=parseInt(p.id.slice(1),10);return p.src==="추천"?"추"+n:String(n).padStart(p.src==="100선"?3:2,"0")}
+function sortList(arr){
+  const a=arr.slice(), base=new Map(PLACES.map((p,i)=>[p.id,i]));
+  const bi=p=>base.has(p.id)?base.get(p.id):9999;
+  const s=state.sort;
+  if(s==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ko"));
+  else if(s==="season")a.sort((x,y)=>(inSeason(y)-inSeason(x))||bi(x)-bi(y));
+  else if(s==="fav")a.sort((x,y)=>(!!visitOf(y)?.fav-!!visitOf(x)?.fav)||bi(x)-bi(y));
+  else if(s==="todo")a.sort((x,y)=>(isDone(x)-isDone(y))||bi(x)-bi(y));
+  else if(s==="recent")a.sort((x,y)=>(isDone(y)-isDone(x))||String(visitOf(y)?.date||"").localeCompare(String(visitOf(x)?.date||""))||bi(x)-bi(y));
+  else if(s==="rating")a.sort((x,y)=>((visitOf(y)?.rating||0)-(visitOf(x)?.rating||0))||(isDone(y)-isDone(x))||bi(x)-bi(y));
+  else a.sort((x,y)=>bi(x)-bi(y));
+  return a;
+}
+function card(p){
+  const v=visitOf(p)||{}, dn=!!v.done;
+  const sum=p.custom?"우리가 직접 추가한 장소":firstSentence(p.intro);
+  const season=!p.custom&&inSeason(p)&&!/사계절/.test(p.when)?`<span class="tagx season">${SEASON} 제철</span>`:"";
+  const kind=`<span>${p.custom?"우리 장소":"No."+numOf(p)}</span><span>· ${esc(p.area)}</span>${season}${p.lv?`<span class="tagx lv">${esc(p.lv)}</span>`:""}${v.fav?`<span class="tagx fav">♥ 찜</span>`:""}`;
+  const meta=p.custom?"":`${esc(p.when)} · ${esc(shortDur(p.dur))}${p.alias?" · 100선과 같은 곳":""}`;
+  const rec=dn?`<div class="note tip"><b>${fmt(v.date)||"날짜 없음"}</b>${v.rating?` <span class="stars">${"★".repeat(v.rating)}</span>`:""}${v.memo?` · ${esc(v.memo)}`:""}</div>`:"";
+  return `<li class="it${dn?" done":""}" id="r-${p.id}"><div class="card" data-info="${p.id}" role="button" tabindex="0" aria-label="${esc(p.name)} 자세히 보기">
+    <div class="chead"><div style="min-width:0"><div class="kind">${kind}</div><h4 class="ctitle">${esc(p.name)}</h4></div>
+    <button class="chk" type="button" data-stamp="${p.id}" aria-label="${dn?"기록 보기·고치기":"도장 찍기"}">${dn?"✓":"도장"}</button></div>
+    <p class="desc">${esc(sum)}</p>${meta?`<div class="cost">${meta}</div>`:""}${rec}</div></li>`;
+}
+let pendingRating=0;
+function formHtml(p,v){
+  pendingRating=v.rating||0;
+  return `<section class="box" id="recForm"><h3>${v.done?"우리 기록 고치기":"다녀왔다면 도장 찍기"}</h3><form class="vstack" id="recFormEl" data-save="${p.id}" style="margin-top:0">
+    <label class="fld">다녀온 날<input type="date" id="fd-${p.id}" value="${esc(v.date||today())}"></label>
+    <div class="fld">우리 별점<span class="rate" role="group" aria-label="별점">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" class="${pendingRating>=n?"on":""}" aria-label="${n}점">★</button>`).join("")}</span></div>
+    <label class="fld">추억 한 줄<textarea id="fm-${p.id}" maxlength="300" placeholder="함께 먹은 것, 기억에 남는 장면">${esc(v.memo||"")}</textarea></label>
+    ${v.done||p.custom?`<div class="frow">${v.done?`<button class="btn sf" type="button" data-undo="${p.id}" style="flex:1">도장 지우기</button>`:""}${p.custom?`<button class="btn sf" type="button" data-del="${p.id}" style="flex:1">장소 빼기</button>`:""}</div>`:""}
+    <p class="meta2">아래 버튼을 누르면 ${v.done?"고친 내용이 저장됩니다":"이 내용으로 도장이 찍힙니다"}.</p></form></section>`;
+}
+function renderRecords(){
+  const all=PLACES.concat(customPlaces());
+  const seen=new Set(), recs=[];
+  for(const p of all){const k=keyOf(p);if(seen.has(k))continue;seen.add(k);const v=state.visits[k];if(v&&v.done)recs.push([p,v])}
+  const rated=recs.filter(([,v])=>v.rating);
+  const avg=rated.length?(rated.reduce((s,[,v])=>s+v.rating,0)/rated.length).toFixed(1)+"점":"-";
+  const yr=String(new Date().getFullYear()), thisYear=recs.filter(([,v])=>(v.date||"").startsWith(yr)).length;
+  const c=src=>PLACES.filter(p=>p.src===src&&isDone(p)).length;
+  const favN=Object.values(state.visits).filter(v=>v&&v.fav&&!v.done).length;
+  $("stats").innerHTML=[["모은 도장",`${recs.length}개`],[`${yr}년에 다녀온 곳`,`${thisYear}곳`],["한국관광 100선",`${c("100선")} / 100`],["명품숲길 50선",`${c("50선")} / 50`],["부부 추천 산책로",`${c("추천")} / 13`],["평균 별점",avg],["찜한 다음 후보",`${favN}곳`]]
+    .map(([l,r])=>`<div class="row"><span class="l">${l}</span><span class="r">${r}</span></div>`).join("");
+  recs.sort((a,b)=>(b[1].date||"").localeCompare(a[1].date||"")||ts(b[1])-ts(a[1]));
+  $("timeline").innerHTML=recs.length?recs.map(([p,v])=>`<li data-info="${p.id}"><div class="l"><b>${esc(p.name)}</b><small>${esc(p.region)} · ${p.list==="tour"?"100선":"걷기"}${v.memo?" · "+esc(v.memo):""}</small></div><div class="r">${fmt(v.date)||"날짜 없음"}${v.rating?`<br><span class="stars">${"★".repeat(v.rating)}</span>`:""}</div></li>`).join("")
+    :`<li style="cursor:default"><div class="l"><small>아직 기록이 없습니다. 목록에서 '도장'을 눌러 첫 기록을 남겨 보세요.</small></div></li>`;
+}
+
+/* ---------- 상세 ---------- */
+function openInfo(id,toForm,picked){
+  const p=findPlace(id);if(!p)return;
+  const v=visitOf(p)||{}, kw=encodeURIComponent(p.name.split(/[&(（]/)[0].trim());
+  const srcLabel={"100선":"한국관광 100선","50선":"산림청 명품숲길 50선","추천":"부부 추천 산책로","우리":"우리가 추가한 곳"}[p.src];
+  const rel=(p.rel||[]).map(findPlace).filter(Boolean);
+  const aliasP=p.alias?findPlace(p.alias):PLACES.find(x=>x.alias===p.id);
+  let links=`<a class="btn sf" href="https://map.naver.com/p/search/${kw}" target="_blank" rel="noopener">네이버 지도 리뷰</a><a class="btn sf" href="https://map.kakao.com/?q=${kw}" target="_blank" rel="noopener">카카오맵 후기</a>`;
+  links+=p.list==="walk"?`<a class="btn sf" href="https://www.foresttrip.go.kr" target="_blank" rel="noopener">숲나들e</a><a class="btn sf" href="https://www.durunubi.kr" target="_blank" rel="noopener">두루누비</a>`
+    :`<a class="btn sf" href="https://korean.visitkorea.or.kr/search/search_list.do?keyword=${kw}" target="_blank" rel="noopener">대한민국 구석구석</a>`;
+  const box=(t,h)=>`<section class="box"><h3>${t}</h3>${h}</section>`;
+  $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><div style="min-width:0">
+    <div class="kind" style="margin:0"><span class="tagx season">${esc(srcLabel)}</span>${v.done?`<span class="tagx season">다녀옴 ${fmt(v.date)}</span>`:""}</div>
+    <h2>${esc(p.name)}</h2><div class="meta">${esc(p.region)} · ${esc(p.area)}</div></div><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>
+  <div class="sbody">
+  ${picked?`<div class="now" style="flex-direction:row;justify-content:space-between;align-items:center"><span class="now-k">추천으로 뽑은 곳</span><button class="now-b" type="button" id="repick">다른 곳 뽑기</button></div>`:""}
+  ${p.custom?`<p class="intro">직접 추가한 장소입니다. 다녀오면 도장과 추억을 남겨 보세요.</p>`:`
+  <p class="intro">${esc(p.intro)}</p>
+  ${box("한눈에",`<div class="row"><span class="l">추천 시기</span><span class="r">${esc(p.when)}</span></div><div class="row"><span class="l">예상 소요</span><span class="r">${esc(shortDur(p.dur))}</span></div>${p.lv?`<div class="row"><span class="l">난이도 · 노면</span><span class="r">${esc(p.lv)} · ${esc(p.sf)}</span></div>`:""}${/·/.test(p.dur)?`<p class="meta2" style="margin-top:4px">${esc(p.dur)}</p>`:""}`)}
+  ${box("좋은 점",`<ul class="ul">${p.pros.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}
+  ${box("미리 알아둘 점",`<ul class="ul">${p.cons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}
+  <div class="note tip" style="margin-top:12px"><b>팁</b> ${esc(p.tip)}</div>`}
+  ${aliasP?box("같은 장소",`<p style="font-size:15px">${p.alias?"한국관광 100선":"명품숲길 50선"}의 아래 장소와 같은 곳이라 도장 하나를 함께 씁니다.</p><div class="rel"><button type="button" data-info="${aliasP.id}">${esc(aliasP.name)} ›</button></div>`):""}
+  ${rel.length?box("함께 묶기 좋은 곳",`<p class="meta2">같은 지역이거나 이어지는 길입니다. 도장은 따로 찍습니다.</p><div class="rel">${rel.map(r=>`<button type="button" data-info="${r.id}">${esc(r.name)} · ${r.list==="tour"?"100선":"걷기"} ›</button>`).join("")}</div>`):""}
+  ${box("실제 방문자 후기와 공식 정보",`<div class="links">${links}</div>`)}
+  ${formHtml(p,v)}
+  ${p.custom?"":`<p class="meta2" style="margin-top:12px">소개와 장단점은 공개된 정보를 요약한 것입니다. 운영 시간·요금·통제 여부는 바뀔 수 있으니 출발 전에 확인하세요.</p>`}
+  </div>
+  <div class="sact"><button class="btn ${v.fav?"line":"sf"}" type="button" data-favbtn="${p.id}" aria-pressed="${!!v.fav}">${v.fav?"♥ 찜함":"♡ 찜하기"}</button><button class="btn pri" type="button" data-goform="1">${v.done?"기록 저장":"도장 찍기"}</button></div>`;
+  $("sheetBg").hidden=false;$("sheet").scrollTop=0;
+  if(toForm){const f=$("recForm");f&&setTimeout(()=>f.scrollIntoView({block:"center",behavior:"smooth"}),30)}
+}
+const closeInfo=()=>{$("sheetBg").hidden=true;$("filterBg").hidden=true};
+
+/* ---------- 알림 ---------- */
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},2400)}
+function confetti(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const box=$("confetti"),cs=getComputedStyle(document.documentElement),cols=["--seal","--celadon","--gold"].map(v=>cs.getPropertyValue(v).trim());
+  box.innerHTML=Array.from({length:36},(_,i)=>`<i style="left:${Math.random()*100}%;background:${cols[i%3]};animation-delay:${Math.random()*.6}s"></i>`).join("");
+  setTimeout(()=>{box.innerHTML=""},3400);
+}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
+
+/* ---------- 백업 ---------- */
+function backupJson(){return JSON.stringify({app:"우리 둘의 국내여행 도장",v:2,exportedAt:new Date().toISOString(),visits:state.visits,custom:state.custom},null,1)}
+function restoreFrom(text){
+  let o;try{o=JSON.parse(text)}catch(e){toast("백업 코드를 읽지 못했습니다. 전체를 그대로 붙여넣어 주세요");return}
+  if(!o||typeof o!=="object"||!o.visits){toast("이 앱의 백업이 아닙니다");return}
+  let n=0;const changed=[],changedC=[];
+  for(const c of Object.values(o.custom||{}))if(takeCustom(c)){changedC.push(c.id)}
+  for(const [id,v] of Object.entries(o.visits)){if(takeVisit(id,v)){n++;changed.push(normalizeId(id))}}
+  lsSave();render();changedC.forEach(pushCustom);changed.forEach(pushVisit);
+  toast(n||changedC.length?`기록 ${n}건을 복원했습니다`:"이미 최신 기록이라 바뀐 것이 없습니다");
+}
+$("bkSave").addEventListener("click",async()=>{
+  let dl=null;try{dl=await window.claude?.use?.("downloads")}catch(e){}
+  if(!dl&&!window.claude){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backupJson()],{type:"application/json"}));a.download=`우리둘의여행도장_백업_${today().replace(/-/g,"")}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast("백업 파일을 다운로드 폴더에 저장했습니다");return}catch(e){}}
+  if(!dl){const ok=await copyText(backupJson());toast(ok?"파일 저장이 안 되는 화면이라 백업 코드를 복사했습니다":"백업 코드 복사 버튼을 이용해 주세요");return}
+  try{await dl.save({filename:`우리둘의여행도장_백업_${today().replace(/-/g,"")}.json`,data:backupJson()});toast("백업 파일을 저장했습니다")}
+  catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다. 백업 코드 복사를 이용해 주세요")}
+});
+$("bkCopy").addEventListener("click",async()=>{
+  const j=backupJson();
+  if(await copyText(j))toast("백업 코드를 복사했습니다. 메모 앱 등에 붙여 보관하세요");
+  else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}
+});
+$("bkRestore").addEventListener("click",()=>{const t=$("bkText").value.trim();if(t)restoreFrom(t);else toast("백업 코드를 먼저 붙여넣어 주세요")});
+$("bkFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restoreFrom(String(r.result));r.readAsText(f);e.target.value=""});
+
+/* ---------- 이벤트 ---------- */
+function pickNext(){
+  const pool=placesOf(state.tab).filter(p=>!isDone(p)&&matches(p));
+  const base=pool.length?pool:placesOf(state.tab).filter(p=>!isDone(p));
+  if(!base.length){toast("남은 곳이 없습니다. 완주를 축하합니다");return}
+  const fresh=base.filter(p=>p.id!==state.pick);const arr=fresh.length?fresh:base;
+  const p=arr[Math.floor(Math.random()*arr.length)];state.pick=p.id;openInfo(p.id,false,true);
+}
+const RESET_F=()=>({region:null,status:"all",theme:null,level:null,src:null,q:"",season:false});
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-info]");if(!t)return;const d=t.dataset;
+  if(d.view){const v=d.view;if(v!=="rec"&&state.tab!==v){state.tab=v;state.f=RESET_F();state.pick=null;$("q").value=""}
+    state.view=v;try{localStorage.setItem("kr-bucket-tab",v)}catch(err){}render();window.scrollTo({top:0});return}
+  if(d.fclose){$("filterBg").hidden=true;return}
+  if(d.goform){const f=$("recForm"),fe=$("recFormEl");if(!f||!fe)return;
+    const r=f.getBoundingClientRect(),sh=$("sheet").getBoundingClientRect();
+    const visible=r.top>=sh.top+40&&r.top<sh.bottom-160;
+    if(visible)fe.requestSubmit();else f.scrollIntoView({block:"center",behavior:"smooth"});return}
+  if(d.close){closeInfo();return}
+  if(d.stamp){openInfo(d.stamp,true);return}
+  if(d.favbtn){const p=findPlace(d.favbtn);toggleFav(p);openInfo(p.id);return}
+  if(d.info){openInfo(d.info);return}
+  if(d.fold){const k=state.tab+d.fold;state.folded[k]=!state.folded[k];saveView();render();return}
+  if(d.region){state.f.region=d.region==="__all"||state.f.region===d.region?null:d.region;render();return}
+  if(d.status){state.f.status=d.status;render();return}
+  if(d.season){state.f.season=!state.f.season;render();return}
+  if(d.themeF){state.f.theme=state.f.theme===d.themeF?null:d.themeF;render();return}
+  if(d.level){state.f.level=state.f.level===d.level?null:d.level;render();return}
+  if(d.src){state.f.src=state.f.src===d.src?null:d.src;render();return}
+  if(d.star){const n=+d.star;pendingRating=pendingRating===n?0:n;t.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on",+b.dataset.star<=pendingRating));return}
+  if(d.undo){const p=findPlace(d.undo);closeInfo();saveVisit(p,{done:false});return}
+  if(d.del){closeInfo();delCustom(d.del);return}
+  if(t.id==="pickBtn"){pickNext();return}
+  if(t.id==="repick"){pickNext();return}
+  if(t.id==="filterBtn"){renderFilterSheet();$("filterBg").hidden=false;return}
+  if(t.id==="resetF2"){state.f={...RESET_F(),q:state.f.q,status:state.f.status,region:state.f.region,season:state.f.season};render();return}
+  if(t.id==="shareBtn"){share();return}
+  if(t.id==="resetF"){state.f=RESET_F();$("q").value="";render();return}
+  if(t.id==="groupBtn"){state.grouped=!state.grouped;saveView();render();return}
+  if(t.id==="foldBtn"){const anyOpen=REGIONS.some(([r])=>!state.folded[state.tab+r]);REGIONS.forEach(([r])=>{state.folded[state.tab+r]=anyOpen});saveView();render();return}
+});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("card")){e.preventDefault();openInfo(e.target.dataset.info)}});
+$("sortSel").addEventListener("change",e=>{state.sort=e.target.value;saveView();render()});
+document.addEventListener("submit",e=>{
+  e.preventDefault();const f=e.target;
+  if(f.dataset.save){const p=findPlace(f.dataset.save);const rec={done:true,date:$("fd-"+p.id).value,rating:pendingRating,memo:$("fm-"+p.id).value.trim()};closeInfo();saveVisit(p,rec)}
+  else if(f.id==="addForm"){const n=$("addName").value.trim();if(!n){toast("장소 이름을 적어 주세요");return}addCustom(n,$("addRegion").value);f.reset();$("addBox").open=false}
+});
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))closeInfo()});
+$("filterBg").addEventListener("click",e=>{if(e.target===$("filterBg"))$("filterBg").hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeInfo()});
+let qt;$("q").addEventListener("input",e=>{clearTimeout(qt);qt=setTimeout(()=>{state.f.q=e.target.value;render()},150)});
+$("addRegion").innerHTML=REGIONS.map(([r])=>`<option>${r}</option>`).join("");
+async function share(){
+  const t100=PLACES.filter(p=>p.src==="100선"&&isDone(p)).length,w50=PLACES.filter(p=>p.src==="50선"&&isDone(p)).length,pk=PLACES.filter(p=>p.src==="추천"&&isDone(p)).length;
+  const recent=Object.entries(state.visits).filter(([,v])=>v.done&&v.date).sort((a,b)=>b[1].date.localeCompare(a[1].date)).slice(0,3)
+    .map(([k,v])=>{const p=findPlace(k);return p?`· ${p.name} (${fmt(v.date)})${v.rating?" "+"★".repeat(v.rating):""}`:""}).filter(Boolean);
+  const txt=`[우리 둘의 국내여행 도장]\n한국관광 100선 ${t100}/100\n명품숲길 50선 ${w50}/50\n부부 추천 산책로 ${pk}/13`+(recent.length?`\n\n최근 다녀온 곳\n${recent.join("\n")}`:"");
+  if(await copyText(txt))toast("기록 문구를 복사했습니다. 카톡에 붙여넣어 보세요");
+  else{$("bkText").value=txt;document.querySelector(".backup").open=true;$("bkText").select();toast("아래 칸의 문구를 직접 복사해 주세요")}
+}
+
+const FS=["s","m","l","xl"];let fs="m",prefRef=null,prefT;
+try{const v=localStorage.getItem("kr-bucket-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("kr-bucket-fs",fs)}catch(e){}}
+function savePref(){if(!prefRef)return;clearTimeout(prefT);prefT=setTimeout(()=>{prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{})},400)}
+async function loadPref(){
+  try{const user=await window.claude.use("user");const uid=user&&await user.id();if(!uid||!db)return;
+    prefRef=db.doc("data/users/"+uid+"/prefs");const snap=await prefRef.get();
+    const v=snap.exists&&snap.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}
+  }catch(e){}
+}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();savePref();$("fontPop").hidden=true;$("fontBtn").setAttribute("aria-expanded","false");toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+document.querySelector(".topbar").style.position="sticky";
+applyFs();
+loadLocal();render();connect();
+})();
+</script>
+<script>
+/* 설치판(github.io): MY 버튼 표시, 아래 창이 열려 있을 때 휴대폰 뒤로가기는 창만 닫고 앱은 나가지 않음 */
+(function(){if(!/github\.io$/.test(location.hostname))return;
+  var home=document.getElementById("homeBtn");if(home)home.hidden=false;
+  var bgs=["sheetBg","filterBg"].map(function(id){return document.getElementById(id)}).filter(Boolean);
+  var hist=false,backing=false;
+  var anyOpen=function(){return bgs.some(function(b){return !b.hidden})};
+  var sync=function(){if(anyOpen()){if(!hist){try{history.pushState({sheet:1},"");hist=true}catch(e){}}}
+    else if(hist){hist=false;backing=true;try{history.back()}catch(e){backing=false}}};
+  var mo=new MutationObserver(sync);bgs.forEach(function(b){mo.observe(b,{attributes:true,attributeFilter:["hidden"]})});
+  window.addEventListener("popstate",function(){if(backing){backing=false;return}if(hist){hist=false;bgs.forEach(function(b){b.hidden=true})}});
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>

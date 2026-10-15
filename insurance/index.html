@@ -1,0 +1,888 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2E6B4F"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="보험관리"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style></head><body>
+<title>우리 가족 보험관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: MY 미니앱 기본 체계 v1 — 폭 560 한 줄, 상단 고정 바(제목·가±), 카드 목록, 하단 고정 탭 4개 (한눈에·보험·청구·가족) */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#2E6B4F; --accent-soft:#E4F0E9; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC; --bad:#A23B2A; --bad-soft:#FBE9E5;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#86C9A5; --accent-soft:#1F3229; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#86C9A5; --accent-soft:#1F3229; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+.tb-home{flex:none;display:grid;place-items:center;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--accent)}
+.tb-home[hidden]{display:none}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted)}
+
+/* 요약 */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.kpi .big{font:600 28px/1.25 var(--body);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .big small{font-size:16px;font-weight:500;color:var(--muted);margin-left:2px}
+.kpi .sub{font-size:14px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bar{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.bar .trk{height:10px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bar .fil{height:100%;border-radius:99px;background:var(--accent)}
+.bar b{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* 카드 목록 */
+.list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;color:inherit;min-width:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+.card:active{background:var(--accent-soft)}
+.card.off{opacity:.62}
+.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font:700 18px/1 var(--display);flex:none}
+.mono.sm{width:32px;height:32px;border-radius:9px;font-size:14px}
+.card .nm{font-weight:600;font-size:17.5px;line-height:1.35;overflow-wrap:anywhere}
+.card .ds{font-size:14px;color:var(--muted);line-height:1.5}
+.card .mt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .amt small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.pinfo{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;font-size:14px;line-height:1.45}
+.pi{display:grid;grid-template-columns:64px 1fr;gap:8px}
+.pi .k{color:var(--muted);font-size:13px;padding-top:1px}
+.pi .v{min-width:0;overflow-wrap:anywhere}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tagx.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tagx.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.tagx.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.empty{margin-top:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.empty .btn{margin-top:10px}
+
+/* 상자 */
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ol li::marker{color:var(--accent);font-weight:600}
+.note{margin-top:8px;font-size:14px;padding:8px 10px;border-radius:8px}
+.note.tip{background:var(--accent-soft)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.meta2{font-size:13.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.pick.busy{opacity:.5;pointer-events:none}
+.btn.danger{background:var(--surface);border-color:var(--bad);color:var(--bad);font-weight:600}
+.sact.three{grid-template-columns:1fr 1fr 2fr}
+.toast .undo{margin-left:10px;min-height:34px;padding:2px 12px;border-radius:8px;border:1px solid var(--surface);background:transparent;color:var(--surface);font-weight:600;cursor:pointer}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.frow>.fld{flex:1 1 140px}
+.vstack{display:flex;flex-direction:column;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:72px;resize:vertical}
+.fld .ck{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;color:var(--ink)}
+.fld .ck input{width:22px;height:22px;min-height:0}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+
+/* 보장 표 */
+.mx{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mxw{overflow-x:auto;margin-inline:-14px;padding-inline:14px}
+.mx th,.mx td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.mx th:first-child,.mx td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.mx thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.mx td.no{color:var(--bad);font-weight:600}
+.mx td.yes{font-weight:600}
+
+/* 일정 */
+.ev{display:grid;grid-template-columns:58px 1fr;gap:10px;padding-block:9px;border-top:1px solid var(--line);align-items:center}
+.ev:first-child{border-top:0}
+.ev .dd{text-align:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px;padding:4px 0;font-variant-numeric:tabular-nums}
+.ev .dd.soon{background:var(--warn-soft);color:var(--warn)}
+.ev b{font-weight:600;font-size:15px;display:block}
+.ev small{font-size:13px;color:var(--muted)}
+
+/* 보험 분석 */
+.rvrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font:inherit;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.rvrow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.rvrow b{font-weight:600;font-size:17px}
+.rvrow small{display:block;font-size:13px;color:var(--muted)}
+.up{color:var(--ok);font-size:13px;font-weight:600}.down{color:var(--bad);font-size:13px;font-weight:600}
+.score{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.score .big{font:600 34px/1.1 var(--body);font-variant-numeric:tabular-nums}
+.score .big small{font-size:16px;color:var(--muted);font-weight:500}
+.gl{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.gl li::marker{color:var(--accent);font-weight:700}
+.gl b{display:block;font-weight:600}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+/* 보장 입력 줄 */
+.cov{border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;grid-template-columns:1fr 112px 40px;gap:6px;background:var(--surface)}
+.cov .full{grid-column:1/-1}
+.cov select,.cov input{font-size:16px;padding:6px 8px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box;min-width:0}
+.cov .x{width:40px;height:42px;border-radius:8px}
+.files{display:flex;flex-direction:column;gap:6px}
+.fvpage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:8px}
+.file{display:flex;align-items:center;gap:8px;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:6px 8px 6px 12px;background:var(--surface);font-size:14px}
+.file a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;min-height:34px;display:flex;align-items:center}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display);min-width:0;overflow-wrap:anywhere}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;margin-top:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="tb-home" id="homeBtn" href="../" hidden aria-label="MY 미니앱 허브로">MY</a>
+    <div class="tb-title">우리 가족 보험관리</div>
+    <span class="pill" id="tbPill">보험 0건</span>
+    <button class="save" type="button" id="saveState" data-s="local" aria-label="저장 상태">저장 상태</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+
+  <main id="vHome"></main>
+  <main id="vPol" hidden></main>
+  <main id="vClaim" hidden></main>
+  <main id="vFam" hidden></main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="home" aria-selected="true"><b>한눈에</b><span>보험료·일정</span></button>
+  <button type="button" role="tab" data-view="pol" aria-selected="false"><b>보험</b><span id="tPol">0건</span></button>
+  <button type="button" role="tab" data-view="claim" aria-selected="false"><b>청구</b><span>보험금 기록</span></button>
+  <button type="button" role="tab" data-view="fam" aria-selected="false"><b>가족</b><span>구성원·백업</span></button>
+</div></nav>
+
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="편집"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ── 고정 목록 (값은 저장 데이터에 들어가므로 바꾸지 말 것: 이름 변경은 라벨만) ── */
+const RELS=["본인","배우자","자녀","부모","형제","기타"];
+const TYPES=["실손","건강(종합)","암","종신","정기","어린이","운전자","치아","간병·치매","연금","저축","화재·주택","자동차","기타"];
+const STATUS={keep:"유지",paid:"납입완료",lapse:"해지",end:"만기"};
+const PAYM=["자동이체","카드","급여공제","직접납부"];
+const COV=[["sil","실손의료비"],["cancer","암 진단"],["brain","뇌혈관 진단"],["heart","심장 진단"],["death","사망"],["disab","후유장해"],["hosp","입원 일당"],["surg","수술비"],["drive","운전자"],["dent","치아"],["care","간병·치매"],["etc","기타"]];
+const COVN=Object.fromEntries(COV);
+const MX=["sil","cancer","brain","heart","death","disab","surg","care"];
+const CST={ready:"준비 중",sent:"청구함",paid:"지급 완료",deny:"거절"};
+const COLORS=["#2E6B4F","#24456E","#7A1F2B","#9A6400","#6B4A8E","#1D5E54","#5E6878"];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const n=Number(String(v??"").replace(/[^\d.-]/g,""));return isFinite(n)?n:0};
+const won=n=>Math.round(n||0).toLocaleString("ko-KR")+"원";
+const man=n=>{n=Math.round(n||0);if(!n)return"-";const e=Math.floor(n/10000),r=n%10000;return (e?e+"억":"")+(e&&r?" ":"")+(r?r.toLocaleString("ko-KR")+"만":"")};
+const pd=s=>{if(!s)return null;const d=new Date(s+"T00:00:00");return isNaN(d)?null:d};
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const dshort=s=>{const d=pd(s);return d?`${String(d.getFullYear()).slice(2)}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`:""};
+const days=(a,b)=>Math.round((b-a)/864e5);
+const addM=(d,m)=>{const x=new Date(d);const day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);x.setDate(Math.min(day,new Date(x.getFullYear(),x.getMonth()+1,0).getDate()));return x};
+const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ── 저장: 공유 저장소(내 전용 칸) + 이 기기, 최근 고친 쪽 우선, 지움은 표시만 ── */
+const LSK="myapps-insurance-v1";
+const state={recs:{},view:"home",mem:null,edit:null,cmem:null};
+let db=null,col=null,canWrite=true;
+const ts=r=>(r&&r.updatedAt)||0;
+function take(r){if(!r||!r.id||!r.kind)return false;const c=state.recs[r.id];if(!c||ts(r)>ts(c)){state.recs[r.id]={...r};return true}return false}
+function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({v:1,recs:state.recs}))}catch(e){}}
+function lsLoad(){try{const o=JSON.parse(localStorage.getItem(LSK)||"null");if(o&&o.recs)Object.values(o.recs).forEach(take)}catch(e){}}
+const q=[];let busy=false;
+function push(id){if(!col||!canWrite)return;const r=state.recs[id];if(!r)return;q.push(()=>col.doc(id).set(JSON.parse(JSON.stringify(r))));if(!busy)run()}
+async function run(){busy=true;while(q.length){const f=q.shift();try{await f();setSave("ok")}catch(e){if(e&&(e.code==="invalid_argument"||e.code==="permission_denied")){canWrite=false;setSave("local","공유 저장소에 쓸 권한이 없어 이 기기에만 저장됩니다")}else setSave("local","저장 실패 · 이 기기에만 저장됨");q.length=0}}busy=false}
+let saveMsg="이 기기에 저장됨";
+function setSave(s,m){const el=$("saveState");el.dataset.s=s;saveMsg=m||(s==="ok"?"공유 저장소(내 전용)에 저장됨":"이 기기에 저장됨");el.title=saveMsg;el.setAttribute("aria-label","저장 상태: "+saveMsg);const t=$("saveTxt");if(t)t.textContent=saveMsg}
+function put(r){r.updatedAt=Date.now();r.createdAt=r.createdAt||r.updatedAt;state.recs[r.id]=r;lsSave();push(r.id);render()}
+let first=true,uid=null;
+async function connect(){
+  if(!window.claude||!window.claude.use){setSave("local","이 휴대폰에만 저장됨 · 백업 파일을 꼭 받아 두세요");return}
+  try{db=await window.claude.use("db")}catch(e){db=null}
+  let user=null;try{user=await window.claude.use("user")}catch(e){}
+  try{uid=user&&await user.id()}catch(e){uid=null}
+  if(!db||!uid){setSave("local","이 기기에 저장됨 · 공유 저장소 연결 안 됨");return}
+  col=db.collection("data/users/"+uid);
+  setSave("ok");
+  col.onSnapshot(snap=>{
+    const remote={};snap.docs.forEach(d=>{const x=d.data();if(x&&x.kind)remote[d.id]={...x,id:d.id}});
+    Object.values(remote).forEach(take);
+    const up=first?Object.keys(state.recs).filter(id=>!remote[id]||ts(state.recs[id])>ts(remote[id])):[];
+    first=false;lsSave();render();if(up.length)setTimeout(()=>up.forEach(push),0);
+  },()=>setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시"));
+  loadPref();initExtras();
+}
+
+/* ── 계산 ── */
+const live=k=>Object.values(state.recs).filter(r=>r.kind===k&&!r.deleted);
+const members=()=>live("member").sort((a,b)=>(a.order??99)-(b.order??99)||ts(a)-ts(b));
+const mById=id=>state.recs[id]&&!state.recs[id].deleted?state.recs[id]:null;
+const policies=()=>live("policy");
+const isActive=p=>p.status==="keep"||p.status==="paid"||!p.status;
+function paying(p,t=today0()){if(p.status&&p.status!=="keep")return false;const e=pd(p.payEnd);return !e||e>=t}
+function monthly(p){const a=num(p.premium);return p.payCycle==="year"?a/12:a}
+function remain(p){const e=pd(p.payEnd);if(!e||!paying(p))return null;const t=today0();const m=(e.getFullYear()-t.getFullYear())*12+(e.getMonth()-t.getMonth())+1;return Math.max(0,m)}
+function age(b){const d=pd(b);if(!d)return null;const t=today0();let a=t.getFullYear()-d.getFullYear();if(t<new Date(t.getFullYear(),d.getMonth(),d.getDate()))a--;return a}
+/* 보험나이: 만나이에서 마지막 생일 후 6개월이 지나면 +1. 상령일 = 생일 + 6개월 */
+function insAge(b){const d=pd(b);if(!d)return null;const a=age(b),t=today0();let last=new Date(t.getFullYear(),d.getMonth(),d.getDate());if(last>t)last=new Date(t.getFullYear()-1,d.getMonth(),d.getDate());return addM(last,6)<=t?a+1:a}
+function nextUp(b){const d=pd(b);if(!d)return null;const t=today0();for(let y=t.getFullYear()-1;y<=t.getFullYear()+1;y++){const u=addM(new Date(y,d.getMonth(),d.getDate()),6);if(u>t)return u}return null}
+function memberColor(m){return m&&m.color||COLORS[0]}
+function polName(p){return p?(p.product||p.company||"이름 없는 보험"):"(지운 보험)"}
+
+function events(){
+  const t=today0(),lim=180,out=[];
+  const add=(d,title,sub,warnDays=30)=>{if(!d)return;const n=days(t,d);if(n>=0&&n<=lim)out.push({d,n,title,sub,soon:n<=warnDays})};
+  policies().forEach(p=>{const m=mById(p.insured);const who=m?m.name:"";
+    if(paying(p))add(pd(p.payEnd),"납입 완료",`${who} · ${polName(p)}`);
+    if(isActive(p))add(pd(p.end),"보험 만기",`${who} · ${polName(p)}`,60);
+    if(isActive(p)&&p.renew)add(pd(p.renewDate),"갱신 (보험료 변동 확인)",`${who} · ${polName(p)}`,60);
+  });
+  members().forEach(m=>{const u=nextUp(m.birth);if(u)add(u,`보험나이 ${insAge(m.birth)+1}세로 바뀜`,`${m.name} · 새로 가입하면 이날부터 보험료 기준이 바뀝니다`,14)});
+  live("claim").forEach(c=>{if(c.status!=="ready")return;const d=pd(c.date);if(!d)return;const lim3=new Date(d.getFullYear()+3,d.getMonth(),d.getDate());add(lim3,"청구 기한 (사고일+3년)",`${(mById(c.member)||{}).name||""} · ${c.reason||c.hospital||"청구 준비"}`,90)});
+  return out.sort((a,b)=>a.d-b.d);
+}
+
+/* ── 화면 ── */
+function render(){
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
+  ["home","pol","claim","fam"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=state.view!==v});
+  const ps=policies(),act=ps.filter(isActive);
+  $("tbPill").textContent=`보험 ${act.length}건`;$("tPol").textContent=`${act.length}건 유지`;
+  if(state.view==="home")renderHome();if(state.view==="pol")renderPol();if(state.view==="claim")renderClaim();if(state.view==="fam")renderFam();
+}
+function noMembers(){return `<div class="empty">먼저 보험을 관리할 가족을 등록해 주세요.<br><button class="btn pri" type="button" data-addmem="1">＋ 가족 등록</button></div>`}
+function renderHome(){
+  const ms=members(),ps=policies(),pay=ps.filter(p=>paying(p));
+  const tot=pay.reduce((s,p)=>s+monthly(p),0);
+  const d=new Date();
+  let h=`<div class="dayhead"><h2>우리 가족 보험 한눈에</h2><div class="meta">${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준 · 가족 ${ms.length}명 · 유지 중 ${ps.filter(isActive).length}건</div></div>`;
+  if(!ms.length){$("vHome").innerHTML=h+noMembers();return}
+  const left=pay.reduce((s,p)=>{const r=remain(p);return s+(r==null?0:r*monthly(p))},0);
+  const noEnd=pay.filter(p=>!pd(p.payEnd)).length;
+  h+=`<div class="kpi"><div class="sub">이번 달 내는 보험료 (납입 중 ${pay.length}건)</div><div class="big">${Math.round(tot).toLocaleString("ko-KR")}<small>원</small></div><div class="sub">1년 ${won(tot*12)} · 앞으로 남은 납입 ${won(left)}${noEnd?` <span class="tagx warn">납입 종료일 없는 ${noEnd}건 제외</span>`:""}</div>`;
+  const per=ms.map(m=>[m,pay.filter(p=>p.insured===m.id).reduce((s,p)=>s+monthly(p),0)]);
+  const mx=Math.max(1,...per.map(x=>x[1]));
+  h+=`<div class="bars">${per.map(([m,v])=>`<div class="bar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.name)}</span><span class="trk"><span class="fil" style="display:block;width:${v/mx*100}%;background:${esc(memberColor(m))}"></span></span><b>${won(v)}</b></div>`).join("")}</div>`;
+  const inc=num(getSet().income);
+  if(inc)h+=`<p class="note ${tot/inc>0.1?"warn":"tip"}">월 가구 소득 ${won(inc)} 대비 보험료 ${(tot/inc*100).toFixed(1)}%</p>`;
+  h+=`</div>`;
+  const ev=events();
+  h+=`<section class="box"><h3>가족별 보험 분석 (누적)</h3>${ms.map(m=>{const rs=reviews(m.id),r=rs[0],pv=rs[1];const sc=r&&num(r.result&&r.result.score),ps=pv&&num(pv.result&&pv.result.score);
+    return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center"><span class="mono sm" style="background:${esc(memberColor(m))}">${esc(m.name.slice(0,1))}</span><span><b style="font-weight:600">${esc(m.name)}</b>${r?` <span style="font-weight:600;white-space:nowrap">${sc}점</span> <span class="tagx ${GRADE_C[r.result.grade]||""}">${esc(r.result.grade||"")}</span> ${pv?diffTag(sc-ps):""}`:""}<small>${r?`${dshort(ymd(new Date(r.at)))} 분석 · 누적 ${rs.length}회`:"아직 분석 전"}</small></span></span><span class="r"><button class="btn sm line" type="button" data-review="${m.id}">${r?"보기":"분석"}</button></span></div>`}).join("")}</section>`;
+  h+=`<section class="box"><h3>다가오는 일정 (180일)</h3>${ev.length?ev.slice(0,8).map(e=>`<div class="ev"><span class="dd ${e.soon?"soon":""}">${e.n===0?"오늘":"D-"+e.n}</span><div><b>${esc(e.title)}</b><small>${dshort(ymd(e.d))} · ${esc(e.sub)}</small></div></div>`).join(""):`<p class="meta2">180일 안에 예정된 납입 완료·만기·갱신이 없습니다.</p>`}</section>`;
+  h+=`<section class="box"><h3>가족별 주요 보장 (가입금액 합계)</h3><div class="mxw"><table class="mx"><thead><tr><th>보장</th>${ms.map(m=>`<th>${esc(m.name)}</th>`).join("")}</tr></thead><tbody>${MX.map(k=>`<tr><td>${COVN[k]}</td>${ms.map(m=>{const v=covSum(m.id,k);return k==="sil"?(v.n?`<td class="yes">있음${v.n>1?` ${v.n}건`:""}</td>`:`<td class="no">없음</td>`):(v.amt?`<td class="yes">${man(v.amt)}</td>`:`<td class="no">없음</td>`)}).join("")}</tr>`).join("")}</tbody></table></div>
+  <p class="meta2" style="margin-top:8px">유지 중인 보험의 '보장 내용'에 입력한 금액을 더한 값입니다. '없음'은 입력된 보장이 없다는 뜻이며, 실제 증권과 다를 수 있습니다.${ms.some(m=>covSum(m.id,"sil").n>1)?" 실손은 여러 건이어도 실제 쓴 비용 안에서 나눠 지급됩니다.":""}</p></section>`;
+  const days31=pay.filter(p=>num(p.payDay)>0).sort((a,b)=>num(a.payDay)-num(b.payDay));
+  if(days31.length)h+=`<section class="box"><h3>매달 빠져나가는 날</h3>${days31.map(p=>`<div class="row"><span class="l">${num(p.payDay)}일 · ${esc(polName(p))}<small>${esc((mById(p.insured)||{}).name||"")} · ${esc(p.company||"")} · ${esc(p.payMethod||"")}</small></span><span class="r">${won(monthly(p))}</span></div>`).join("")}</section>`;
+  $("vHome").innerHTML=h;
+}
+function covSum(mid,k){let amt=0,n=0;policies().filter(p=>p.insured===mid&&isActive(p)).forEach(p=>{let hit=false;(p.covers||[]).forEach(c=>{if(c.cat===k){amt+=num(c.amt);hit=true}});if(!hit&&k==="sil"&&p.type==="실손")hit=true;if(hit)n++});return{amt,n}}
+
+function renderPol(){
+  const ms=members();
+  let h=`<div class="dayhead"><h2>가입한 보험</h2><div class="meta">카드를 누르면 자세히 보고 고칠 수 있습니다</div></div>`;
+  if(!ms.length){$("vPol").innerHTML=h+noMembers();return}
+  const ps=policies();
+  if(state.mem&&!mById(state.mem))state.mem=null;
+  h+=`<div class="chips">${[[null,"전체",ps.length],...ms.map(m=>[m.id,m.name,ps.filter(p=>p.insured===m.id).length])].map(([k,l,n])=>`<button class="chip" type="button" data-mem="${k??""}" aria-pressed="${state.mem===k}">${esc(l)} ${n}</button>`).join("")}</div>`;
+  const list=ps.filter(p=>!state.mem||p.insured===state.mem).sort((a,b)=>(isActive(b)-isActive(a))||(monthly(b)-monthly(a)));
+  h+=`<div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addpol="1" style="flex:1;min-height:46px">＋ 보험 등록</button></div>`;
+  h+=list.length?`<ul class="list">${list.map(polCard).join("")}</ul>`:`<div class="empty">등록된 보험이 없습니다. 보험증권이나 보험사 앱의 '계약 조회' 화면을 보면서 입력해 주세요.</div>`;
+  $("vPol").innerHTML=h;
+}
+/* 카드에 보이는 주요 정보: 보장기간·납입기간·갱신·주요 보장 */
+function ageAt(b,d){const x=pd(b);if(!x||!d)return null;let a=d.getFullYear()-x.getFullYear();if(d<new Date(d.getFullYear(),x.getMonth(),x.getDate()))a--;return a}
+const yrs=(a,b)=>Math.round((b-a)/(365.25*864e5));
+const ym=s=>{const d=pd(s);return d?`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}`:""};
+const leftTxt=(t,E)=>{const mo=(E.getFullYear()-t.getFullYear())*12+(E.getMonth()-t.getMonth());return mo>=12?`${Math.floor(mo/12)}년${mo%12?" "+(mo%12)+"개월":""} 남음`:`${Math.max(mo,0)}개월 남음`};
+function shortCov(c){let n=String(c.name||"").replace(/\s*\/\s*보통약관/g,"").replace(/\([^()]*\)/g,"").replace(/\[[^\]]*\]/g,"").replace(/[()\[\]]/g,"").replace(/^무배당\s*/,"").trim();if(!n)n=COVN[c.cat]||"";return n.length>14?n.slice(0,13)+"…":n}
+function polInfo(p,m,r){
+  const S=pd(p.start),E=pd(p.end),P=pd(p.payEnd),t=today0(),rows=[];
+  if(S||E){const ea=m&&E?ageAt(m.birth,E):null;rows.push(["보장기간",`${S?ym(p.start):"?"} ~ ${E?ym(p.end):"만기 미입력"}${ea!=null?` (${ea}세까지)`:""}${E?(E>t?` · ${leftTxt(t,E)}`:" · 만기 지남"):""}`])}
+  if(P){const n=S?yrs(S,P):null;rows.push(["납입기간",`${ym(p.payEnd)}까지${n?` · ${n}년납`:""}${paying(p)?(r!=null?` · 남은 ${r}회`:""):" · 납입 완료"}`])}
+  rows.push(["갱신",p.renew?`${p.renewYears?p.renewYears+"년마다 ":""}갱신${p.renewDate?` · 다음 ${ym(p.renewDate)}`:""}`:"비갱신"]);
+  const cs=(p.covers||[]).filter(c=>c.cat||c.name);
+  if(cs.length){const sil=cs.some(c=>c.cat==="sil");const top=cs.filter(c=>num(c.amt)>0&&c.cat!=="sil").sort((a,b)=>num(b.amt)-num(a.amt)).slice(0,4);
+    const parts=(sil?["실손"]:[]).concat(top.map(c=>`${shortCov(c)} ${man(num(c.amt))}`));const rest=cs.length-top.length-cs.filter(c=>c.cat==="sil").length;
+    rows.push(["주요 보장",esc(parts.join(" · "))+(rest>0?` <span class="meta2">외 ${rest}개</span>`:"")])}
+  else rows.push(["주요 보장",`<span class="meta2">입력 없음</span>`]);
+  return `<span class="pinfo">${rows.map(([k,v])=>`<span class="pi"><span class="k">${k}</span><span class="v">${k==="주요 보장"?v:esc(v)}</span></span>`).join("")}</span>`;
+}
+function polCard(p){
+  const m=mById(p.insured),r=remain(p);
+  const st=p.status||"keep",stc=st==="keep"?(paying(p)?"ok":""):st==="paid"?"":"bad";
+  const stl=st==="keep"&&!paying(p)?"납입완료":STATUS[st];
+  return `<li><button class="card ${isActive(p)?"":"off"}" type="button" data-pol="${p.id}"><span class="mono" style="background:${esc(memberColor(m))}">${esc((m?m.name:"?").slice(0,1))}</span>
+  <span style="min-width:0"><span class="nm clamp2">${esc(polName(p))}</span><span class="ds" style="display:block">${esc(p.company||"")}${p.type?" · "+esc(p.type):""}${m?" · "+esc(m.name):""}</span>
+  <span class="mt"><span class="tagx ${stc}">${stl}</span>${p.renew?`<span class="tagx warn">갱신형</span>`:""}${(p.files||[]).length?`<span>자료 ${(p.files||[]).length}</span>`:""}</span></span>
+  <span class="amt">${paying(p)?won(monthly(p)):"-"}<small>${p.payCycle==="year"?"연납 월환산":"월"}</small></span>${polInfo(p,m,r)}</button></li>`;
+}
+
+function renderClaim(){
+  const ms=members(),cs=live("claim").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const y=String(new Date().getFullYear());
+  const yc=cs.filter(c=>(c.date||"").startsWith(y));
+  let h=`<div class="dayhead"><h2>보험금 청구 기록</h2><div class="meta">병원비·진단금 청구와 지급 결과를 남겨 둡니다</div></div>`;
+  if(!ms.length){$("vClaim").innerHTML=h+noMembers();return}
+  h+=`<div class="kpi"><div class="sub">${y}년 받은 보험금</div><div class="big">${Math.round(yc.reduce((s,c)=>s+num(c.paid),0)).toLocaleString("ko-KR")}<small>원</small></div><div class="sub">청구 ${yc.filter(c=>c.status!=="ready").length}건 · 준비 중 ${cs.filter(c=>c.status==="ready").length}건 · 청구액 ${won(yc.reduce((s,c)=>s+num(c.amount),0))}</div></div>`;
+  h+=`<div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addclaim="1" style="flex:1;min-height:46px">＋ 청구 기록 추가</button></div>`;
+  h+=cs.length?`<ul class="list">${cs.map(c=>{const m=mById(c.member),p=state.recs[c.policy];const stc=c.status==="paid"?"ok":c.status==="deny"?"bad":c.status==="ready"?"warn":"";
+    return `<li><button class="card" type="button" data-claim="${c.id}"><span class="mono" style="background:${esc(memberColor(m))}">${esc((m?m.name:"?").slice(0,1))}</span><span style="min-width:0"><span class="nm" style="display:block">${esc(c.reason||c.hospital||"청구")}</span><span class="ds" style="display:block">${dshort(c.date)}${c.hospital&&c.reason?" · "+esc(c.hospital):""}${p?" · "+esc(polName(p)):""}</span><span class="mt"><span class="tagx ${stc}">${CST[c.status]||""}</span></span></span><span class="amt">${num(c.paid)?won(num(c.paid)):won(num(c.amount))}<small>${num(c.paid)?"받은 돈":"청구액"}</small></span></button></li>`}).join("")}</ul>`:`<div class="empty">아직 청구 기록이 없습니다.</div>`;
+  h+=`<section class="box"><h3>청구할 때 보통 필요한 서류</h3><ol class="ol"><li>통원·입원 실손: 진료비 영수증, 진료비 세부내역서 (금액이 크면 진단서 또는 처방전)</li><li>진단금 (암·뇌·심장): 진단서, 조직검사 등 검사 결과지</li><li>수술비: 수술 확인서 (수술명·수술일 기재)</li></ol><p class="meta2" style="margin-top:8px">보험사마다 기준 금액과 서류가 다르므로 청구 전 보험사 앱에서 확인해 주세요. 보험금 청구권은 사고일로부터 3년이 지나면 소멸합니다(상법 제662조).</p></section>`;
+  $("vClaim").innerHTML=h;
+}
+
+function renderFam(){
+  const ms=members(),ps=policies();
+  let h=`<div class="dayhead"><h2>가족과 설정</h2><div class="meta">구성원 등록 · 소득 · 백업</div></div>`;
+  h+=`<section class="box"><h3>가족 구성원</h3>${ms.length?ms.map(m=>{const a=age(m.birth),ia=insAge(m.birth),cnt=ps.filter(p=>p.insured===m.id&&isActive(p)).length;
+    return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center"><span class="mono sm" style="background:${esc(memberColor(m))}">${esc(m.name.slice(0,1))}</span><span><b style="font-weight:600">${esc(m.name)}</b> <span class="meta2">${esc(m.rel||"")}</span><small>${a!=null?`만 ${a}세 · 보험나이 ${ia}세 · `:""}보험 ${cnt}건</small></span></span><span class="r" style="display:flex;gap:6px"><button class="btn sm line" type="button" data-review="${m.id}">분석</button><button class="btn sm" type="button" data-editmem="${m.id}">수정</button></span></div>`}).join(""):`<p class="meta2">등록된 가족이 없습니다.</p>`}
+    <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addmem="1" style="flex:1">＋ 가족 등록</button></div></section>`;
+  const s=getSet();
+  h+=`<section class="box"><h3>보험료 비교 기준</h3><label class="fld">월 가구 소득 (세후, 선택)<input id="incIn" inputmode="numeric" value="${s.income?num(s.income).toLocaleString("ko-KR"):""}" placeholder="예: 5,000,000"></label><p class="meta2" style="margin-top:6px">입력하면 '한눈에'에서 소득 대비 보험료 비율을 보여 드립니다.</p></section>`;
+  h+=`<section class="box"><h3>백업</h3>
+      <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
+      <div class="row"><span class="l">기록 건수</span><span class="r">가족 ${ms.length} · 보험 ${ps.length} · 청구 ${live("claim").length}</span></div>
+      ${(()=>{const fm=allFiles();const mb=[...fm.values()].reduce((a,f)=>a+num(f.size),0)/1048576;return fm.size?`<div class="row"><span class="l">첨부 자료</span><span class="r">${fm.size}개 · 약 ${mb<1?mb.toFixed(1):Math.round(mb)}MB</span></div>`:""})()}
+      <p class="meta2" style="margin-top:6px">보험 기록은 나만 볼 수 있는 저장 칸과 이 기기에 함께 저장됩니다. <b>'백업 파일 저장'은 첨부한 증권 파일까지 함께 담습니다.</b> 백업 파일을 PC나 휴대폰 'MY' 폴더에 받아 두면 더 안전합니다.</p>
+      <p class="meta2" id="bkProg" style="margin-top:4px" hidden></p>
+      <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><button class="btn line" type="button" id="bkCopy" style="flex:1">백업 코드 복사</button></div>
+      <div class="vstack" style="margin-top:10px"><p class="meta2">백업 코드에는 첨부 파일이 빠집니다. 첨부 파일까지 되살리려면 '파일에서 복원'을 쓰세요.</p><label class="fld">백업 코드로 복원 (기존 기록과 합칩니다)<textarea id="bkText" placeholder="복사해 둔 백업 코드를 붙여넣으세요"></textarea></label>
+        <div class="frow"><button class="btn line" type="button" id="bkRestore" style="flex:1">붙여넣은 코드로 복원</button><label class="btn" style="flex:1">파일에서 복원<input type="file" id="bkFile" accept="application/json,.json,.txt" hidden></label></div></div></section>`;
+  const gone=Object.values(state.recs).filter(r=>r.deleted&&["member","policy","claim"].includes(r.kind)).sort((a,b)=>(b.deletedAt||ts(b))-(a.deletedAt||ts(a)));
+  if(gone.length)h+=`<section class="box"><h3>지운 기록 (${gone.length}건)</h3>${gone.slice(0,20).map(r=>{const k={member:"가족",policy:"보험",claim:"청구"}[r.kind];const nm=r.kind==="member"?r.name:r.kind==="policy"?polName(r):(r.reason||r.hospital||"청구");const sub=r.kind==="policy"?[r.company,(mById(r.insured)||{}).name].filter(Boolean).join(" · "):r.kind==="claim"?dshort(r.date):(r.rel||"");
+    return `<div class="row" style="align-items:center"><span class="l"><span class="tagx">${k}</span> ${esc(nm)}<small>${esc(sub)}${r.deletedAt?` · ${dshort(ymd(new Date(r.deletedAt)))} 지움`:""}</small></span><span class="r"><button class="btn sm line" type="button" data-restore="${r.id}">되살리기</button></span></div>`}).join("")}<p class="meta2" style="margin-top:6px">잘못 지운 기록은 여기서 되살릴 수 있습니다.</p></section>`;
+  h+=`<section class="box"><h3>개인정보 원칙</h3><ol class="ol"><li>주민등록번호, 계좌·카드 전체 번호는 입력하지 않습니다. 증권번호는 뒤 4자리만 적습니다.</li><li>증권 사진을 올릴 때 주민번호가 보이면 가린 뒤 올려 주세요.</li><li>이 앱의 기록은 나만 볼 수 있는 칸에 저장되며, 앱 링크를 공유해도 다른 사람에게는 보이지 않습니다.</li></ol></section>`;
+  $("vFam").innerHTML=h;
+}
+function getSet(){return state.recs.settings&&!state.recs.settings.deleted?state.recs.settings:{}}
+
+/* ── 시트 ── */
+/* 설치판(github.io): 시트를 열면 기록을 하나 쌓아, 휴대폰 뒤로가기가 앱을 나가지 않고 시트만 닫게 함 */
+const PWA=/github\.io$/.test(location.hostname);let sheetHist=false,backing=false;
+if(PWA){$("homeBtn").hidden=false;window.addEventListener("popstate",()=>{if(backing){backing=false;return}if(sheetHist){sheetHist=false;$("sheetBg").hidden=true;state.edit=null;pendingPdf=null;state.rv=null;fv=null}})}
+function sheet(title,body,actions){
+  if(PWA&&!sheetHist){try{history.pushState({sheet:1},"");sheetHist=true}catch(e){}}
+  $("sheet").innerHTML=`<div class="shead"><div class="grab"></div><div class="hd"><h2>${title}</h2><button class="x" type="button" data-close="1" aria-label="닫기">✕</button></div></div>${body}${actions?`<div class="sact${(actions.match(/<button/g)||[]).length===3?" three":""}">${actions}</div>`:'<div style="height:16px"></div>'}`;
+  $("sheetBg").hidden=false;$("sheet").scrollTop=0;
+}
+const closeSheet=()=>{$("sheetBg").hidden=true;state.edit=null;pendingPdf=null;state.rv=null;fv=null;if(sheetHist){sheetHist=false;backing=true;try{history.back()}catch(e){backing=false}}};
+const opt=(arr,v)=>arr.map(x=>{const [k,l]=Array.isArray(x)?x:[x,x];return `<option value="${esc(k)}" ${k===v?"selected":""}>${esc(l)}</option>`}).join("");
+
+function openMember(id){
+  const m=id?{...state.recs[id]}:{id:null,kind:"member",name:"",rel:members().length?"배우자":"본인",birth:"",sex:"",color:COLORS[members().length%COLORS.length],memo:""};
+  state.edit=m;
+  sheet(id?"가족 수정":"가족 등록",`<form id="fm" class="vstack" style="margin-top:12px">
+    <label class="fld">이름 (또는 호칭)<input id="mName" maxlength="20" value="${esc(m.name)}" placeholder="예: 홍길동, 아내, 큰딸"></label>
+    <div class="frow"><label class="fld">관계<select id="mRel">${opt(RELS,m.rel)}</select></label><label class="fld">성별<select id="mSex">${opt([["","선택 안 함"],["M","남"],["F","여"]],m.sex)}</select></label></div>
+    <label class="fld">생년월일 (보험나이 계산용)<input id="mBirth" type="date" value="${esc(m.birth)}" max="${ymd(today0())}"></label>
+    <div class="fld">표시 색<div class="swatches">${COLORS.map(c=>`<button type="button" class="sw" data-color="${c}" style="background:${c}" aria-pressed="${c===m.color}" aria-label="색 ${c}"></button>`).join("")}</div></div>
+    <label class="fld">메모<textarea id="mMemo" placeholder="지병, 복용 약, 수술 이력 등 가입 심사에 필요한 내용">${esc(m.memo)}</textarea></label>
+    ${id?`<button class="btn danger" type="button" data-delmem="${id}">이 가족 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="mSave">저장</button>`);
+}
+function saveMember(){
+  const e=state.edit,name=$("mName").value.trim();if(!name){toast("이름을 적어 주세요");return}
+  const r={...e,id:e.id||newId("m"),kind:"member",name,rel:$("mRel").value,sex:$("mSex").value,birth:$("mBirth").value,memo:$("mMemo").value.trim(),color:e.color,deleted:false};
+  if(r.order==null)r.order=members().length;
+  put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
+}
+
+/* ── 개인별 보험 분석: 누를 때마다 그 시점 기록을 새로 쌓음 (kind:"review") ── */
+const GRADE_C={"충분":"ok","양호":"ok","보통":"","부족":"warn","매우 부족":"bad"};
+const ST_C={"충분":"ok","보통":"","부족":"warn","없음":"bad","과다":"warn"};
+const reviews=mid=>live("review").filter(r=>r.member===mid).sort((a,b)=>b.at-a.at);
+const diffTag=d=>d>0?`<span class="up">▲${d}</span>`:d<0?`<span class="down">▼${-d}</span>`:`<span class="meta2">-</span>`;
+const dtime=t=>{const d=new Date(t);return `${dshort(ymd(d))} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`};
+let rvBusy=null;
+function reviewData(m){
+  const ps=policies().filter(p=>p.insured===m.id&&isActive(p));
+  return {오늘:ymd(today0()),대상:{관계:m.rel||"",성별:m.sex==="M"?"남":m.sex==="F"?"여":"미입력",만나이:age(m.birth),보험나이:insAge(m.birth),건강메모:m.memo||""},
+    가구:{가족수:members().length,가구월보험료합계:Math.round(policies().filter(p=>paying(p)).reduce((s,p)=>s+monthly(p),0)),월소득:num(getSet().income)||"미입력"},
+    보험:ps.map(p=>({보험사:p.company||"",상품명:p.product||"",종류:p.type||"",납입상태:paying(p)?"납입 중":"납입 완료",월보험료:Math.round(monthly(p)),계약일:p.start||"",납입종료일:p.payEnd||"",만기일:p.end||"",갱신형:p.renew?`예(${p.renewYears||"?"}년마다)`:"아니오",
+      보장:(p.covers||[]).map(c=>`${COVN[c.cat]||c.cat} | ${c.name||""} | ${c.cat==="sil"&&!num(c.amt)?"실손(실제 비용)":num(c.amt)?num(c.amt)+"만원":"금액 미입력"}`)}))};
+}
+function reviewPrompt(m,prev){
+  return `당신은 한국 보험 보장 분석 전문가입니다. 아래는 한 가족 구성원이 지금 유지 중인 보험 자료입니다.
+규칙:
+- 주어진 자료만 근거로 평가하고, 없는 정보는 추측하지 말고 '자료 없음'으로 다루세요.
+- 특정 보험사·상품 가입을 권하지 말고, 보장 항목·금액·구조 기준으로 안내하세요.
+- 일반적인 국내 기준으로 판단하되 금액·비율 기준을 말할 때는 '일반적으로'를 붙이세요. 예: 실손은 1건이면 충분(여러 건은 비례보상이라 중복), 진단비(암·뇌혈관·심장)의 나이 대비 적정성, 부양가족 유무에 따른 사망보장 필요성, 갱신형 비중과 갱신 때 보험료 인상 위험, 납입 완료·만기 시점과 나이, 소득 대비 보험료 비율.
+- 건강 메모가 있으면 새로 가입하기 어려울 수 있다는 점을 고려하세요(해지 권유는 신중히).
+- 쉬운 한국어 존댓말, 문장은 짧게.
+${prev?`지난 분석(${ymd(new Date(prev.at))}): ${num(prev.result.score)}점, ${prev.result.grade||""}. 부족했던 점: ${(prev.result.gaps||[]).join(" / ").slice(0,600)}\nchange 항목에 지난 분석과 비교한 변화를 적으세요.`:"지난 분석이 없으니 change는 빈 문자열로 두세요."}
+JSON 하나로만 답하세요:
+{"score":0~100 정수(보장 균형 점수),"grade":"충분|양호|보통|부족|매우 부족","summary":"총평 2~3문장","coverage":[{"cat":"${MX.concat(["hosp","drive","dent"]).join("|")} 중 하나","status":"충분|보통|부족|없음|과다","comment":"한 문장"}],"strengths":["잘된 점"],"gaps":["부족한 점"],"overlaps":["중복·과다 보장"],"cautions":["갱신·만기·납입 관련 주의"],"premium":"보험료 수준 평가 1~2문장","guide":[{"title":"짧은 제목","detail":"무엇을 어떻게 하면 되는지 2~3문장"}],"change":""}
+guide는 중요한 순서로 3~6개, coverage는 위 항목을 모두 포함하세요.
+=== 자료 ===
+${JSON.stringify(reviewData(m))}`;
+}
+function cleanReview(o){
+  if(!o||typeof o!=="object")throw{code:"invalid_json"};
+  const arr=v=>Array.isArray(v)?v.filter(x=>x!=null&&x!=="").map(x=>typeof x==="string"?x.slice(0,300):x).slice(0,10):[];
+  const score=Math.max(0,Math.min(100,Math.round(num(o.score))));
+  return {score,grade:["충분","양호","보통","부족","매우 부족"].includes(o.grade)?o.grade:(score>=80?"양호":score>=60?"보통":"부족"),summary:String(o.summary||"").slice(0,600),
+    coverage:arr(o.coverage).filter(c=>c&&COVN[c.cat]).map(c=>({cat:c.cat,status:String(c.status||""),comment:String(c.comment||"").slice(0,200)})),
+    strengths:arr(o.strengths),gaps:arr(o.gaps),overlaps:arr(o.overlaps),cautions:arr(o.cautions),premium:String(o.premium||"").slice(0,400),
+    guide:arr(o.guide).filter(g=>g&&g.title).map(g=>({title:String(g.title).slice(0,80),detail:String(g.detail||"").slice(0,400)})),change:String(o.change||"").slice(0,300)};
+}
+async function runReview(mid){
+  const m=mById(mid);if(!m||rvBusy||!extras.sample)return;
+  const ps=policies().filter(p=>p.insured===mid&&isActive(p));
+  if(!ps.length){toast("유지 중인 보험이 없어 분석할 수 없습니다");return}
+  rvBusy=mid;openReview(mid);
+  const prev=reviews(mid)[0];
+  try{
+    const o=cleanReview(await extras.sample.json(reviewPrompt(m,prev),{modelTier:"complex"}));
+    const r={id:newId("r"),kind:"review",member:mid,at:Date.now(),basis:{count:ps.length,monthly:Math.round(ps.filter(p=>paying(p)).reduce((s,p)=>s+monthly(p),0)),age:age(m.birth)},result:o,deleted:false};
+    rvBusy=null;put(r);
+    if(state.rv===mid)openReview(mid,r.id);else toast(`${m.name} 보험 분석이 끝났습니다`);
+  }catch(e){
+    rvBusy=null;const c=e&&e.code;
+    const msg=c==="not_granted"?"Claude에게 보험 자료를 보내는 것을 허용하지 않아 분석할 수 없습니다.":c==="rate_limited"?"잠시 후 다시 시도해 주세요.":"분석하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    if(state.rv===mid){openReview(mid);const el=$("rvMsg");if(el){el.textContent=msg+` (오류: ${c||"?"})`;el.hidden=false}}else toast(msg);
+  }
+}
+function reviewDetail(r,prev){
+  const o=r.result||{};const li=a=>a&&a.length?`<ul class="ul">${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:`<p class="meta2">없음</p>`;
+  return `<section class="box"><div class="score"><span class="big">${num(o.score)}<small>/100</small></span><span class="tagx ${GRADE_C[o.grade]||""}">${esc(o.grade||"")}</span>${prev?diffTag(num(o.score)-num(prev.result&&prev.result.score)):""}</div>
+    <p class="meta2" style="margin-top:2px">${dtime(r.at)} 분석 · 당시 보험 ${r.basis?r.basis.count:"-"}건 · 월 ${won(r.basis?r.basis.monthly:0)}${r.basis&&r.basis.age!=null?` · 만 ${r.basis.age}세`:""}</p>
+    <p style="margin-top:8px">${esc(o.summary||"")}</p>${o.change?`<p class="note tip">지난 분석 대비: ${esc(o.change)}</p>`:""}</section>
+   <section class="box"><h3>가입 보험 가이드</h3>${o.guide&&o.guide.length?`<ol class="gl">${o.guide.map(g=>`<li><b>${esc(g.title)}</b>${esc(g.detail)}</li>`).join("")}</ol>`:`<p class="meta2">없음</p>`}</section>
+   <section class="box"><h3>보장 항목별 평가</h3>${(o.coverage||[]).map(c=>`<div class="row"><span class="l">${esc(COVN[c.cat]||c.cat)}<small>${esc(c.comment)}</small></span><span class="r"><span class="tagx ${ST_C[c.status]||""}">${esc(c.status)}</span></span></div>`).join("")||`<p class="meta2">없음</p>`}</section>
+   <section class="box"><h3>부족한 점</h3>${li(o.gaps)}</section>
+   <section class="box"><h3>잘된 점</h3>${li(o.strengths)}</section>
+   ${o.overlaps&&o.overlaps.length?`<section class="box"><h3>중복·과다</h3>${li(o.overlaps)}</section>`:""}
+   <section class="box"><h3>갱신·만기·납입 주의</h3>${li(o.cautions)}</section>
+   ${o.premium?`<section class="box"><h3>보험료 수준</h3><p>${esc(o.premium)}</p></section>`:""}
+   <p class="meta2" style="margin-top:10px">입력된 보험 자료를 바탕으로 Claude가 만든 참고용 평가입니다. 가입·해지 전에는 보험사나 설계사에게 실제 약관을 확인해 주세요.</p>
+   <div class="frow" style="margin-top:8px"><button class="btn danger sm" type="button" data-delrv="${r.id}">이 분석 기록 지우기</button></div>`;
+}
+function openReview(mid,selId){
+  const m=mById(mid);if(!m)return;state.rv=mid;
+  const rs=reviews(mid),sel=rs.find(r=>r.id===selId)||rs[0],idx=sel?rs.indexOf(sel):-1;
+  const busy=rvBusy===mid;
+  const body=`<div style="margin-top:12px"></div>
+   ${busy?`<div class="note tip">보험 ${policies().filter(p=>p.insured===mid&&isActive(p)).length}건을 분석하는 중입니다… (30초~1분) 창을 닫아도 분석은 계속됩니다.</div>`:""}
+   <p class="note warn" id="rvMsg" hidden></p>
+   ${!extras.sample?`<p class="note warn">이 화면에서는 분석 기능을 쓸 수 없습니다. Claude 앱의 보험관리 링크로 열어 주세요.</p>`:""}
+   ${rs.length?`<section class="box"><h3>분석 기록 (누적 ${rs.length}회)</h3><div class="vstack" style="gap:6px">${rs.map((r,i)=>{const pv=rs[i+1];return `<button class="rvrow" type="button" data-rvsel="${r.id}" aria-pressed="${r===sel}"><span><b>${num(r.result&&r.result.score)}점</b><small>${dtime(r.at)} · 보험 ${r.basis?r.basis.count:"-"}건</small></span><span class="tagx ${GRADE_C[r.result&&r.result.grade]||""}">${esc(r.result&&r.result.grade||"")}</span>${pv?diffTag(num(r.result.score)-num(pv.result.score)):`<span class="meta2">첫 분석</span>`}</button>`}).join("")}</div></section>
+     ${reviewDetail(sel,rs[idx+1])}`:(busy?"":`<div class="empty">아직 분석한 적이 없습니다.<br>'지금 분석하기'를 누르면 지금 가입한 보험을 평가하고 가이드를 드립니다. 분석할 때마다 기록이 쌓여 변화를 볼 수 있습니다.</div>`)}`;
+  sheet(`${esc(m.name)} 보험 분석`,body,`<button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-runrv="${mid}" ${busy||!extras.sample?"disabled":""}>${busy?"분석 중…":"지금 분석하기"}</button>`);
+}
+
+/* ── 보관 자료 보기: 앱 안에서 열기 (새 창 링크는 Claude 앱·휴대폰에서 막힘). 비밀번호 PDF는 여기서 비밀번호 입력 ── */
+let fv=null;
+async function openFile(pid,fid){
+  const p=state.recs[pid];const f=p&&(p.files||[]).find(x=>x.id===fid);if(!f)return;
+  fv={pid,fid,f,blob:null};const me=fv;
+  sheet(esc(f.name||"자료"),`<div style="margin-top:12px"></div><p class="note tip" id="fvMsg">불러오는 중입니다…</p>
+    <div id="fvPw" hidden style="margin-top:8px"><label class="fld">PDF 비밀번호<input id="fvPwIn" type="password" autocomplete="off" placeholder="보통 생년월일 6자리 또는 8자리"></label><button class="btn pri" type="button" id="fvPwOk" style="width:100%;margin-top:6px">비밀번호로 열기</button><p class="meta2" style="margin-top:4px">비밀번호는 저장하지 않습니다.</p></div>
+    <div id="fvPages" class="vstack" style="gap:8px;margin-top:8px"></div>`,
+    `<button class="btn" type="button" data-backpol="${pid}">보험으로</button><button class="btn pri" type="button" id="fvSave">파일 저장</button>`);
+  try{
+    const r=await fetch("/_blob/"+fid);if(!r.ok)throw{code:"http_"+r.status};
+    const blob=await r.blob();if(fv!==me)return;me.blob=blob;
+    const head=String.fromCharCode(...new Uint8Array(await blob.slice(0,5).arrayBuffer()));
+    if(head==="%PDF-")await fvPdf(me);
+    else{$("fvMsg").hidden=true;$("fvPages").innerHTML=`<img class="fvpage" alt="${esc(f.name||"자료")}" src="${URL.createObjectURL(blob)}">`}
+  }catch(e){if(fv===me)fvErr(e)}
+}
+function fvErr(e){const m=$("fvMsg");if(!m)return;m.hidden=false;m.className="note warn";m.textContent=`자료를 열지 못했습니다. '파일 저장'으로 받아서 열어 보세요. (오류: ${(e&&(e.code||e.name))||"?"})`}
+async function fvPdf(me,pw){
+  const msg=$("fvMsg");msg.hidden=false;msg.className="note tip";msg.textContent="PDF를 여는 중입니다…";
+  let lib;try{lib=await getPdfLib()}catch(e){throw{code:"pdf_load"}}
+  let doc;
+  try{doc=await lib.getDocument({data:new Uint8Array(await me.blob.arrayBuffer()),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){if(e&&e.name==="PasswordException"){$("fvPw").hidden=false;msg.textContent=e.code===2?"비밀번호가 맞지 않습니다. 다시 입력해 주세요.":"비밀번호가 걸린 증권입니다. 비밀번호를 입력해 주세요.";const i=$("fvPwIn");i.value="";setTimeout(()=>i.focus(),50);return}throw{code:"pdf_bad",name:e&&e.name}}
+  $("fvPw").hidden=true;
+  const box=$("fvPages"),N=Math.min(doc.numPages,30),W=Math.min(box.clientWidth||520,560),dpr=Math.min(2,window.devicePixelRatio||1);
+  for(let i=1;i<=N;i++){
+    if(fv!==me){doc.destroy();return}
+    msg.textContent=`${doc.numPages}쪽 중 ${i}쪽을 표시하는 중…`;
+    const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:W/v0.width*dpr});
+    const cv=document.createElement("canvas");cv.className="fvpage";cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+    box.appendChild(cv);await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+  }
+  msg.textContent=doc.numPages>N?`앞 ${N}쪽만 표시했습니다 (전체 ${doc.numPages}쪽). 전체는 '파일 저장'으로 받아 보세요.`:`전체 ${doc.numPages}쪽`;
+  doc.destroy();
+}
+async function saveAsset(){
+  const me=fv;if(!me)return;
+  try{if(!me.blob){const r=await fetch("/_blob/"+me.fid);if(!r.ok)throw{code:"http_"+r.status};me.blob=await r.blob()}}catch(e){fvErr(e);return}
+  const name=me.f.name||"보험자료.pdf";
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  if(dl){try{await dl.save({filename:name,data:me.blob});toast("파일을 저장했습니다")}catch(e){if(e&&e.code!=="declined")toast("저장하지 못했습니다")}return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(me.blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+
+function viewPolicy(id){
+  const p=state.recs[id];if(!p)return;const m=mById(p.insured),r=remain(p);
+  const rows=[["피보험자",m?m.name:"-"],["계약자",p.holder||"-"],["보험사",p.company||"-"],["종류",p.type||"-"],["증권번호",p.no4?"…"+p.no4:"-"],["계약일",dshort(p.start)||"-"],["납입 종료",p.payEnd?`${dshort(p.payEnd)}${r!=null?` (남은 ${r}회)`:""}`:"-"],["만기",dshort(p.end)||"-"],
+    ["보험료",num(p.premium)?`${p.payCycle==="year"?"연":"월"} ${won(num(p.premium))}`:"-"],["납입 방법",[p.payMethod,num(p.payDay)?`매달 ${num(p.payDay)}일`:""].filter(Boolean).join(" · ")||"-"],
+    ["갱신",p.renew?`갱신형${p.renewYears?` ${p.renewYears}년마다`:""}${p.renewDate?` · 다음 ${dshort(p.renewDate)}`:""}`:"비갱신형"],["상태",STATUS[p.status||"keep"]]];
+  const covs=(p.covers||[]).filter(c=>c.cat||c.name);
+  const tels=[[p.companyTel,"보험사 고객센터"],[p.agentTel,`설계사${p.agent?" "+p.agent:""}`]].filter(x=>x[0]);
+  sheet(esc(polName(p)),`<section class="box">${rows.map(([l,v])=>`<div class="row"><span class="l">${l}</span><span class="r">${esc(v)}</span></div>`).join("")}</section>
+   <section class="box"><h3>보장 내용</h3>${covs.length?covs.map(c=>`<div class="row"><span class="l">${esc(c.name||COVN[c.cat]||"")}<small>${esc(COVN[c.cat]||"")}</small></span><span class="r">${c.cat==="sil"&&!num(c.amt)?"가입":man(num(c.amt))+"원"}</span></div>`).join(""):`<p class="meta2">입력된 보장이 없습니다. '수정'에서 진단금·수술비 등을 넣으면 가족별 보장 표에 반영됩니다.</p>`}</section>
+   ${(p.files||[]).length?`<section class="box"><h3>보관 자료</h3><div class="files">${p.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm line" type="button" data-openfile="${esc(f.id)}" data-pid="${id}">보기</button></div>`).join("")}</div></section>`:""}
+   ${tels.length?`<section class="box"><h3>연락처</h3><div class="frow">${tels.map(([t,l])=>`<a class="btn line" style="flex:1" href="tel:${esc(String(t).replace(/[^\d+]/g,""))}">${esc(l)} 전화</a>`).join("")}</div></section>`:""}
+   ${p.memo?`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(p.memo)}</p></section>`:""}`,
+   `<button class="btn danger" type="button" data-delpol="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editpol="${id}">수정</button>`);
+}
+let extras={sample:null,assets:null};
+/* 증권 올리기·자료 올리기는 PC에서만 (휴대폰 앱·브라우저의 파일 첨부가 불안정해 사용자 요청으로 막음) */
+const MOBILE=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+function openPolicy(id,prefill){
+  const base={id:null,kind:"policy",insured:state.mem||(members()[0]||{}).id||"",holder:"",company:"",product:"",type:"건강(종합)",no4:"",start:"",payEnd:"",end:"",premium:"",payCycle:"month",payMethod:"자동이체",payDay:"",renew:false,renewYears:"",renewDate:"",status:"keep",agent:"",agentTel:"",companyTel:"",covers:[],files:[],memo:""};
+  const p=id?JSON.parse(JSON.stringify(state.recs[id])):{...base,...(prefill||{})};
+  p.covers=(p.covers||[]).map(c=>({id:c.id||newId("c"),...c}));
+  state.edit=p;
+  const ms=members();
+  sheet(id?"보험 수정":"보험 등록",`<form id="fp" class="vstack" style="margin-top:12px">
+    ${!id&&MOBILE?`<div class="note tip">증권 PDF로 자동 등록하기와 자료 올리기는 <b>PC</b>에서 해 주세요. 휴대폰에서는 직접 입력과 보기·수정만 됩니다.</div>`:""}
+    ${!id&&extras.sample&&!MOBILE?`<div class="note tip">보험증권 PDF(비밀번호가 걸린 파일도 됩니다)나 증권 사진을 올리면 내용을 자동으로 채워 드립니다. 채운 뒤 꼭 확인해 주세요.<div class="frow" id="ocrPick" style="margin-top:8px"><label class="btn line pick" style="flex:1">PDF 파일 고르기<input type="file" id="ocrPdf" accept="application/pdf,.pdf"></label><label class="btn line pick" style="flex:1">사진 찍기·고르기<input type="file" id="ocrImg" accept="image/*"></label></div>
+      <div id="pwBox" hidden style="margin-top:8px"><label class="fld">PDF 비밀번호<input id="pwIn" type="password" autocomplete="off" inputmode="text" placeholder="보통 생년월일 6자리 또는 8자리"></label><div class="frow" style="margin-top:6px"><button class="btn" type="button" id="pwCancel" style="flex:1">취소</button><button class="btn pri" type="button" id="pwOk" style="flex:2">비밀번호로 열기</button></div><p class="meta2" style="margin-top:4px">비밀번호는 파일을 여는 데만 쓰고 저장하지 않습니다.</p></div>
+      <div class="meta2" id="ocrMsg" style="margin-top:6px"></div></div>`:""}
+    <div class="frow"><label class="fld">피보험자 (보장받는 사람)<select id="pIns">${opt(ms.map(m=>[m.id,m.name]),p.insured)}</select></label><label class="fld">계약자 (돈 내는 사람)<input id="pHolder" maxlength="20" value="${esc(p.holder)}" placeholder="예: 본인"></label></div>
+    <div class="frow"><label class="fld">보험사<input id="pCo" maxlength="30" value="${esc(p.company)}" placeholder="예: 삼성화재" list="coList"></label><label class="fld">종류<select id="pType">${opt(TYPES,p.type)}</select></label></div>
+    <label class="fld">상품명<input id="pProd" maxlength="60" value="${esc(p.product)}" placeholder="증권에 적힌 상품 이름"></label>
+    <div class="frow"><label class="fld">증권번호 뒤 4자리<input id="pNo" inputmode="numeric" maxlength="4" value="${esc(p.no4)}"></label><label class="fld">상태<select id="pSt">${opt(Object.entries(STATUS),p.status||"keep")}</select></label></div>
+    <div class="frow"><label class="fld">보험료 (원)<input id="pPrem" inputmode="numeric" value="${p.premium?num(p.premium).toLocaleString("ko-KR"):""}" placeholder="예: 85,000"></label><label class="fld">내는 주기<select id="pCyc">${opt([["month","매달"],["year","1년에 한 번"]],p.payCycle)}</select></label></div>
+    <div class="frow"><label class="fld">납입 방법<select id="pPm">${opt(PAYM,p.payMethod)}</select></label><label class="fld">빠져나가는 날 (일)<input id="pDay" inputmode="numeric" maxlength="2" value="${esc(p.payDay)}" placeholder="예: 25"></label></div>
+    <div class="frow"><label class="fld">계약일<input id="pStart" type="date" value="${esc(p.start)}"></label><label class="fld">납입 종료일<input id="pPayEnd" type="date" value="${esc(p.payEnd)}"></label></div>
+    <div class="frow"><label class="fld">만기일 (보장 끝)<input id="pEnd" type="date" value="${esc(p.end)}"></label><div class="fld">갱신형 여부<label class="ck"><input type="checkbox" id="pRenew" ${p.renew?"checked":""}>갱신형</label></div></div>
+    <div class="frow" id="renewRow" ${p.renew?"":"hidden"}><label class="fld">갱신 주기 (년)<input id="pRy" inputmode="numeric" maxlength="2" value="${esc(p.renewYears)}" placeholder="예: 3, 5, 20"></label><label class="fld">다음 갱신일<input id="pRd" type="date" value="${esc(p.renewDate)}"></label></div>
+    <div class="fld">보장 내용 (금액은 만원 단위)<div class="vstack" id="covList" style="gap:8px">${p.covers.map(covRow).join("")}</div><button class="btn line" type="button" id="covAdd" style="margin-top:6px">＋ 보장 추가</button></div>
+    <div class="frow"><label class="fld">보험사 전화<input id="pCt" inputmode="tel" maxlength="20" value="${esc(p.companyTel)}" placeholder="예: 1588-0000"></label><label class="fld">설계사 이름<input id="pAg" maxlength="20" value="${esc(p.agent)}"></label></div>
+    <label class="fld">설계사 전화<input id="pAt" inputmode="tel" maxlength="20" value="${esc(p.agentTel)}"></label>
+    ${extras.assets?`<div class="fld">보관 자료 (증권·약관 사진이나 PDF)<div class="files" id="fileList">${fileRows(p)}</div>${MOBILE?`<p class="meta2" style="margin-top:4px">자료 올리기는 PC에서 해 주세요.</p>`:`<label class="btn line pick" id="attPick" style="margin-top:6px">＋ 자료 올리기 (PDF·사진)<input type="file" id="attIn"></label>`}</div>`:""}
+    <label class="fld">메모<textarea id="pMemo" placeholder="특약, 해지 시 주의점, 청구 요령 등">${esc(p.memo)}</textarea></label>
+    ${id?`<button class="btn danger" type="button" data-delpol="${id}">이 보험 지우기</button>`:""}</form>
+    <datalist id="coList">${["삼성생명","한화생명","교보생명","신한라이프","NH농협생명","KB라이프","동양생명","미래에셋생명","흥국생명","라이나생명","AIA생명","메트라이프","삼성화재","현대해상","DB손해보험","KB손해보험","메리츠화재","한화손해보험","롯데손해보험","흥국화재","NH농협손해보험","MG손해보험"].map(x=>`<option value="${x}">`).join("")}</datalist>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="pSave">저장</button>`);
+}
+function covRow(c){return `<div class="cov" data-cid="${esc(c.id)}"><select data-k="cat" aria-label="보장 분류">${opt(COV,c.cat||"cancer")}</select><input data-k="amt" inputmode="numeric" value="${c.amt?esc(c.amt):""}" placeholder="만원" aria-label="가입금액(만원)"><button class="btn x" type="button" data-delcov="${esc(c.id)}" aria-label="이 보장 빼기">✕</button><input class="full" data-k="name" maxlength="40" value="${esc(c.name||"")}" placeholder="이름 (예: 일반암 진단비, 질병수술비)"></div>`}
+function fileRows(p){return (p.files||[]).map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm" type="button" data-delfile="${esc(f.id)}">빼기</button></div>`).join("")||`<p class="meta2">올린 자료가 없습니다.</p>`}
+function readCovers(){return [...document.querySelectorAll("#covList .cov")].map(el=>{const g=k=>el.querySelector(`[data-k="${k}"]`).value;return{id:el.dataset.cid,cat:g("cat"),amt:num(g("amt"))||"",name:g("name").trim()}})}
+function savePolicy(){
+  const e=state.edit;if(!$("pIns").value){toast("피보험자를 고르세요");return}
+  if(!$("pProd").value.trim()&&!$("pCo").value.trim()){toast("보험사나 상품명을 적어 주세요");return}
+  const day=num($("pDay").value);
+  const r={...e,id:e.id||newId("p"),kind:"policy",insured:$("pIns").value,holder:$("pHolder").value.trim(),company:$("pCo").value.trim(),product:$("pProd").value.trim(),type:$("pType").value,
+    no4:$("pNo").value.replace(/\D/g,"").slice(-4),status:$("pSt").value,premium:num($("pPrem").value)||"",payCycle:$("pCyc").value,payMethod:$("pPm").value,payDay:day>=1&&day<=31?day:"",
+    start:$("pStart").value,payEnd:$("pPayEnd").value,end:$("pEnd").value,renew:$("pRenew").checked,renewYears:$("pRenew").checked?num($("pRy").value)||"":"",renewDate:$("pRenew").checked?$("pRd").value:"",
+    covers:readCovers().filter(c=>c.cat),files:e.files||[],companyTel:$("pCt").value.trim(),agent:$("pAg").value.trim(),agentTel:$("pAt").value.trim(),memo:$("pMemo").value.trim(),deleted:false};
+  delete r.url;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
+}
+
+function openClaim(id){
+  const ms=members();
+  const c=id?{...state.recs[id]}:{id:null,kind:"claim",member:state.mem||(ms[0]||{}).id||"",policy:"",date:ymd(today0()),hospital:"",reason:"",amount:"",paid:"",status:"ready",memo:""};
+  state.edit=c;
+  sheet(id?"청구 기록 수정":"청구 기록 추가",`<form id="fc" class="vstack" style="margin-top:12px">
+    <div class="frow"><label class="fld">누구<select id="cMem">${opt(ms.map(m=>[m.id,m.name]),c.member)}</select></label><label class="fld">진료·사고일<input id="cDate" type="date" value="${esc(c.date)}"></label></div>
+    <label class="fld">청구할 보험<select id="cPol">${polOpts(c.member,c.policy)}</select></label>
+    <div class="frow"><label class="fld">내용<input id="cReason" maxlength="40" value="${esc(c.reason)}" placeholder="예: 정형외과 통원, 백내장 수술"></label><label class="fld">병원<input id="cHosp" maxlength="30" value="${esc(c.hospital)}"></label></div>
+    <div class="frow"><label class="fld">청구액 (원)<input id="cAmt" inputmode="numeric" value="${c.amount?num(c.amount).toLocaleString("ko-KR"):""}"></label><label class="fld">받은 돈 (원)<input id="cPaid" inputmode="numeric" value="${c.paid?num(c.paid).toLocaleString("ko-KR"):""}"></label></div>
+    <div class="fld">진행 상태<div class="seg" id="cSt">${Object.entries(CST).map(([k,l])=>`<button type="button" data-cst="${k}" aria-pressed="${k===c.status}">${l}</button>`).join("")}</div></div>
+    <label class="fld">메모<textarea id="cMemo" placeholder="제출 서류, 접수번호 뒤자리, 거절 사유 등">${esc(c.memo)}</textarea></label>
+    ${id?`<button class="btn danger" type="button" data-delclaim="${id}">이 기록 지우기</button>`:""}</form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="cSave">저장</button>`);
+}
+function polOpts(mid,sel){return `<option value="">선택 안 함</option>`+policies().filter(p=>p.insured===mid).map(p=>`<option value="${p.id}" ${p.id===sel?"selected":""}>${esc(polName(p))}${p.company?" · "+esc(p.company):""}</option>`).join("")}
+function saveClaim(){
+  const e=state.edit;if(!$("cMem").value){toast("누구의 청구인지 고르세요");return}
+  const r={...e,id:e.id||newId("c"),kind:"claim",member:$("cMem").value,policy:$("cPol").value,date:$("cDate").value,reason:$("cReason").value.trim(),hospital:$("cHosp").value.trim(),amount:num($("cAmt").value)||"",paid:num($("cPaid").value)||"",status:e.status||"ready",memo:$("cMemo").value.trim(),deleted:false};
+  put(r);closeSheet();toast(e.id?"수정했습니다":"추가했습니다");
+}
+
+/* ── 증권 사진 자동 채우기 · 자료 보관 (Claude 앱에서만) ── */
+async function initExtras(){
+  try{const s=await window.claude.use("sample");if(s){extras.sample=s;extras.lim=await s.limits().catch(()=>null)}}catch(e){}
+  try{extras.assets=await window.claude.use("assets")}catch(e){extras.assets=null}
+}
+/* PDF 읽기: pdf.js를 필요할 때만 불러옴. 비밀번호는 메모리에서만 쓰고 저장하지 않음 */
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+let pdfLib=null,pendingPdf=null;
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("load"));document.head.appendChild(s)})}
+async function getPdfLib(){if(pdfLib)return pdfLib;await loadScript(PDFJS+"pdf.worker.min.js");await loadScript(PDFJS+"pdf.min.js");pdfLib=window.pdfjsLib;pdfLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";return pdfLib}
+const isPdf=f=>f&&(f.type==="application/pdf"||/\.pdf$/i.test(f.name||""));
+/* 고른 파일을 바로 메모리에 복사: 이후 비밀번호 입력·재시도·자료 보관 모두 이 복사본을 씀 */
+async function toMem(f){const buf=await f.arrayBuffer();const h=new Uint8Array(buf.slice(0,5));const pdf=String.fromCharCode(...h)==="%PDF-";
+  let type=pdf?"application/pdf":(f.type||(/\.png$/i.test(f.name||"")?"image/png":"image/jpeg"));let name=f.name||(pdf?"증권.pdf":"증권 사진.jpg");if(pdf&&!/\.pdf$/i.test(name))name+=".pdf";
+  return new File([buf],name,{type})}
+function ocrPrompt(src){return `${src} 보이는 내용만 읽어 아래 JSON 하나로만 답하세요. 없는 값은 빈 문자열로 두고 추측하지 마세요.
+주민등록번호, 계좌번호, 카드번호는 절대 옮기지 마세요. 증권번호는 마지막 4자리 숫자만 no4에 넣으세요.
+여러 계약이 있으면 첫 번째 주계약 기준으로 답하세요. 담보(특약)는 모두 covers에 넣으세요.
+{"company":"보험사명","product":"상품명","type":"${TYPES.join("|")} 중 하나","holder":"계약자 이름","insuredName":"피보험자 이름","no4":"","start":"YYYY-MM-DD 계약일","payEnd":"YYYY-MM-DD 납입 종료일(납입기간으로 계산 가능하면 계산)","end":"YYYY-MM-DD 만기일","premium":숫자(원, 1회 보험료 합계),"payCycle":"month|year","renew":true|false,"renewYears":숫자 또는 "","companyTel":"보험사 고객센터 번호","covers":[{"cat":"${COV.map(c=>c[0]).join("|")} 중 하나","name":"담보명 그대로","amt":숫자(만원 단위 가입금액, 실손은 0)}]}`}
+function setOcr(m){const el=$("ocrMsg");if(el)el.textContent=m}
+function showPw(on,msg){const b=$("pwBox");if(!b)return;b.hidden=!on;if(on){const i=$("pwIn");i.value="";setTimeout(()=>i.focus(),50)}if(msg)setOcr(msg)}
+async function runOcr(file,pw){
+  const btn=$("ocrPick");if(!btn)return;
+  btn.classList.add("busy");
+  try{
+    if(isPdf(file))await fromPdf(file,pw);
+    else{
+      if(!extras.lim||!extras.lim.images){setOcr("이 화면에서는 사진을 보낼 수 없습니다. PDF 파일로 올리거나 직접 입력해 주세요.");return}
+      setOcr("사진을 읽는 중입니다… (10~30초)");
+      fill(await extras.sample.json(ocrPrompt("이 이미지는 한국 보험증권 또는 보험사 앱의 계약 정보 화면입니다."),{images:[file.type?file:new Blob([file],{type:"image/jpeg"})],modelTier:"default"}),file);
+    }
+  }catch(e){
+    const c=e&&e.code;
+    setOcr(c==="not_granted"?"Claude에게 증권 내용을 보내는 것을 허용하지 않아 자동 채우기를 쓸 수 없습니다. 직접 입력해 주세요.":c==="rate_limited"?"잠시 후 다시 시도해 주세요.":c==="image_rejected"?"이 사진은 읽을 수 없습니다. 다른 사진(JPG·PNG)으로 해 주세요.":c==="pdf_load"?"PDF 도구를 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.":c==="pdf_bad"?"PDF 파일을 열지 못했습니다.":c==="empty"?"분석은 했지만 증권 항목을 찾지 못했습니다.":c==="invalid_json"?"분석 결과를 정리하지 못했습니다.":"내용을 읽지 못했습니다.");
+    setOcr($("ocrMsg").textContent+` (오류: ${c||(e&&e.name)||"?"}${e&&e.detail?" · "+String(e.detail).slice(0,60):""}) 직접 입력해 주세요.`);
+  }finally{btn.classList.remove("busy")}
+}
+async function fromPdf(file,pw){
+  setOcr("PDF를 여는 중입니다…");
+  let lib;try{lib=await getPdfLib()}catch(e){throw{code:"pdf_load"}}
+  let doc;
+  try{doc=await lib.getDocument({data:new Uint8Array((await file.arrayBuffer()).slice(0)),password:pw||undefined,cMapUrl:PDFJS+"cmaps/",cMapPacked:true,standardFontDataUrl:PDFJS+"standard_fonts/",isEvalSupported:false}).promise}
+  catch(e){
+    if(e&&e.name==="PasswordException"){pendingPdf=file;showPw(true,e.code===2?"비밀번호가 맞지 않습니다. 다시 입력해 주세요.":"비밀번호가 걸린 PDF입니다. 비밀번호를 입력해 주세요.");return}
+    throw{code:"pdf_bad",detail:(e&&(e.name||e.message))||""};
+  }
+  pendingPdf=null;showPw(false);
+  const n=Math.min(doc.numPages,8);let text="";
+  setOcr(`PDF ${doc.numPages}쪽을 읽는 중입니다…`);
+  for(let i=1;i<=n;i++){try{const pg=await doc.getPage(i);const tc=await pg.getTextContent();text+=`\n[${i}쪽]\n`+tc.items.map(it=>(it.str||"")+(it.hasEOL?"\n":" ")).join("")}catch(e){}}
+  text=text.replace(/(\d{6})\s*-?\s*([1-8])\d{6}/g,"$1-$2******"); /* 주민번호 뒷자리는 보내기 전에 가림 */
+  const clean=text.replace(/\s+/g,"");
+  const good=(clean.match(/[가-힣A-Za-z0-9]/g)||[]).length/Math.max(1,clean.length);
+  let o;
+  if(clean.length>=150&&good>=0.5){
+    setOcr("증권 내용을 분석하는 중입니다… (10~30초)");
+    o=await extras.sample.json(ocrPrompt("아래는 한국 보험증권 PDF에서 뽑은 글자입니다. 표가 줄 단위로 섞여 있을 수 있습니다.")+"\n\n=== 증권 내용 ===\n"+text.slice(0,60000),{modelTier:"default"});
+  }else{
+    /* 글자가 없는 스캔 PDF: 앞쪽 몇 장을 그림으로 바꿔 보냄 */
+    if(!extras.lim||!extras.lim.images){setOcr("글자가 없는 스캔 PDF라 이 화면에서는 읽을 수 없습니다. 직접 입력해 주세요.");doc.destroy();return}
+    setOcr("스캔된 PDF라 그림으로 바꿔 분석하는 중입니다… (20~40초)");
+    const imgs=[];const m=Math.min(doc.numPages,extras.lim.images.maxCount||3,3);
+    for(let i=1;i<=m;i++){const pg=await doc.getPage(i);const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:Math.min(2,1200/v0.width)});
+      const cv=document.createElement("canvas");cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+      await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+      imgs.push(await new Promise(r=>cv.toBlob(r,"image/jpeg",.85)))}
+    o=await extras.sample.json(ocrPrompt("이 이미지들은 한국 보험증권 PDF의 앞쪽 페이지입니다."),{images:imgs.filter(Boolean),modelTier:"default"});
+  }
+  doc.destroy();fill(o,file);
+}
+function fill(o,file){
+  if(!o||typeof o!=="object")throw{code:"invalid_json"};
+  if(!o.company&&!o.product&&!num(o.premium)&&!(Array.isArray(o.covers)&&o.covers.length))throw{code:"empty"};
+  if(!$("pIns"))return;
+  const g=(k,v)=>{const el=$(k);if(el&&v!==undefined&&v!==null&&v!=="")el.value=v};
+  g("pCo",o.company);g("pProd",o.product);if(TYPES.includes(o.type))g("pType",o.type);g("pHolder",o.holder);
+  g("pNo",String(o.no4||"").replace(/\D/g,"").slice(-4));
+  ["start","payEnd","end"].forEach(k=>{if(/^\d{4}-\d{2}-\d{2}$/.test(o[k]||""))g({start:"pStart",payEnd:"pPayEnd",end:"pEnd"}[k],o[k])});
+  if(num(o.premium))g("pPrem",num(o.premium).toLocaleString("ko-KR"));if(o.payCycle==="year")g("pCyc","year");
+  if(o.renew===true){$("pRenew").checked=true;$("renewRow").hidden=false;if(num(o.renewYears))g("pRy",num(o.renewYears))}
+  g("pCt",o.companyTel);
+  if(o.insuredName){const m=members().find(m=>m.name&&(m.name===o.insuredName||String(o.insuredName).includes(m.name)));if(m)g("pIns",m.id)}
+  const cv=Array.isArray(o.covers)?o.covers.filter(c=>c&&COVN[c.cat]).slice(0,40):[];
+  if(cv.length){$("covList").insertAdjacentHTML("beforeend",cv.map(c=>covRow({id:newId("c"),cat:c.cat,amt:num(c.amt)||"",name:String(c.name||"").slice(0,40)})).join(""))}
+  setOcr(`읽어서 채웠습니다${cv.length?` (보장 ${cv.length}개)`:""}. 증권과 맞는지 한 번 확인한 뒤 저장해 주세요.${file&&isPdf(file)&&extras.assets?" 원본 PDF는 보관 자료에 넣었습니다(비밀번호는 그대로 걸려 있습니다).":""}`);
+  if(file&&extras.assets)attach(file,true);
+}
+async function attach(file,quiet){
+  if(!extras.assets||!state.edit)return;
+  if(file.size>20*1024*1024){toast("20MB 이하 파일만 올릴 수 있습니다");return}
+  const ed=state.edit;if(!quiet)toast("올리는 중입니다…");
+  try{const ty=file.type||(isPdf(file)?"application/pdf":/\.png$/i.test(file.name||"")?"image/png":"image/jpeg");const r=await extras.assets.upload(file,{type:ty});ed.files=[...(ed.files||[]),{id:r.id,name:file.name||"증권 사진",type:ty,size:r.sizeBytes,addedAt:Date.now()}];
+    if(state.edit===ed&&$("fileList"))$("fileList").innerHTML=fileRows(ed);if(!quiet)toast("자료를 올렸습니다. 저장을 눌러야 보험에 연결됩니다")}
+  catch(e){toast(e&&e.code==="unsupported_type"?"사진이나 PDF만 올릴 수 있습니다":e&&e.code==="quota_or_state"?"저장 공간이 가득 찼습니다":"올리지 못했습니다")}
+}
+
+/* ── 이벤트 ── */
+let tt;function toast(m,undoId){const t=$("toast");t.textContent=m;if(undoId){const b=document.createElement("button");b.type="button";b.className="undo";b.dataset.undo=undoId;b.textContent="되돌리기";t.appendChild(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},undoId?7000:2600)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
+const backup=()=>JSON.stringify({app:"우리 가족 보험관리",v:1,exportedAt:new Date().toISOString(),recs:state.recs},null,1);
+/* 백업 v2: 기록 + 첨부 파일 내용(base64). 지운 보험의 파일도 포함(되살릴 수 있으므로) */
+function allFiles(){const m=new Map();Object.values(state.recs).forEach(r=>{if(r&&r.kind==="policy")(r.files||[]).forEach(f=>{if(f&&f.id&&!m.has(f.id))m.set(f.id,f)})});return m}
+const toB64=blob=>new Promise((ok,no)=>{const fr=new FileReader();fr.onload=()=>ok(String(fr.result).split(",")[1]||"");fr.onerror=()=>no(fr.error);fr.readAsDataURL(blob)});
+const fromB64=(b,type)=>{const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:type||"application/octet-stream"})};
+function bkProg(t){const el=$("bkProg");if(!el)return;el.hidden=!t;el.textContent=t||""}
+async function backupFull(){
+  const fm=[...allFiles().entries()],files={};let miss=[];
+  for(let i=0;i<fm.length;i++){const [id,f]=fm[i];bkProg(`첨부 파일 담는 중… ${i+1}/${fm.length}`);
+    try{const r=await fetch("/_blob/"+id);if(!r.ok)throw 0;const bl=await r.blob();files[id]={name:f.name||"",type:f.type||bl.type||"",size:bl.size,data:await toB64(bl)}}catch(e){miss.push(f.name||id)}}
+  bkProg("");
+  return {text:JSON.stringify({app:"우리 가족 보험관리",v:2,exportedAt:new Date().toISOString(),recs:state.recs,files}),count:Object.keys(files).length,miss};
+}
+async function assetExists(id){try{const r=await fetch("/_blob/"+id);if(r.body&&r.body.cancel)r.body.cancel().catch(()=>{});return r.ok}catch(e){return false}}
+async function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 코드를 읽지 못했습니다");return}
+  if(!o||!o.recs||o.app!=="우리 가족 보험관리"){toast("보험관리 백업이 아닙니다");return}
+  let n=0;Object.values(o.recs).forEach(r=>{if(take(r)){n++;push(r.id)}});lsSave();render();
+  /* 첨부 파일: 저장소에 없는 것만 다시 올리고, 새 번호로 보험 기록을 고침 */
+  const fs=o.files&&typeof o.files==="object"?Object.entries(o.files):[];let up=0,keep=0,fail=0;
+  if(fs.length&&!extras.assets){toast(`${n}건 복원 · 첨부 파일 ${fs.length}개는 이 화면에서 올릴 수 없습니다 (Claude 앱 PC에서 다시 복원해 주세요)`);return}
+  const map={};
+  for(let i=0;i<fs.length;i++){const [id,f]=fs[i];bkProg(`첨부 파일 복원 중… ${i+1}/${fs.length}`);
+    try{if(await assetExists(id)){keep++;continue}
+      /* 예전 복원에서 이미 새 번호로 다시 올린 파일이면 건너뜀 */
+      const again=[...allFiles().values()].find(x=>x.origId===id);if(again&&await assetExists(again.id)){keep++;continue}
+      const ty=f.type||"application/pdf";const r=await extras.assets.upload(fromB64(f.data,ty),{type:ty});map[id]=r.id;up++}catch(e){fail++}}
+  bkProg("");
+  if(Object.keys(map).length){const now=Date.now();Object.values(state.recs).forEach(r=>{if(r.kind==="policy"&&(r.files||[]).some(f=>map[f.id])){
+      state.recs[r.id]={...r,files:r.files.map(f=>map[f.id]?{...f,id:map[f.id],origId:f.origId||f.id}:f),updatedAt:now};push(r.id)}});lsSave();render()}
+  toast(`기록 ${n}건 복원${fs.length?` · 첨부 파일 ${up}개 다시 올림, ${keep}개 그대로${fail?`, ${fail}개 실패`:""}`:""}`.replace(/^기록 0건 복원/,"기록은 이미 최신"));
+}
+/* 지우기: 문서는 남기고 deleted 표시만. 확인창(confirm)은 Claude 앱에서 막히므로 되돌리기·되살리기로 대신함 */
+function softDel(id,msg){const r=state.recs[id];if(!r)return;put({...r,deleted:true,deletedAt:Date.now()});closeSheet();toast(msg,id)}
+function undel(id){const r=state.recs[id];if(!r||!r.deleted)return;const x={...r,deleted:false};delete x.deletedAt;put(x);toast("되살렸습니다")}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.view){state.view=d.view;try{localStorage.setItem("myapps-ins-view",d.view)}catch(_){}render();window.scrollTo({top:0});return}
+  if("mem" in d){state.mem=d.mem||null;render();return}
+  if(d.close){closeSheet();return}
+  if(d.addmem){openMember(null);return}
+  if(d.editmem){openMember(d.editmem);return}
+  if(d.openfile){openFile(d.pid,d.openfile);return}
+  if(d.backpol){fv=null;viewPolicy(d.backpol);return}
+  if(t.id==="fvSave"){saveAsset();return}
+  if(t.id==="fvPwOk"){const pw=$("fvPwIn").value;if(!pw){toast("비밀번호를 입력해 주세요");return}$("fvPwIn").value="";if(fv&&fv.blob)fvPdf(fv,pw).catch(fvErr);return}
+  if(d.review){openReview(d.review);return}
+  if(d.runrv){runReview(d.runrv);return}
+  if(d.rvsel){openReview(state.rv,d.rvsel);return}
+  if(d.delrv){softDel(d.delrv,"분석 기록을 지웠습니다");return}
+  if(d.color){state.edit.color=d.color;document.querySelectorAll(".sw").forEach(s=>s.setAttribute("aria-pressed",String(s.dataset.color===d.color)));return}
+  if(d.delmem){const n=policies().filter(p=>p.insured===d.delmem).length;softDel(d.delmem,n?`가족을 지웠습니다 (보험 ${n}건은 남아 있음)`:"가족을 지웠습니다");return}
+  if(d.undo){$("toast").hidden=true;undel(d.undo);return}
+  if(d.restore){undel(d.restore);return}
+  if(d.addpol){if(!members().length){openMember(null);return}openPolicy(null);return}
+  if(d.pol){viewPolicy(d.pol);return}
+  if(d.editpol){openPolicy(d.editpol);return}
+  if(d.delpol){softDel(d.delpol,"보험을 지웠습니다");return}
+  if(d.delcov){const el=t.closest(".cov");if(el)el.remove();return}
+  if(d.delfile){state.edit.files=(state.edit.files||[]).filter(f=>f.id!==d.delfile);$("fileList").innerHTML=fileRows(state.edit);toast("목록에서 뺐습니다. 저장을 눌러야 반영됩니다");return}
+  if(d.addclaim){if(!members().length){openMember(null);return}openClaim(null);return}
+  if(d.claim){openClaim(d.claim);return}
+  if(d.delclaim){softDel(d.delclaim,"청구 기록을 지웠습니다");return}
+  if(d.cst){state.edit.status=d.cst;document.querySelectorAll("#cSt [data-cst]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.cst===d.cst)));return}
+  if(t.id==="mSave"){saveMember();return}
+  if(t.id==="pSave"){savePolicy();return}
+  if(t.id==="cSave"){saveClaim();return}
+  if(t.id==="covAdd"){$("covList").insertAdjacentHTML("beforeend",covRow({id:newId("c"),cat:"cancer"}));const l=$("covList").lastElementChild;l&&l.querySelector("input").focus();return}
+  if(t.id==="pwOk"){const pw=$("pwIn").value;if(!pw){toast("비밀번호를 입력해 주세요");return}if(pendingPdf)runOcr(pendingPdf,pw);$("pwIn").value="";return}
+  if(t.id==="pwCancel"){pendingPdf=null;showPw(false,"취소했습니다. 직접 입력하시거나 다른 파일을 올려 주세요.");return}
+  if(t.id==="bkSave"){saveFile();return}
+  if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
+  if(t.id==="bkRestore"){restore($("bkText").value);return}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="pRenew"){$("renewRow").hidden=!t.checked;return}
+  if(t.id==="cMem"){$("cPol").innerHTML=polOpts(t.value,"");return}
+  if(t.id==="ocrPdf"||t.id==="ocrImg"){const f=t.files&&t.files[0];if(!f){setOcr("파일을 받지 못했습니다. 다시 골라 주세요.");return}
+    pendingPdf=null;showPw(false);setOcr("파일을 불러오는 중입니다…");
+    toMem(f).then(m=>{t.value="";if(t.id==="ocrPdf"&&!isPdf(m)&&!/^image\//.test(m.type)){setOcr(`PDF 파일이 아닙니다. 증권 PDF를 골라 주세요. (파일: ${m.name}, ${m.size}바이트)`);return}runOcr(m)})
+      .catch(e=>{t.value="";setOcr(`휴대폰에서 파일을 읽지 못했습니다. 파일을 '다운로드' 폴더에 저장한 뒤 다시 골라 주세요. (오류: ${(e&&e.name)||"read"})`)});return}
+  if(t.id==="attIn"){const f=t.files&&t.files[0];t.value="";if(!f)return;
+    if(!isPdf(f)&&!/^image\//.test(f.type||"")&&!/\.(jpe?g|png|heic|webp)$/i.test(f.name||"")){toast("PDF나 사진 파일만 올릴 수 있습니다");return}
+    attach(f);return}
+  if(t.id==="bkFile"&&t.files[0]){t.files[0].text().then(restore);t.value="";return}
+  if(t.id==="incIn"){const s=getSet();put({...s,id:"settings",kind:"settings",income:num(t.value)||"",deleted:false});toast("저장했습니다");return}
+});
+document.addEventListener("input",e=>{const t=e.target;if(["pPrem","cAmt","cPaid","incIn"].includes(t.id)){const n=num(t.value);t.value=n?n.toLocaleString("ko-KR"):""}});
+document.addEventListener("submit",e=>e.preventDefault());
+
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();if(e.key==="Enter"&&e.target.id==="pwIn"){e.preventDefault();$("pwOk").click()}if(e.key==="Enter"&&e.target.id==="fvPwIn"){e.preventDefault();$("fvPwOk").click()}});
+async function saveFile(){
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  const d=new Date(),name=`MY미니앱_보험관리_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+  if(!dl){try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backup()],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast("백업 파일을 저장했습니다")}catch(e){toast((await copyText(backup()))?"파일 저장이 안 되어 백업 코드를 복사했습니다":"백업 코드 복사를 이용해 주세요")}return}
+  const btn=$("bkSave");if(btn)btn.disabled=true;
+  try{const b=await backupFull();const fname=b.count?name.replace(".json",`_자료${b.count}개.json`):name;
+    await dl.save({filename:fname,data:new Blob([b.text],{type:"application/json"})});
+    toast(`백업 파일을 저장했습니다${b.count?` (첨부 파일 ${b.count}개 포함)`:""}${b.miss.length?` · ${b.miss.length}개는 불러오지 못함`:""}`)}
+  catch(e){bkProg("");if(e&&e.code!=="declined")toast("저장하지 못했습니다. 백업 코드 복사를 이용해 주세요")}
+  finally{if(btn)btn.disabled=false}
+}
+
+/* ── 글자 크기 (기기 + 내 설정) ── */
+const FS=["s","m","l","xl"];let fs="m",prefRef=null;
+try{const v=localStorage.getItem("myapps-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("myapps-fs",fs)}catch(e){}}
+async function loadPref(){try{if(!uid||!db)return;prefRef=db.doc("data/users/"+uid+"/prefs");const s=await prefRef.get();const v=s.exists&&s.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}}catch(e){}}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+
+try{const v=localStorage.getItem("myapps-ins-view");if(["home","pol","claim","fam"].includes(v))state.view=v}catch(e){}
+applyFs();lsLoad();render();connect();
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
