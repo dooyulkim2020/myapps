@@ -222,6 +222,23 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
 .yc .det .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .yc .det .hd b{font-size:18px;color:var(--accent);font-variant-numeric:tabular-nums}
 .yc .det .row{border-color:rgba(127,127,127,.18)}
+.rp .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.rp .kp{background:var(--bg);border-radius:10px;padding:10px}
+.rp .kp b{display:block;font-size:19px;font-variant-numeric:tabular-nums}
+.rp .kp small{font-size:13px;color:var(--muted)}
+.rp .pos{color:var(--ok)}.rp .neg{color:var(--bad)}
+.rp .plot{position:relative;height:190px;margin:14px 0 0 44px;border-bottom:1px solid var(--line);cursor:pointer;touch-action:pan-y}
+.rp .cols{position:absolute;inset:0;display:flex;align-items:flex-end;gap:2px}
+.rp .col{flex:1;min-width:0;height:100%;position:relative;display:flex;flex-direction:column-reverse}
+.rp .col i{display:block;width:100%}
+.rp .col .sp{position:absolute;left:-1px;right:-1px;border-top:2.5px solid var(--ink)}
+.rp .col.short .sp{border-color:var(--bad)}
+.rp .plot.sel .col{opacity:.6}.rp .plot.sel .col.on{opacity:1}
+.rp .xl{position:relative;height:20px;margin-left:44px}
+.rp .xl span{position:absolute;top:3px;transform:translateX(-50%);font-size:12px;color:var(--muted)}
+.rp .lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:14px}
+.rp .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rp .det{margin-top:10px;padding:12px;border-radius:12px;background:var(--accent-soft)}
 .rng{width:100%;accent-color:var(--accent);min-height:40px}
 .gauge{height:10px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:6px}
 .gauge>span{display:block;height:100%;background:var(--accent);border-radius:99px}
@@ -249,7 +266,7 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
 <nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
   <button type="button" role="tab" data-view="home" aria-selected="true"><b>한눈에</b><span>적립·수령</span></button>
   <button type="button" role="tab" data-view="plan" aria-selected="false"><b>연금</b><span id="tPlan">0건</span></button>
-  <button type="button" role="tab" data-view="sim" aria-selected="false"><b>수령 계획</b><span>연도별·세금</span></button>
+  <button type="button" role="tab" data-view="sim" aria-selected="false"><b>수령 계획</b><span>생활비·연도</span></button>
   <button type="button" role="tab" data-view="fam" aria-selected="false"><b>가족</b><span>구성원·백업</span></button>
 </div></nav>
 
@@ -495,12 +512,92 @@ function ycPick(e){const pl=e.target.closest("#ycPlot");if(!pl)return;const yt=y
   const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);$("ycDet").innerHTML=ycDet(yt,yt.rows.find(r=>r.y===y),peak)}
 document.addEventListener("pointerdown",ycPick);
 document.addEventListener("pointermove",e=>{if(e.buttons&&e.pointerType==="mouse")ycPick(e)});
+/* ── 은퇴 생활비 설계: 모든 금액을 '지금 돈 가치(현재가치)'로 환산해 비교 ── */
+const RP_ITEMS=[["basic","기본 생활 (식비·통신·생필품)"],["house","주거 (관리비·공과금·세금)"],["health","의료·건강"],["car","자동차·교통"],["leisure","여가·여행·경조사"],["etc","기타 (용돈·자녀 지원 등)"]];
+/* 국민연금연구원 국민노후보장패널 2024년 조사(50세 이상): 부부 적정 298.1만·최소 216.6만, 개인 적정 197.6만·최소 139.2만 */
+const RP_STD={couple:{good:298.1,min:216.6},single:{good:197.6,min:139.2}};
+const RP_SPLIT={basic:.4,house:.17,health:.1,car:.08,leisure:.17,etc:.08};
+function rpGet(){const r=getSet().rp||{};return {retireAge:num(r.retireAge)||60,inf:r.inf===""||r.inf==null?2.5:num(r.inf),items:r.items||{},ins:num(r.ins),insEnd:num(r.insEnd)||75,work:num(r.work),workEnd:num(r.workEnd)||65,assets:num(r.assets),hh:r.hh||"couple",set:!!r.items}}
+function rpMe(){const ms=members().filter(m=>pd(m.birth));return ms.find(m=>m.rel==="본인")||ms[0]||null}
+function rpCalc(){
+  const me=rpMe();if(!me)return null;const rp=rpGet();const by=pd(me.birth).getFullYear(),y0=today0().getFullYear();
+  const inf=rp.inf/100,realR=(rate()-rp.inf)/100;const live=Object.values(rp.items).reduce((a,b)=>a+num(b),0)*1e4;
+  const st=members().filter(m=>pd(m.birth)).map(m=>({m,s:streams(m)}));const couple=rp.hh!=="single";
+  const from=Math.max(y0,by+rp.retireAge),to=by+95;if(from>to)return null;
+  let assets=rp.assets*1e4*Math.pow(1+realR,Math.max(0,from-y0));const rows=[];let outAge=null,shortSum=0;
+  for(let y=from;y<=to;y++){const t=y-y0,df=Math.pow(1+inf,t),age=y-by;let pub=0,priv=0;
+    st.forEach(x=>{const a=y-pd(x.m.birth).getFullYear();x.s.forEach(s=>{if(a>=s.start&&a<s.end){if(s.p.type==="nps"||s.p.type==="gov")pub+=s.monthly;else priv+=s.monthly/df}})});
+    const other=age<rp.workEnd?rp.work*1e4:0;const ins=age<rp.insEnd?rp.ins*1e4/df:0;const spend=live+ins;const inc=pub+priv+other;const gap=inc-spend;
+    if(gap<0)shortSum+=-gap*12;
+    const startA=assets;assets=assets*(1+realR)+gap*12;if(outAge==null&&rp.assets&&assets<0)outAge=age;
+    rows.push({y,age,pub,priv,other,ins,spend,inc,gap,assets:startA})}
+  return {me,rp,rows,couple,live,shortSum,outAge}}
+function rpSection(){
+  const c=rpCalc();if(!c)return "";const {me,rp,rows,couple}=c;const std=couple?RP_STD.couple:RP_STD.single;
+  let h=`<section class="box rp" id="rpBox"><h3>은퇴 생활비 설계</h3>`;
+  if(!rp.set){h+=`<p>은퇴 뒤 매달 쓸 생활비를 넣으면, 연금으로 얼마나 충당되는지 해마다 비교해 드립니다.</p>
+    <p class="meta2" style="margin-top:6px">참고: 50세 이상 ${couple?"부부":"1인 가구"}가 생각하는 노후 생활비는 적정 월 ${std.good}만원, 최소 월 ${std.min}만원입니다(국민연금연구원 국민노후보장패널 2024년 조사).</p>
+    <button class="btn pri" type="button" data-rpedit="1" style="width:100%;min-height:46px;margin-top:10px">생활비 입력하기</button></section>`;return h}
+  const first=rows[0],npsA=npsAge(me.birth),after=rows.find(r=>r.age>=Math.max(npsA,rp.retireAge)&&r.pub>0)||rows[rows.length-1];
+  const bridge=rows.filter(r=>r.pub===0&&r.gap<0);
+  const k=(v)=>`<b class="${v>=0?"pos":"neg"}">${v>=0?"+":"−"}${manW(Math.abs(v))}</b>`;
+  h+=`<p class="meta2">${esc(me.name)}님 ${rp.retireAge}세 은퇴 · 생활비 월 ${manW(c.live)}${rp.ins?` + 보험료 ${manW(rp.ins*1e4)}(${rp.insEnd}세까지)`:""} · 물가 연 ${rp.inf}% · 모든 금액은 지금 돈 가치</p>
+    <div class="kpis"><div class="kp"><small>${first.age}세 (은퇴 첫해) 매달</small>${k(first.gap)}</div><div class="kp"><small>${after.age}세 (국민연금 받는 해) 매달</small>${k(after.gap)}</div>
+    <div class="kp"><small>${rows[rows.length-1].age}세까지 부족 합계</small><b class="${c.shortSum?"neg":"pos"}">${c.shortSum?man(c.shortSum):"부족 없음"}</b></div>
+    <div class="kp"><small>연금 외 노후자금 ${rp.assets?manW(rp.assets*1e4):"미입력"}</small><b class="${c.outAge?"neg":"pos"}">${rp.assets?(c.outAge?`${c.outAge}세에 바닥`:"95세까지 유지"):"-"}</b></div></div>`;
+  // 그래프
+  const max=Math.max(1,...rows.map(r=>Math.max(r.inc,r.spend)));const p10=Math.pow(10,Math.floor(Math.log10(max/4||1)));const step=[1,2,2.5,5,10].map(x=>x*p10).find(x=>x>=max/4);const top=Math.ceil(max/step)*step;
+  let grid="";for(let v=0;v<=top+1;v+=step)grid+=`<div class="gl" style="bottom:${v/top*100}%"><span>${Math.round(v/1e4)}만</span></div>`;
+  const sel=rows.find(r=>r.y===state.rpY)||first;
+  const cols=rows.map(r=>`<div class="col${r.gap<0?" short":""}${r===sel?" on":""}" data-y="${r.y}"><i style="height:${r.pub/top*100}%;background:var(--g1)"></i><i style="height:${r.priv/top*100}%;background:var(--g3)"></i><i style="height:${r.other/top*100}%;background:var(--g2)"></i><span class="sp" style="bottom:${r.spend/top*100}%"></span></div>`).join("");
+  const n=rows.length,lab=rows.map((r,i)=>r.age%5===0&&i<n-2?`<span style="left:${(i+.5)/n*100}%">${r.age}세</span>`:"").join("");
+  h+=`<div class="lg yc"><span><span class="dot" style="background:var(--g1)"></span>국민·공적연금</span><span><span class="dot" style="background:var(--g3)"></span>퇴직·개인연금</span><span><span class="dot" style="background:var(--g2)"></span>근로·기타 수입</span><span><span class="dot" style="background:var(--ink);height:3px;vertical-align:3px"></span>생활비</span></div>
+    <div class="yc"><div class="plot sel" id="rpPlot" role="img" aria-label="은퇴 후 연도별 월 수입과 생활비 비교">${grid}<div class="cols">${cols}</div></div><div class="xl">${lab}</div></div>
+    <div class="det" id="rpDet">${rpDet(sel)}</div><p class="meta2" style="margin-top:6px">막대를 누르면 그해 내역을 봅니다. 빨간 선은 그해 생활비가 수입보다 많은 해입니다.</p>`;
+  // 가이드
+  const G=[];
+  if(bridge.length)G.push(["국민연금 전 공백 기간",`${bridge[0].age}~${bridge[bridge.length-1].age}세에 매달 평균 ${manW(bridge.reduce((a,r)=>a-r.gap,0)/bridge.length)} 모자랍니다(합계 ${man(bridge.reduce((a,r)=>a-r.gap*12,0))}). 이 기간에 퇴직연금·IRP 수령액을 늘리거나, 일을 조금 더 하거나, 국민연금 조기수령(1년당 6% 감액)을 아래 비교표로 따져 보세요.`]);
+  if(after.gap>0&&bridge.length)G.push(["국민연금 뒤에는 여유",`국민연금을 받기 시작하면 매달 ${manW(after.gap)} 남습니다. 앞 공백 기간에 사적연금을 앞당겨 쓰고 뒤에 줄이는 방식으로 고르게 맞출 수 있습니다.`]);
+  if(after.gap<0)G.push(["국민연금을 받아도 부족",`매달 ${manW(-after.gap)} 모자랍니다. 생활비를 줄이거나, 연금저축·IRP 추가 납입(세액공제 연 900만원 한도), 주택연금 등을 검토하세요.`]);
+  const npsMe=plans().filter(p=>(p.type==="nps"||p.type==="gov")&&active(p)).map(p=>{const m=mById(p.owner);return {m,yr:project(p,m).monthly*12}}).filter(x=>x.yr>2e7);
+  npsMe.forEach(x=>G.push(["건강보험 피부양자 기준",`${esc(x.m.name)}님 국민연금이 연 ${man(x.yr)}으로 피부양자 소득 기준(연 2,000만원)을 넘을 수 있습니다. 넘으면 지역가입자로 건강보험료를 내야 하니 생활비에 넣어 두세요. 퇴직·개인연금은 이 소득에 들어가지 않습니다.`]));
+  const lv=c.live/1e4;G.push(["생활비 수준",`입력한 생활비 월 ${Math.round(lv)}만원은 ${couple?"부부":"1인 가구"} 적정 생활비(${std.good}만원)의 ${Math.round(lv/std.good*100)}%입니다.${lv<std.min?` 최소 생활비(${std.min}만원)보다 적으니 빠진 항목이 없는지 확인하세요.`:""}`]);
+  if(rp.ins)G.push(["보험료 끝나는 시점",`보험료 ${manW(rp.ins*1e4)}을 ${rp.insEnd}세까지 내는 것으로 넣었습니다. 갱신형 특약은 납입이 끝나도 계속 내야 하니 보험관리 앱의 갱신 일정과 함께 보세요.`]);
+  h+=`<div class="sec" style="margin-top:12px"><h3>가이드</h3><ol class="gl" style="list-style:decimal;padding-left:20px;display:flex;flex-direction:column;gap:10px;margin:0">${G.map(g=>`<li><b style="display:block;font-weight:600">${g[0]}</b>${g[1]}</li>`).join("")}</ol></div>
+    <button class="btn line" type="button" data-rpedit="1" style="width:100%;min-height:44px;margin-top:12px">생활비·조건 고치기</button>
+    <p class="meta2" style="margin-top:6px">국민연금은 물가에 맞춰 오르므로 그대로, 퇴직·개인연금은 금액이 고정이라 물가만큼 줄여 계산했습니다. 세금·건강보험료는 빠진 금액입니다.</p></section>`;
+  return h}
+function rpDet(r){return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${r.y}년 · ${r.age}세</b><b class="${r.gap>=0?"pos":"neg"}" style="font-size:18px">${r.gap>=0?"매달 +":"매달 −"}${manW(Math.abs(r.gap))}</b></div>
+  <div class="row"><span class="l">국민·공적연금</span><span class="r">${manW(r.pub)}</span></div><div class="row"><span class="l">퇴직·개인연금</span><span class="r">${manW(r.priv)}</span></div>${r.other?`<div class="row"><span class="l">근로·기타 수입</span><span class="r">${manW(r.other)}</span></div>`:""}
+  <div class="row"><span class="l">생활비${r.ins?" (보험료 포함)":""}</span><span class="r">${manW(r.spend)}</span></div>${rpGet().assets?`<div class="row"><span class="l">그해 초 노후자금</span><span class="r">${r.assets>0?man(r.assets):"바닥"}</span></div>`:""}`}
+function rpPick(e){const pl=e.target.closest("#rpPlot");if(!pl)return;const c=rpCalc();if(!c)return;const cs=pl.querySelectorAll(".col");const rc=pl.getBoundingClientRect();const i=Math.max(0,Math.min(cs.length-1,Math.floor((e.clientX-rc.left)/rc.width*cs.length)));
+  const y=+cs[i].dataset.y;state.rpY=y;cs.forEach(x=>x.classList.toggle("on",+x.dataset.y===y));$("rpDet").innerHTML=rpDet(c.rows.find(r=>r.y===y))}
+document.addEventListener("pointerdown",rpPick);
+function openRp(){const rp=rpGet();const me=rpMe();const couple=rp.hh!=="single";const std=couple?RP_STD.couple:RP_STD.single;
+  sheet("은퇴 생활비 설계",`<form class="vstack" style="margin-top:12px">
+    <div class="frow"><label class="fld">은퇴 나이 (${esc(me?me.name:"본인")} 기준)<input id="rRet" inputmode="numeric" maxlength="2" value="${rp.retireAge}"></label><label class="fld">물가상승률 (연 %)<input id="rInf" inputmode="decimal" value="${rp.inf}"></label></div>
+    <label class="fld">생활비 기준<select id="rHh">${opt([["couple","부부 (2인 가구)"],["single","혼자 (1인 가구)"]],rp.hh)}</select></label>
+    <p class="meta2">은퇴 뒤 매달 쓸 돈을 <b>지금 돈 가치</b>로, <b>만원 단위</b>로 넣어 주세요.</p>
+    <div class="frow"><button class="btn sm line" type="button" data-rpfill="good">적정 생활비로 채우기 (${std.good}만)</button><button class="btn sm line" type="button" data-rpfill="min">최소 생활비로 채우기 (${std.min}만)</button></div>
+    ${RP_ITEMS.map(([k,l])=>`<label class="fld">${l}<input data-rpi="${k}" inputmode="numeric" value="${rp.items[k]!=null&&rp.items[k]!==""?esc(rp.items[k]):""}" placeholder="만원"></label>`).join("")}
+    <p class="meta2" id="rSum"></p>
+    <div class="frow"><label class="fld">보험료 (월, 만원)<input id="rIns" inputmode="numeric" value="${rp.ins||""}" placeholder="예: 67"></label><label class="fld">보험료 내는 나이까지<input id="rInsE" inputmode="numeric" maxlength="3" value="${rp.insEnd}"></label></div>
+    <div class="frow"><label class="fld">은퇴 뒤 근로·임대 등 수입 (월, 만원)<input id="rWork" inputmode="numeric" value="${rp.work||""}"></label><label class="fld">그 수입이 있는 나이까지<input id="rWorkE" inputmode="numeric" maxlength="3" value="${rp.workEnd}"></label></div>
+    <label class="fld">연금 말고 노후에 쓸 돈 (예금·투자 등, 만원)<input id="rAst" inputmode="numeric" value="${rp.assets||""}" placeholder="없으면 비워 두세요"></label>
+    <p class="meta2">참고: 국민연금연구원 국민노후보장패널 2024년 조사, 50세 이상 ${couple?"부부":"1인 가구"} 적정 월 ${std.good}만원·최소 월 ${std.min}만원. 노후자금은 기대수익률(${rate()}%)에서 물가를 뺀 만큼 불어난다고 봅니다.</p></form>`,
+    `<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="rSave">저장</button>`);rpSum()}
+function rpSum(){const t=[...document.querySelectorAll("#sheet [data-rpi]")].reduce((a,i)=>a+num(i.value),0);const e=$("rSum");if(e)e.textContent=`생활비 합계 월 ${t.toLocaleString("ko-KR")}만원`}
+function saveRp(){const items={};document.querySelectorAll("#sheet [data-rpi]").forEach(i=>{items[i.dataset.rpi]=i.value===""?"":num(i.value)});
+  const ret=Math.max(40,Math.min(80,num($("rRet").value)||60));
+  const rp={retireAge:ret,inf:Math.max(0,Math.min(10,num($("rInf").value))),items,ins:num($("rIns").value)||"",insEnd:num($("rInsE").value)||75,work:num($("rWork").value)||"",workEnd:num($("rWorkE").value)||65,assets:num($("rAst").value)||"",hh:$("rHh").value};
+  put({...getSet(),id:"settings",kind:"settings",rp,deleted:false});closeSheet();toast("은퇴 생활비 설계를 저장했습니다")}
 function renderSim(){
   const ms=members();
-  let h=`<div class="dayhead"><h2>수령 계획</h2><div class="meta">연도별 가족 월 수령액과 국민연금 조기·연기 비교</div></div>`;
+  let h=`<div class="dayhead"><h2>수령 계획</h2><div class="meta">은퇴 생활비 · 연도별 수령액 · 국민연금 조기·연기 비교</div></div>`;
   if(!ms.length){$("vSim").innerHTML=h+noMembers();return}
   const yt=yearTable();
   if(!yt){$("vSim").innerHTML=h+`<div class="empty">가족의 생년월일을 입력하면 연도별 수령액을 계산합니다.</div>`;return}
+  h+=rpSection();
   const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);
   const shown=yt.rows.filter((r,i)=>i===0||r.y%5===0||r===peak||r.cells.some((c,j)=>c!==yt.rows[i-1].cells[j]));
   h+=`<section class="box yc" id="ycBox"><h3>연도별 가족 월 수령액 (예상)</h3>${ycInner(yt,peak)}
@@ -890,6 +987,8 @@ document.addEventListener("click",e=>{
   if(d.view){state.view=d.view;try{localStorage.setItem("myapps-pen-view",d.view)}catch(_){}render();window.scrollTo({top:0});return}
   if("mem" in d){state.mem=d.mem||null;render();return}
   if(d.ycby){state.ycBy=d.ycby;render();return}
+  if(d.rpedit){openRp();return}
+  if(d.rpfill){const couple=$("rHh").value!=="single";const tot=(couple?RP_STD.couple:RP_STD.single)[d.rpfill];document.querySelectorAll("#sheet [data-rpi]").forEach(i=>{i.value=Math.round(tot*RP_SPLIT[i.dataset.rpi])});rpSum();return}
   if(d.close){closeSheet();return}
   if(d.addmem){openMember(null);return}
   if(d.editmem){openMember(d.editmem);return}
@@ -911,6 +1010,7 @@ document.addEventListener("click",e=>{
   if(t.id==="iApply"){applyImport();return}
   if(t.id==="mSave"){saveMember();return}
   if(t.id==="pSave"){savePlan();return}
+  if(t.id==="rSave"){saveRp();return}
   if(t.id==="bkSave"){saveFile();return}
   if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
   if(t.id==="bkRestore"){restore($("bkText").value);return}
@@ -928,6 +1028,7 @@ document.addEventListener("change",e=>{const t=e.target;
   if(t.dataset.npsadj){const p=state.recs[t.dataset.npsadj];if(p){const x={...p,npsAdj:num(t.value)};delete x._fv;put(x)}return}
 });
 document.addEventListener("input",e=>{const t=e.target;
+  if(t.dataset&&t.dataset.rpi!=null){rpSum();return}
   if(["pMon","pBal","pExp","mSal","pPrin","pSur"].includes(t.id)){const n=num(t.value);t.value=n?n.toLocaleString("ko-KR"):""}
   if(t.dataset&&t.dataset.npsadj){const a=num(t.value),l=$("adjLbl-"+t.dataset.npsadj);if(l)l.textContent=a<0?`${-a}년 앞당김`:a>0?`${a}년 늦춤`:"정상"}
 });
