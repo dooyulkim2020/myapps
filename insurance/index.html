@@ -717,7 +717,7 @@ async function toMem(f){const buf=await f.arrayBuffer();const h=new Uint8Array(b
   return new File([buf],name,{type})}
 function ocrPrompt(src){return `${src} 보이는 내용만 읽어 아래 JSON 하나로만 답하세요. 없는 값은 빈 문자열로 두고 추측하지 마세요.
 주민등록번호, 계좌번호, 카드번호는 절대 옮기지 마세요. 증권번호는 마지막 4자리 숫자만 no4에 넣으세요.
-여러 계약이 있으면 첫 번째 주계약 기준으로 답하세요. 담보(특약)는 모두 covers에 넣으세요.
+여러 계약이 있으면 첫 번째 주계약 기준으로 답하세요. 담보(특약)는 모두 covers에 넣으세요. 증권 뒤쪽 쪽까지 빠짐없이 넣으세요(50개가 넘어도 모두). 입원의료비·외래(통원)의료비·약제(처방조제)의료비처럼 실제 쓴 병원비를 보상하는 담보는 cat을 sil로, 금액은 보험가입금액(만원)으로 넣으세요.
 {"company":"보험사명","product":"상품명","type":"${TYPES.join("|")} 중 하나","holder":"계약자 이름","insuredName":"피보험자 이름","no4":"","start":"YYYY-MM-DD 계약일","payEnd":"YYYY-MM-DD 납입 종료일(납입기간으로 계산 가능하면 계산)","end":"YYYY-MM-DD 만기일","premium":숫자(원, 1회 보험료 합계),"payCycle":"month|year","renew":true|false,"renewYears":숫자 또는 "","companyTel":"보험사 고객센터 번호","covers":[{"cat":"${COV.map(c=>c[0]).join("|")} 중 하나","name":"담보명 그대로","amt":숫자(만원 단위 가입금액, 실손은 0)}]}`}
 function setOcr(m){const el=$("ocrMsg");if(el)el.textContent=m}
 function showPw(on,msg){const b=$("pwBox");if(!b)return;b.hidden=!on;if(on){const i=$("pwIn");i.value="";setTimeout(()=>i.focus(),50)}if(msg)setOcr(msg)}
@@ -747,7 +747,7 @@ async function fromPdf(file,pw){
     throw{code:"pdf_bad",detail:(e&&(e.name||e.message))||""};
   }
   pendingPdf=null;showPw(false);
-  const n=Math.min(doc.numPages,8);let text="";
+  const n=Math.min(doc.numPages,20);let text="";
   setOcr(`PDF ${doc.numPages}쪽을 읽는 중입니다…`);
   for(let i=1;i<=n;i++){try{const pg=await doc.getPage(i);const tc=await pg.getTextContent();text+=`\n[${i}쪽]\n`+tc.items.map(it=>(it.str||"")+(it.hasEOL?"\n":" ")).join("")}catch(e){}}
   text=text.replace(/(\d{6})\s*-?\s*([1-8])\d{6}/g,"$1-$2******"); /* 주민번호 뒷자리는 보내기 전에 가림 */
@@ -782,7 +782,7 @@ function fill(o,file){
   if(o.renew===true){$("pRenew").checked=true;$("renewRow").hidden=false;if(num(o.renewYears))g("pRy",num(o.renewYears))}
   g("pCt",o.companyTel);
   if(o.insuredName){const m=members().find(m=>m.name&&(m.name===o.insuredName||String(o.insuredName).includes(m.name)));if(m)g("pIns",m.id)}
-  const cv=Array.isArray(o.covers)?o.covers.filter(c=>c&&COVN[c.cat]).slice(0,40):[];
+  const cv=Array.isArray(o.covers)?o.covers.filter(c=>c&&COVN[c.cat]).slice(0,120):[];
   if(cv.length){$("covList").insertAdjacentHTML("beforeend",cv.map(c=>covRow({id:newId("c"),cat:c.cat,amt:num(c.amt)||"",name:String(c.name||"").slice(0,40)})).join(""))}
   setOcr(`읽어서 채웠습니다${cv.length?` (보장 ${cv.length}개)`:""}. 증권과 맞는지 한 번 확인한 뒤 저장해 주세요.${file&&isPdf(file)&&extras.assets?" 원본 PDF는 보관 자료에 넣었습니다(비밀번호는 그대로 걸려 있습니다).":""}`);
   if(file&&extras.assets)attach(file,true);
