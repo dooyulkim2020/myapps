@@ -264,7 +264,7 @@ const RELS=["본인","배우자","기타"];
 const TYPES=[["nps","국민연금","공적"],["gov","공무원·사학·군인연금","공적"],["db","퇴직연금 DB형","퇴직"],["dc","퇴직연금 DC형","퇴직"],["irp","IRP (개인형퇴직연금)","퇴직"],["psf","연금저축펀드","개인"],["psi","연금저축보험","개인"],["pins","연금보험 (비과세)","개인"],["house","주택연금","기타"],["etc","기타","기타"]];
 const TN=Object.fromEntries(TYPES.map(t=>[t[0],t[1]])),TG=Object.fromEntries(TYPES.map(t=>[t[0],t[2]]));
 const GROUPS=["공적","퇴직","개인","기타"];
-const STATUS={pay:"납입 중",stop:"납입 중지",recv:"수령 중",done:"수령 완료",end:"해지"};
+const STATUS={pay:"납입 중",paid:"납입 완료",stop:"납입 중지",recv:"수령 중",done:"수령 완료",end:"해지"};
 /* 세액공제 대상(본인 납입분) */
 const TAXCREDIT=["psf","psi","irp","dc"];
 const SRC={nps:"국민연금공단",fss:"통합연금포털",hometax:"홈택스 연말정산",statement:"금융회사 명세서",paste:"붙여넣은 자료",manual:"직접 입력",other:"공식 자료"};
@@ -448,7 +448,7 @@ function checkBox(ms,ps){
 }
 function planCard(p){
   const m=mById(p.owner),pr=project(p,m);
-  const st=p.status||"pay",stc=st==="pay"?"ok":st==="recv"?"ok":st==="end"?"bad":"";
+  const st=p.status||"pay",stc=st==="pay"||st==="paid"?"ok":st==="recv"?"ok":st==="end"?"bad":"";
   const info=[["수령",`${pr.start}세부터 ${pr.lifelong?(p.type==="nps"||p.type==="gov"||p.type==="house"?"평생":"90세까지 가정"):num(p.payYears)+"년간"}`],
     ["예상 월",pr.monthly?`${won(pr.monthly)} <span class="meta2">(${esc(pr.basis)})</span>`:`<span class="meta2">예상액 또는 적립금 입력 필요</span>`]];
   if(num(p.balance))info.push(["적립금",`${man(num(p.balance))}${p.balanceDate?` <span class="meta2">(${esc(ym(p.balanceDate))} 기준)</span>`:""}`]);
@@ -460,7 +460,7 @@ function planCard(p){
   return `<li><button class="card ${active(p)?"":"off"}" type="button" data-plan="${p.id}"><span class="mono" style="background:${esc((m&&m.color)||COLORS[0])}">${esc((m?m.name:"?").slice(0,1))}</span>
   <span style="min-width:0"><span class="nm clamp2">${esc(planName(p))}</span><span class="ds" style="display:block">${esc(TN[p.type]||"")}${p.provider?" · "+esc(p.provider):""}${m?" · "+esc(m.name):""}</span>
   <span class="mt"><span class="tagx ${stc}">${STATUS[st]}</span><span class="tagx">${TG[p.type]}연금</span></span></span>
-  <span class="amt">${p.status==="pay"&&num(p.monthly)?won(num(p.monthly)):"-"}<small>월 납입</small></span>
+  <span class="amt">${st==="paid"?`<span class="j0" style="color:var(--ok)">완료</span><small>납입</small>`:`${p.status==="pay"&&num(p.monthly)?won(num(p.monthly)):"-"}<small>월 납입</small>`}</span>
   <span class="pinfo">${info.map(([k,v])=>`<span class="pi"><span class="k">${k}</span><span class="v">${v}</span></span>`).join("")}</span></button></li>`;
 }
 
@@ -750,7 +750,7 @@ function impMsg(t){const e=$("iMsg");if(e)e.textContent=t}
 const IMPORT_PROMPT=`아래 자료는 한국 연금 조회 자료입니다(국민연금공단 예상연금 조회, 금융감독원 통합연금포털, 홈택스 연말정산 간소화의 연금계좌 납입내역, 금융회사 연금 명세서 중 하나 이상). 보이는 값만 옮겨 JSON 하나로 답하세요. 없는 값은 빈 문자열, 추측 금지.
 규칙: 금액은 모두 '원' 단위 숫자로(만원·천원 표기는 환산). 주민등록번호·계좌 전체번호는 절대 옮기지 말고 계좌·증권번호는 마지막 4자리만 no4에. 같은 계좌가 여러 번 나오면 하나로 합치세요.
 종류(type): 국민연금 nps, 공무원·사학·군인연금 gov, 퇴직연금 DB형 db, DC형(기업형IRP 포함) dc, 개인형IRP irp, 연금저축펀드·연금저축신탁 psf, 연금저축보험 psi, 세제비적격 연금보험 pins, 주택연금 house, 그 밖 etc.
-상태(status): 납입 중 pay, 납입 중지 stop, 연금 수령 중 recv.
+상태(status): 납입 중 pay, 납입 완료(만기 납입을 다 마침) paid, 납입 중지 stop, 연금 수령 중 recv.
 {"source":"nps|fss|hometax|statement|other","baseDate":"YYYY-MM-DD (조회일·기준일)","items":[{"ownerName":"가입자 이름","type":"","provider":"금융회사·기관","product":"상품명","no4":"","status":"","balance":적립금·평가금액,"monthly":월 납입액,"annualPaid":연간 납입액,"paidYear":납입 연도,"expected":예상 월 연금액,"startAge":연금 개시 나이,"payYears":연금 수령 기간(년),"startDate":"YYYY-MM-DD 가입일","principal":지금까지 낸 돈(납입 원금·납부 총액),"npsMonths":국민연금 가입 개월 수,"rateInfo":"운용 방식·적용 이율","payMethod":"fixed(확정기간)|life(종신)|inherit(상속)|lump(일시금)","surrender":해지환급금,"company":"퇴직연금 회사명","lastPaid":"YYYY-MM-DD 최근 납입일"}]}`;
 async function pdfToInput(file,pw){
   const lib=await getPdfLib();
