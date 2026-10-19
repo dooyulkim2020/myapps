@@ -814,9 +814,10 @@ function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판"
     <p class="meta2">① 고친 쪽에서 <b>보내기</b> → ② 다른 쪽에서 <b>받기</b>. 같은 기록은 더 나중에 고친 것이 남고, 지운 기록도 함께 옮겨집니다.</p>
     <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="syncOut" style="flex:1">${other}으로 보내기</button><button class="btn line" type="button" id="syncIn" style="flex:1">${other}에서 받기</button></div>
     <div class="vstack" id="syncPaste" hidden style="margin-top:10px"><label class="fld" id="syncLbl">동기화 코드<textarea id="syncText"></textarea></label><button class="btn pri" type="button" id="syncApply" hidden>붙여넣은 코드 합치기</button></div>
-    <p class="meta2" style="margin-top:6px">${last?`마지막 동기화 ${last} · `:""}첨부 파일은 옮겨지지 않습니다. 첨부까지 옮기려면 아래 백업 파일을 쓰세요.</p></section>`}
+    <p class="meta2" style="margin-top:6px">${last?`마지막 동기화 ${last} · `:""}첨부 파일은 옮겨지지 않습니다. 첨부까지 옮기려면 아래 백업 파일을 쓰세요. · 앱 버전 ${APP_VER}</p></section>`}
 function syncShow(mode,txt){const w=$("syncPaste");if(!w)return;w.hidden=false;$("syncApply").hidden=mode!=="in";const ta=$("syncText");
   $("syncLbl").firstChild.textContent=mode==="in"?"여기에 길게 눌러 붙여넣기":"아래 코드를 모두 복사하세요";ta.value=txt||"";if(mode==="out"){ta.focus();ta.select()}else ta.focus()}
+const APP_VER="10.19-4";
 const SYNC_SRC=PWA?"phone":"claude";
 const syncCode=()=>{const o=JSON.parse(backup());o.src=SYNC_SRC;return JSON.stringify(o)};
 async function syncOut(){const j=syncCode();const other=PWA?"Claude판":"휴대폰판";
@@ -826,7 +827,10 @@ async function syncApplyTxt(t){const txt=(t||"").trim();if(!txt.startsWith("{"))
   if(o&&o.src===SYNC_SRC){toast(`이 화면에서 보낸 코드입니다. ${PWA?"Claude판":"휴대폰판"}에서 '보내기'를 먼저 누르세요`);return}
   /* 설정은 한 덩어리라, 이쪽이 더 나중에 저장됐어도 이쪽에 없는 항목(목표·생활비 등)은 채움 */
   const fill=[];if(o&&o.recs)Object.values(o.recs).forEach(r=>{const c=r&&state.recs[r.id];if(r&&r.kind==="settings"&&c&&ts(r)<=ts(c)){const add={};Object.keys(r).forEach(k=>{if(c[k]==null&&r[k]!=null)add[k]=r[k]});if(Object.keys(add).length)fill.push({...c,...add})}});
-  await restore(txt);fill.forEach(x=>put(x));if(fill.length)toast("설정을 합쳤습니다");syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
+  const rs=o&&o.recs?Object.values(o.recs).filter(r=>r&&r.id):[];const newer=rs.filter(r=>!state.recs[r.id]||ts(r)>ts(state.recs[r.id])).length;
+  const st=rs.find(r=>r.kind==="settings");const gl=st&&st.goal&&st.goal.monthly?` · 목표 ${st.goal.age}세 월 ${st.goal.monthly}만원`:"";
+  await restore(txt);fill.forEach(x=>put(x));
+  toast(`${o&&o.src==="claude"?"Claude판":o&&o.src==="phone"?"휴대폰판":"받은"} 코드 ${rs.length}건${gl} → ${newer+fill.length?`${newer+fill.length}건 반영`:"바뀐 것 없음(이미 같음)"}`);syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
 async function syncIn(){let t="";try{t=navigator.clipboard&&navigator.clipboard.readText?await navigator.clipboard.readText():""}catch(e){}
   if(t&&t.trim().startsWith("{")){await syncApplyTxt(t);return}
   if(!$("syncPaste")){state.view="fam";render();window.scrollTo({top:0})}
