@@ -755,7 +755,7 @@ function syncMark(){const d=new Date();try{localStorage.setItem(SYNC_K+"-t",Stri
 /* 휴대폰판: 받은 지 7일이 지났거나 한 번도 안 받았으면 화면 위에 '받기' 띠 */
 function syncBarUpd(){const b=$("syncBar");if(!b)return;let t=0;try{t=+localStorage.getItem(SYNC_K+"-t")||0}catch(e){}
   const show=PWA&&state.view!=="fam"&&Date.now()-t>7*864e5;b.hidden=!show;b.style.display=show?"flex":"none";
-  if(show)b.innerHTML=`<span style="flex:1;font-size:14px">${t?"Claude판 기록을 받은 지 7일이 지났습니다.":"Claude판에서 고친 기록은 '받기'를 해야 여기에 보입니다."}</span><button class="btn sm pri" type="button" id="syncIn" style="white-space:nowrap">Claude판에서 받기</button>`}
+  if(show)b.innerHTML=`<span style="flex:1;font-size:14px">${t?"Claude판 기록을 받은 지 7일이 지났습니다.":"Claude판에서 고친 기록은 '받기'를 해야 여기에 보입니다."}</span><button class="btn sm pri" type="button" id="syncIn" style="white-space:nowrap">Claude판에서 받기</button>`;else b.innerHTML=""}
 function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판":"휴대폰판",last=syncLast();
   return `<section class="box" id="syncBox"><h3>${me} ↔ ${other} 동기화</h3>
     <p class="meta2">① 고친 쪽에서 <b>보내기</b> → ② 다른 쪽에서 <b>받기</b>. 같은 기록은 더 나중에 고친 것이 남고, 지운 기록도 함께 옮겨집니다.</p>
@@ -764,10 +764,16 @@ function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판"
     <p class="meta2" style="margin-top:6px">${last?`마지막 동기화 ${last} · `:""}첨부 파일은 옮겨지지 않습니다. 첨부까지 옮기려면 아래 백업 파일을 쓰세요.</p></section>`}
 function syncShow(mode,txt){const w=$("syncPaste");if(!w)return;w.hidden=false;$("syncApply").hidden=mode!=="in";const ta=$("syncText");
   $("syncLbl").firstChild.textContent=mode==="in"?"여기에 길게 눌러 붙여넣기":"아래 코드를 모두 복사하세요";ta.value=txt||"";if(mode==="out"){ta.focus();ta.select()}else ta.focus()}
-async function syncOut(){const j=backup();const other=PWA?"Claude판":"휴대폰판";
+const SYNC_SRC=PWA?"phone":"claude";
+const syncCode=()=>{const o=JSON.parse(backup());o.src=SYNC_SRC;return JSON.stringify(o)};
+async function syncOut(){const j=syncCode();const other=PWA?"Claude판":"휴대폰판";
   if(await copyText(j)){syncMark();toast(`복사했습니다. ${other}을 열어 '받기'를 누르세요`);render()}else{syncShow("out",j);toast("자동 복사가 막혀 있어 코드를 보여 드립니다. 모두 선택해 복사하세요")}}
 async function syncApplyTxt(t){const txt=(t||"").trim();if(!txt.startsWith("{")){toast("동기화 코드가 아닙니다. 다른 쪽에서 '보내기'를 먼저 누르세요");return}
-  await restore(txt);syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
+  let o=null;try{o=JSON.parse(txt)}catch(e){}
+  if(o&&o.src===SYNC_SRC){toast(`이 화면에서 보낸 코드입니다. ${PWA?"Claude판":"휴대폰판"}에서 '보내기'를 먼저 누르세요`);return}
+  /* 설정은 한 덩어리라, 이쪽이 더 나중에 저장됐어도 이쪽에 없는 항목(목표·생활비 등)은 채움 */
+  const fill=[];if(o&&o.recs)Object.values(o.recs).forEach(r=>{const c=r&&state.recs[r.id];if(r&&r.kind==="settings"&&c&&ts(r)<=ts(c)){const add={};Object.keys(r).forEach(k=>{if(c[k]==null&&r[k]!=null)add[k]=r[k]});if(Object.keys(add).length)fill.push({...c,...add})}});
+  await restore(txt);fill.forEach(x=>put(x));if(fill.length)toast("설정을 합쳤습니다");syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
 async function syncIn(){let t="";try{t=navigator.clipboard&&navigator.clipboard.readText?await navigator.clipboard.readText():""}catch(e){}
   if(t&&t.trim().startsWith("{")){await syncApplyTxt(t);return}
   if(!$("syncPaste")){state.view="fam";render();window.scrollTo({top:0})}
