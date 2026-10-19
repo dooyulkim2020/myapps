@@ -1,0 +1,503 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#A4472F"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MY 회화"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><style>[hidden]{display:none!important}body{margin:0;background:#F3F4F6}</style></head><body>
+<title>MY 회화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: MY 미니앱 기본 체계 v1 — 폭 560 한 줄, 상단 고정 바(제목·가±), 카드 목록, 하단 고정 탭 3개 (듣기·문장·설정) */
+:root{
+  --bg:#F3F4F6; --surface:#FFFFFF; --ink:#18202C; --muted:#5E6878; --line:#DCE0E6;
+  --accent:#A4472F; --accent-soft:#F7E9E4; --ok:#2E7D4F; --warn:#9A6400; --warn-soft:#FFF4DC; --bad:#A23B2A; --bad-soft:#FBE9E5;
+  --display:"Gowun Batang",Georgia,serif;
+  --body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#EBA58F; --accent-soft:#3A2620; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1A1F27; --ink:#E8EBF0; --muted:#9BA4B3; --line:#2B313C;
+  --accent:#EBA58F; --accent-soft:#3A2620; --ok:#6FCB94; --warn:#E8B95A; --warn-soft:#3A2F17; --bad:#F0A08F; --bad-soft:#3A221D; color-scheme:dark}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 96px;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p{margin:0}
+
+/* 상단 고정 바 */
+.topbar{position:sticky;top:0;z-index:7;margin-inline:-16px;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-height:44px}
+.tb-title{flex:1;min-width:0;font:700 17px/1.3 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.save{flex:none;width:24px;height:38px;border:0;background:none;padding:0;display:grid;place-items:center;font-size:0;cursor:pointer}
+.save::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.save[data-s="ok"]::before{background:var(--ok)}.save[data-s="local"]::before{background:var(--warn)}
+.tb-font{flex:none;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:16px;cursor:pointer}
+.tb-font small{font-size:11px}
+.tb-home{flex:none;display:grid;place-items:center;width:44px;height:38px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--accent)}
+.tb-home[hidden]{display:none}
+html[data-fs]:not([data-fs="m"]) .tb-font{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+html[data-fs="s"] .wrap>main,html[data-fs="s"] .sheet{zoom:.88}
+html[data-fs="l"] .wrap>main,html[data-fs="l"] .sheet{zoom:1.14}
+html[data-fs="xl"] .wrap>main,html[data-fs="xl"] .sheet{zoom:1.28}
+.fpop{position:absolute;right:12px;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:4px;min-width:160px;z-index:8}
+.fpop[hidden]{display:none}
+.fpop p{margin:2px 6px 4px;font-size:13px;color:var(--muted)}
+.fpop button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;cursor:pointer;text-align:left}
+.fpop button small{color:var(--muted);font-size:13px}
+.fpop button[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 머리 */
+.dayhead{margin-block:16px 0}
+.dayhead h2{font:700 21px/1.3 var(--display);text-wrap:balance}
+.dayhead .meta{color:var(--muted);font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:20px 0 0}
+.tl-h h3{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tl-h span{font-size:13.5px;color:var(--muted)}
+
+/* 요약 */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.kpi .big{font:600 28px/1.25 var(--body);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .big small{font-size:16px;font-weight:500;color:var(--muted);margin-left:2px}
+.kpi .sub{font-size:14px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bar{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.bar .trk{height:10px;border-radius:99px;background:var(--bg);overflow:hidden}
+.bar .fil{height:100%;border-radius:99px;background:var(--accent)}
+.bar b{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* 카드 목록 */
+.list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;color:inherit;min-width:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+.card:active{background:var(--accent-soft)}
+.card.off{opacity:.62}
+.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font:700 18px/1 var(--display);flex:none}
+.mono.sm{width:32px;height:32px;border-radius:9px;font-size:14px}
+.card .nm{font-weight:600;font-size:17.5px;line-height:1.35;overflow-wrap:anywhere}
+.card .ds{font-size:14px;color:var(--muted);line-height:1.5}
+.card .mt{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.card .amt{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.card .amt small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.pinfo{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line);padding-top:8px;font-size:14px;line-height:1.45}
+.pi{display:grid;grid-template-columns:64px 1fr;gap:8px}
+.pi .k{color:var(--muted);font-size:13px;padding-top:1px}
+.pi .v{min-width:0;overflow-wrap:anywhere}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tagx{border-radius:4px;padding:0 6px;font-weight:600;font-size:12.5px;background:var(--bg);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tagx.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.tagx.ok{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+.tagx.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.empty{margin-top:12px;padding:24px 14px;text-align:center;color:var(--muted);font-size:15px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.empty .btn{margin-top:10px}
+
+/* 상자 */
+section.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.row{display:flex;justify-content:space-between;gap:10px;padding-block:8px;border-top:1px solid var(--line);align-items:baseline}
+.row:first-of-type{border-top:0}
+.row .l{min-width:0}
+.row .l small{display:block;color:var(--muted);font-size:13px}
+.row .r{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.ol li::marker{color:var(--accent);font-weight:600}
+.note{margin-top:8px;font-size:14px;padding:8px 10px;border-radius:8px}
+.note.tip{background:var(--accent-soft)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.meta2{font-size:13.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.btn.line{background:var(--surface);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn.sm{min-height:34px;padding:4px 10px;font-size:13.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.pick.busy{opacity:.5;pointer-events:none}
+.btn.danger{background:var(--surface);border-color:var(--bad);color:var(--bad);font-weight:600}
+.sact.three{grid-template-columns:1fr 1fr 2fr}
+.toast .undo{margin-left:10px;min-height:34px;padding:2px 12px;border-radius:8px;border:1px solid var(--surface);background:transparent;color:var(--surface);font-weight:600;cursor:pointer}
+.frow{display:flex;flex-wrap:wrap;gap:8px}
+.frow>.fld{flex:1 1 140px}
+.vstack{display:flex;flex-direction:column;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);min-width:0}
+.fld input,.fld select,.fld textarea{font-size:16px;padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.fld textarea{min-height:72px;resize:vertical}
+.fld .ck{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;color:var(--ink)}
+.fld .ck input{width:22px;height:22px;min-height:0}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+
+/* 보장 표 */
+.mx{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.mxw{overflow-x:auto;margin-inline:-14px;padding-inline:14px}
+.mx th,.mx td{padding:7px 6px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.mx th:first-child,.mx td:first-child{text-align:left;position:sticky;left:0;background:var(--surface)}
+.mx thead th{border-top:0;color:var(--muted);font-weight:600;font-size:13px}
+.mx td.no{color:var(--bad);font-weight:600}
+.mx td.yes{font-weight:600}
+
+/* 일정 */
+.ev{display:grid;grid-template-columns:58px 1fr;gap:10px;padding-block:9px;border-top:1px solid var(--line);align-items:center}
+.ev:first-child{border-top:0}
+.ev .dd{text-align:center;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px;padding:4px 0;font-variant-numeric:tabular-nums}
+.ev .dd.soon{background:var(--warn-soft);color:var(--warn)}
+.ev b{font-weight:600;font-size:15px;display:block}
+.ev small{font-size:13px;color:var(--muted)}
+
+/* 보험 분석 */
+.rvrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font:inherit;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.rvrow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.rvrow b{font-weight:600;font-size:17px}
+.rvrow small{display:block;font-size:13px;color:var(--muted)}
+.up{color:var(--ok);font-size:13px;font-weight:600}.down{color:var(--bad);font-size:13px;font-weight:600}
+.score{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.score .big{font:600 34px/1.1 var(--body);font-variant-numeric:tabular-nums}
+.score .big small{font-size:16px;color:var(--muted);font-weight:500}
+.gl{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.gl li::marker{color:var(--accent);font-weight:700}
+.gl b{display:block;font-weight:600}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+/* 보장 입력 줄 */
+.cov{border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;grid-template-columns:1fr 112px 40px;gap:6px;background:var(--surface)}
+.cov .full{grid-column:1/-1}
+.cov select,.cov input{font-size:16px;padding:6px 8px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box;min-width:0}
+.cov .x{width:40px;height:42px;border-radius:8px}
+.files{display:flex;flex-direction:column;gap:6px}
+.fvpage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:8px}
+.file{display:flex;align-items:center;gap:8px;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:6px 8px 6px 12px;background:var(--surface);font-size:14px}
+.file a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;min-height:34px;display:flex;align-items:center}
+
+/* 하단 탭 */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
+nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button[aria-selected="true"] b{color:var(--accent)}
+
+/* 아래에서 올라오는 창 */
+.sheetBg{position:fixed;inset:0;z-index:20;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:16px 16px 0 0;padding:0 16px}
+.shead{position:sticky;top:0;z-index:2;margin-inline:-16px;padding:8px 16px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grab{width:40px;height:5px;margin:0 auto 8px;border-radius:99px;background:var(--line)}
+.shead .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead h2{font:700 21px/1.3 var(--display);min-width:0;overflow-wrap:anywhere}
+.x{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;cursor:pointer}
+.sact{position:sticky;bottom:0;z-index:2;margin-inline:-16px;margin-top:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.sact .btn{min-height:46px;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;max-width:calc(100vw - 32px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:14px;font-weight:500;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* MY 회화 전용 */
+.langs{display:flex;gap:6px;overflow-x:auto;padding-block:12px 2px;scrollbar-width:none}
+.langs::-webkit-scrollbar{display:none}
+.chip[disabled]{opacity:.55;cursor:default}
+.chip small{font-size:12px;opacity:.75;margin-left:4px}
+.player{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;position:relative}
+.prog{display:flex;gap:3px;margin-bottom:6px}
+.prog i{flex:1;height:5px;border-radius:99px;background:var(--line)}
+.prog i.done{background:var(--accent-soft)}
+.prog i.on{flex:1.8;background:var(--accent)}
+.pmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.ln{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:8px;transition:background .2s,border-color .2s}
+.ln .lb{font-size:13px;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.ln.ko .tx{font-size:19px;font-weight:600;line-height:1.45;margin-top:2px}
+.ln.tg .tx{font:700 28px/1.35 var(--body);margin-top:4px;word-break:keep-all;overflow-wrap:anywhere}
+.ln .rd{font-size:16px;color:var(--muted);margin-top:6px}
+.ln.speak{background:var(--accent-soft);border-color:var(--accent)}
+.reps{display:flex;gap:4px;margin-top:10px}.reps i{flex:1;height:4px;border-radius:99px;background:var(--line)}.reps i.on{background:var(--accent)}
+.status{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted);min-height:22px}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none}
+.status .dot.on{background:var(--ok)}
+.ctl{display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px;margin-top:12px}
+.ctl .btn{min-height:56px;font-size:16px;border-radius:999px}
+.ctl .play{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;font-size:18px}
+.ctl .play.stop{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.star{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--muted);min-width:44px;min-height:44px}
+.star[aria-pressed="true"]{color:#E0A100}
+.awake{font-size:13px;padding:6px 10px;border-radius:999px;background:var(--bg);display:inline-flex;gap:6px;align-items:center}
+.awake.on{background:var(--accent-soft);color:var(--ok)}
+.opt{margin-top:12px}
+.opt h4{margin:0 0 6px;font-size:14px;color:var(--muted);font-weight:600}
+.seg.full{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.seg.full button{padding:6px 4px}
+.slist{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.srow{display:grid;grid-template-columns:32px 1fr 44px;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 6px 8px 10px}
+.srow.on{border-color:var(--accent);background:var(--accent-soft)}
+.srow .no{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;background:var(--bg);color:var(--muted)}
+.srow.on .no{background:var(--accent);color:#fff}
+.srow .bd{min-width:0;text-align:left;border:0;background:none;padding:4px 0;cursor:pointer;font:inherit;color:inherit}
+.srow .bd b{display:block;font-weight:600;font-size:16px}
+.srow .bd span{display:block;font-size:14px;color:var(--muted)}
+.ksv{position:absolute;left:0;bottom:0;width:4px;height:4px;opacity:.01;pointer-events:none}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="tb-home" id="homeBtn" href="../" hidden aria-label="MY 미니앱 허브로">MY</a>
+    <div class="tb-title">MY 회화</div>
+    <span class="pill" id="tbPill">일본어</span>
+    <button class="save" type="button" id="saveState" data-s="local" aria-label="저장 상태">저장 상태</button>
+    <button class="tb-font" id="fontBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="글자 크기">가<small>±</small></button>
+    <div class="fpop" id="fontPop" hidden role="menu"><p>글자 크기</p>
+      <button type="button" role="menuitemradio" data-fs="s"><span style="font-size:13px">작게</span><small>88%</small></button>
+      <button type="button" role="menuitemradio" data-fs="m"><span style="font-size:15px">보통</span><small>100%</small></button>
+      <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
+      <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
+  </div>
+  <main id="vPlay"></main>
+  <main id="vList" hidden></main>
+  <main id="vSet" hidden></main>
+</div>
+
+<nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
+  <button type="button" role="tab" data-view="play" aria-selected="true"><b>듣기</b><span>반복 재생</span></button>
+  <button type="button" role="tab" data-view="list" aria-selected="false"><b>문장</b><span id="tList">즐겨찾기</span></button>
+  <button type="button" role="tab" data-view="set" aria-selected="false"><b>설정</b><span>음성·백업</span></button>
+</div></nav>
+
+<div class="sheetBg" id="sheetBg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="편집"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<video id="ksv" class="ksv" muted playsinline loop preload="auto" aria-hidden="true" tabindex="-1"><source src="data:video/webm;base64,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" type="video/webm"><source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAZJbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAD6AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAop0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAD6AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAEAAAABAAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAA+gAAAAAAABAAAAAAICbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAABAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABrW1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAW1zdGJsAAAAuXN0c2QAAAAAAAAAAQAAAKlhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAEAAQABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAAL2F2Y0MBQsAK/+EAF2dCwArZBCbARAAAAwAEAAADABA8SJkgAQAFaMuDyyAAAAAQcGFzcAAAAAEAAAABAAAAFGJ0cnQAAAAAAAAFsgAABbIAAAAYc3R0cwAAAAAAAAABAAAACAAAIAAAAAAUc3RzcwAAAAAAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAAAQAAAAEAAAA0c3RzegAAAAAAAAAAAAAACAAAApIAAAAKAAAACwAAAAoAAAAKAAAACgAAAAoAAAAKAAAAMHN0Y28AAAAAAAAACAAABo4AAAkwAAAJSgAACWUAAAl/AAAJmQAACbMAAAnNAAAC6XRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAIAAAAAAAAPoAAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAD6AAAAQAAAEAAAAAAmFtZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAB9AAACBAFXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAIMbWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAHQc3RibAAAAH5zdHNkAAAAAAAAAAEAAABubXA0YQAAAAAAAAABAAAAAAAAAAAAAQAQAAAAAB9AAAAAAAA2ZXNkcwAAAAADgICAJQACAASAgIAXQBUAAAAAAB9AAAABIAWAgIAFFYhW5QAGgICAAQIAAAAUYnRydAAAAAAAAB9AAAABIAAAACBzdHRzAAAAAAAAAAIAAAAgAAAEAAAAAAEAAAEAAAAAKHN0c2MAAAAAAAAAAgAAAAEAAAABAAAAAQAAAAIAAAAEAAAAAQAAAJhzdHN6AAAAAAAAAAAAAAAhAAAAFQAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAANHN0Y28AAAAAAAAACQAABnkAAAkgAAAJOgAACVUAAAlvAAAJiQAACaMAAAm9AAAJ1wAAABpzZ3BkAQAAAHJvbGwAAAACAAAAAf//AAAAHHNiZ3AAAAAAcm9sbAAAAAEAAAAhAAAAAQAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNjAuMTYuMTAwAAAACGZyZWUAAAN2bWRhdN4CAExhdmM2MC4zMS4xMDIAAjBADgAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjQgcjMxMDggMzFlMTlmOSAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjMgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0yIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTIgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAaZYiEBX///w9FAAFC3ycnJ1111111111114ABGCAHARggBwEYIAcBGCAHAAAABkGaOAr4RgEYIAcBGCAHARggBwEYIAcAAAAHQZpUAr4RgAEYIAcBGCAHARggBwEYIAcAAAAGQZpgFfCMARggBwEYIAcBGCAHARggBwAAAAZBmoAU8IwBGCAHARggBwEYIAcBGCAHAAAABkGaoBTwjAEYIAcBGCAHARggBwEYIAcAAAAGQZrAFPCMARggBwEYIAcBGCAHARggBwAAAAZBmuAS8IwBGCAHARggBwEYIAcBGCAH" type="video/mp4"></video>
+
+<script>
+(function(){
+"use strict";
+/* ── 언어별 문장 (id는 즐겨찾기 저장에 쓰이므로 바꾸지 말 것) ── */
+const S=(ko,t,r)=>({ko,t,r});
+const LANGS={
+ ja:{name:"일본어",native:"日本語",voice:"ja-JP",tl:"ja",flag:"JP",readLb:"읽는 법",cats:[
+  {id:"basic",label:"인사·기본",sub:"基本",s:[S("안녕하세요","こんにちは","콘니치와"),S("감사합니다","ありがとうございます","아리가토- 고자이마스"),S("죄송합니다","すみません","스미마셍"),S("네","はい","하이"),S("아니요","いいえ","이-에"),S("괜찮아요","大丈夫です","다이죠-부데스"),S("잘 부탁드립니다","よろしくお願いします","요로시쿠 오네가이시마스"),S("또 만나요","また会いましょう","마타 아이마쇼-"),S("이름이 뭐예요?","お名前は何ですか？","오나마에와 난데스카?"),S("저는 한국 사람이에요","私は韓国人です","와타시와 칸코쿠진데스"),S("안녕히 가세요","さようなら","사요-나라"),S("처음 뵙겠습니다","はじめまして","하지메마시테"),S("잘 지냈어요?","お元気ですか？","오겡키데스카?"),S("몰라요","わかりません","와카리마셍"),S("알겠습니다","わかりました","와카리마시타")]},
+  {id:"daily",label:"일상 대화",sub:"日常",s:[S("오늘 날씨가 좋네요","今日はいい天気ですね","쿄-와 이- 텡키데스네"),S("지금 몇 시예요?","今何時ですか？","이마 난지데스카?"),S("조금 기다려 주세요","少し待ってください","스코시 맛테 쿠다사이"),S("천천히 말해 주세요","ゆっくり話してください","윳쿠리 하나시테 쿠다사이"),S("한 번 더 말해 주세요","もう一度言ってください","모- 이치도 잇테 쿠다사이"),S("일본어를 조금 할 수 있어요","日本語が少しできます","니홍고가 스코시 데키마스"),S("이건 일본어로 뭐라고 해요?","これは日本語で何と言いますか？","코레와 니홍고데 난토 이-마스카?"),S("사진 좀 찍어 주시겠어요?","写真を撮ってもらえますか？","샤신오 톳테 모라에마스카?"),S("여기서 사진 찍어도 돼요?","ここで写真を撮ってもいいですか？","코코데 샤신오 톳테모 이-데스카?"),S("즐거웠어요","楽しかったです","타노시캇타데스"),S("정말요?","本当ですか？","혼토-데스카?"),S("잘 모르겠어요","よくわかりません","요쿠 와카리마셍"),S("수고하셨습니다","お疲れ様でした","오츠카레사마데시타"),S("잘 먹겠습니다","いただきます","이타다키마스"),S("잘 먹었습니다","ごちそうさまでした","고치소-사마데시타")]},
+  {id:"food",label:"식당",sub:"食事",s:[S("물 주세요","お水をください","오미즈오 쿠다사이"),S("메뉴 주세요","メニューをください","메뉴-오 쿠다사이"),S("이거 주세요","これをください","코레오 쿠다사이"),S("맛있어요","おいしいです","오이시-데스"),S("얼마예요?","いくらですか？","이쿠라데스카?"),S("계산해 주세요","お会計をお願いします","오카이케-오 오네가이시마스"),S("맛있었어요","おいしかったです","오이시캇타데스"),S("포장해 주세요","持ち帰りでお願いします","모치카에리데 오네가이시마스"),S("맥주 주세요","ビールをください","비-루오 쿠다사이"),S("젓가락 주세요","お箸をください","오하시오 쿠다사이"),S("두 명이에요","二人です","후타리데스"),S("안 맵게 해 주세요","辛くしないでください","카라쿠 시나이데 쿠다사이"),S("차가운 물 주세요","冷たい水をください","츠메타이 미즈오 쿠다사이"),S("배불러요","お腹がいっぱいです","오나카가 입파이데스"),S("배고파요","お腹がすきました","오나카가 스키마시타")]},
+  {id:"shop",label:"쇼핑·계산",sub:"買い物",s:[S("이거 얼마예요?","これはいくらですか？","코레와 이쿠라데스카?"),S("카드 돼요?","カードで払えますか？","카-도데 하라에마스카?"),S("봉투 주세요","袋をください","후쿠로오 쿠다사이"),S("입어 봐도 돼요?","試着してもいいですか？","시차쿠 시테모 이-데스카?"),S("다른 색 있어요?","違う色はありますか？","치가우 이로와 아리마스카?"),S("이걸로 할게요","これにします","코레니 시마스"),S("면세 돼요?","免税できますか？","멘제- 데키마스카?"),S("영수증 주세요","レシートをください","레시-토오 쿠다사이"),S("그냥 보고 있어요","見ているだけです","미테이루 다케데스"),S("좀 더 싼 거 있어요?","もう少し安いのはありますか？","모- 스코시 야스이노와 아리마스카?"),S("더 큰 사이즈 있어요?","もっと大きいサイズはありますか？","못토 오-키- 사이즈와 아리마스카?"),S("더 작은 사이즈 있어요?","もっと小さいサイズはありますか？","못토 치-사이 사이즈와 아리마스카?"),S("할인 돼요?","割引はありますか？","와리비키와 아리마스카?"),S("현금으로 할게요","現金で払います","겡킨데 하라이마스"),S("너무 비싸요","高すぎます","타카스기마스")]},
+  {id:"move",label:"교통·길찾기",sub:"交通",s:[S("화장실 어디예요?","トイレはどこですか？","토이레와 도코데스카?"),S("역 어디예요?","駅はどこですか？","에키와 도코데스카?"),S("여기서 내려 주세요","ここで降ろしてください","코코데 오로시테 쿠다사이"),S("택시 타는 곳 어디예요?","タクシー乗り場はどこですか？","타쿠시- 노리바와 도코데스카?"),S("지도 보여 주세요","地図を見せてください","치즈오 미세테 쿠다사이"),S("길을 잃었어요","道に迷いました","미치니 마요이마시타"),S("얼마나 걸려요?","どのくらいかかりますか？","도노쿠라이 카카리마스카?"),S("이 버스 신주쿠 가요?","このバスは新宿に行きますか？","코노 바스와 신주쿠니 이키마스카?"),S("버스 어디서 타요?","バスはどこで乗れますか？","바스와 도코데 노레마스카?"),S("길 좀 알려 주세요","道を教えてください","미치오 오시에테 쿠다사이"),S("오른쪽이에요?","右ですか？","미기데스카?"),S("왼쪽이에요?","左ですか？","히다리데스카?"),S("쭉 가면 돼요?","まっすぐですか？","맛스구데스카?"),S("가까워요?","近いですか？","치카이데스카?"),S("멀어요?","遠いですか？","토-이데스카?")]},
+  {id:"stay",label:"숙소",sub:"宿泊",s:[S("체크인 하고 싶어요","チェックインをお願いします","첵쿠인오 오네가이시마스"),S("체크아웃 몇 시예요?","チェックアウトは何時ですか？","첵쿠아우토와 난지데스카?"),S("와이파이 비밀번호가 뭐예요?","Wi-Fiのパスワードは何ですか？","와이파이노 파스와-도와 난데스카?"),S("수건 주세요","タオルをください","타오루오 쿠다사이"),S("짐 좀 맡아 주세요","荷物を預かってください","니모츠오 아즈캇테 쿠다사이"),S("근처에 편의점 있어요?","近くにコンビニはありますか？","치카쿠니 콤비니와 아리마스카?"),S("아침은 몇 시부터예요?","朝食は何時からですか？","쵸-쇼쿠와 난지카라데스카?"),S("예약 확인하고 싶어요","予約を確認したいです","요야쿠오 카쿠닌 시타이데스"),S("방이 추워요","部屋が寒いです","헤야가 사무이데스"),S("방을 바꿀 수 있어요?","部屋を替えてもらえますか？","헤야오 카에테 모라에마스카?"),S("방이 더러워요","部屋が汚れています","헤야가 요고레테 이마스"),S("열쇠 주세요","鍵をください","카기오 쿠다사이"),S("에어컨 어떻게 켜요?","エアコンの使い方を教えてください","에아콘노 츠카이카타오 오시에테 쿠다사이"),S("문이 안 열려요","ドアが開きません","도아가 아키마셍"),S("물이 안 나와요","水が出ません","미즈가 데마셍")]},
+  {id:"time",label:"숫자·시간",sub:"数・時間",s:[S("하나 주세요","一つください","히토츠 쿠다사이"),S("두 개 주세요","二つください","후타츠 쿠다사이"),S("세 명이에요","三人です","산닌데스"),S("오늘","今日","쿄-"),S("내일","明日","아시타"),S("어제","昨日","키노-"),S("아침","朝","아사"),S("밤","夜","요루"),S("몇 시까지 해요?","何時までですか？","난지마데데스카?"),S("몇 시에 열어요?","何時に開きますか？","난지니 아키마스카?"),S("10분 정도 걸려요","十分くらいかかります","줏풍 쿠라이 카카리마스"),S("천 엔","千円","셍엔"),S("만 엔","一万円","이치만엔"),S("오늘 무슨 요일이에요?","今日は何曜日ですか？","쿄-와 낭요-비데스카?"),S("내일 몇 시에 만나요?","明日何時に会いますか？","아시타 난지니 아이마스카?")]},
+  {id:"help",label:"응급·도움",sub:"緊急",s:[S("도와주세요","助けてください","타스케테 쿠다사이"),S("병원 어디예요?","病院はどこですか？","뵤-잉와 도코데스카?"),S("약국 어디예요?","薬局はどこですか？","야쿄쿠와 도코데스카?"),S("경찰 불러 주세요","警察を呼んでください","케-사츠오 욘데 쿠다사이"),S("몸이 안 좋아요","具合が悪いです","구아이가 와루이데스"),S("여권을 잃어버렸어요","パスポートをなくしました","파스포-토오 나쿠시마시타"),S("영어 하시는 분 있어요?","英語ができる人はいますか？","에-고가 데키루 히토와 이마스카?"),S("구급차 불러 주세요","救急車を呼んでください","큐-큐-샤오 욘데 쿠다사이"),S("열이 있어요","熱があります","네츠가 아리마스"),S("넘어졌어요","転びました","코로비마시타"),S("다쳤어요","怪我をしました","케가오 시마시타"),S("배가 아파요","お腹が痛いです","오나카가 이타이데스"),S("머리가 아파요","頭が痛いです","아타마가 이타이데스"),S("약 좀 주세요","薬をください","쿠스리오 쿠다사이"),S("한국어 하시는 분 있어요?","韓国語ができる人はいますか？","캉코쿠고가 데키루 히토와 이마스카?")]}]},
+ en:{name:"영어",native:"English",soon:true},
+ zh:{name:"중국어",native:"中文",soon:true},
+ vi:{name:"베트남어",native:"Tiếng Việt",soon:true}};
+Object.entries(LANGS).forEach(([lk,L])=>(L.cats||[]).forEach(c=>c.s.forEach((x,i)=>{x.id=`${lk}-${c.id}-${String(i+1).padStart(2,"0")}`})));
+const ORDERS=[["kt","한 1 → 외 2","기본"],["tt","외국어 2","듣기만"],["k","한국어 1","뜻 확인"]];
+const REPEATS=[["all","전체 반복"],["one","한 문장"],["shuffle","섞어서"]];
+const RATES=[0.7,0.8,0.9,1,1.1];
+const GAPS=[1,2,3,5];
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ── 설정(이 기기) + 즐겨찾기(내 전용 저장소 + 이 기기) ── */
+const LSK="myapps-talk-v1";
+const DEF={view:"play",lang:"ja",cat:"basic",idx:0,order:"kt",repeat:"all",rate:0.9,gap:2,vKo:"",vT:{},online:true};
+let cfg={...DEF};try{cfg={...DEF,...JSON.parse(localStorage.getItem(LSK+"-cfg")||"{}")}}catch(e){}
+const saveCfg=()=>{try{localStorage.setItem(LSK+"-cfg",JSON.stringify(cfg))}catch(e){}};
+let fav={ids:[],updatedAt:0};try{const o=JSON.parse(localStorage.getItem(LSK+"-fav")||"null");if(o&&Array.isArray(o.ids))fav=o}catch(e){}
+let db=null,favRef=null,uid=null,saveMsg="이 기기에 저장됨";
+function setSave(s,m){const el=$("saveState");el.dataset.s=s;saveMsg=m||(s==="ok"?"내 전용 저장소에 저장됨":"이 기기에 저장됨");el.title=saveMsg;el.setAttribute("aria-label","저장 상태: "+saveMsg);const t=$("saveTxt");if(t)t.textContent=saveMsg}
+function saveFav(){fav.updatedAt=Date.now();try{localStorage.setItem(LSK+"-fav",JSON.stringify(fav))}catch(e){}if(favRef)favRef.set(JSON.parse(JSON.stringify(fav))).then(()=>setSave("ok")).catch(()=>setSave("local","저장소에 쓰지 못해 이 기기에만 저장됨"))}
+async function connect(){
+  if(!window.claude||!window.claude.use){setSave("local","이 휴대폰에만 저장됨");return}
+  try{db=await window.claude.use("db");const u=await window.claude.use("user");uid=u&&await u.id()}catch(e){}
+  if(!db||!uid){setSave("local");return}
+  favRef=db.doc("data/users/"+uid+"/talkFav");setSave("ok");
+  try{const s=await favRef.get();const r=s.exists&&s.data();if(r&&Array.isArray(r.ids)){if((r.updatedAt||0)>(fav.updatedAt||0)){fav=r;try{localStorage.setItem(LSK+"-fav",JSON.stringify(fav))}catch(e){}render()}else if((fav.updatedAt||0)>(r.updatedAt||0))saveFav()}else if(fav.ids.length)saveFav()}catch(e){setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시")}
+  loadPref();
+}
+const isFav=id=>fav.ids.includes(id);
+function toggleFav(id){fav.ids=isFav(id)?fav.ids.filter(x=>x!==id):[...fav.ids,id];saveFav();render();toast(isFav(id)?"즐겨찾기에 넣었습니다":"즐겨찾기에서 뺐습니다")}
+
+/* ── 현재 목록 ── */
+const L=()=>LANGS[cfg.lang]&&!LANGS[cfg.lang].soon?LANGS[cfg.lang]:LANGS.ja;
+function curList(){const lg=L();if(cfg.cat==="fav"){const all=lg.cats.flatMap(c=>c.s);return all.filter(x=>isFav(x.id))}const c=lg.cats.find(c=>c.id===cfg.cat)||lg.cats[0];return c.s}
+function catLabel(){if(cfg.cat==="fav")return "즐겨찾기";const c=L().cats.find(c=>c.id===cfg.cat);return c?c.label:""}
+function cur(){const l=curList();if(!l.length)return null;if(cfg.idx>=l.length)cfg.idx=0;return l[cfg.idx]}
+
+/* ── 음성: 기기 음성(기본) → 안 되면 온라인 음성 ── */
+let voices=[];
+function loadVoices(){try{voices=window.speechSynthesis?speechSynthesis.getVoices():[]}catch(e){voices=[]}}
+loadVoices();try{if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{loadVoices();if(cfg.view==="set")render()}}catch(e){}
+const pref=(list,keys)=>list.find(v=>keys.some(k=>v.name.includes(k)))||list.find(v=>v.localService)||list[0]||null;
+function pickVoice(lang){const code=lang==="ko"?"ko":L().voice.slice(0,2);const list=voices.filter(v=>(v.lang||"").toLowerCase().replace("_","-").startsWith(code));
+  const want=lang==="ko"?cfg.vKo:(cfg.vT||{})[cfg.lang];const w=want&&list.find(v=>v.name===want);if(w)return w;
+  return pref(list,lang==="ko"?["Google","Yuna","유나","Heami"]:["Google","Kyoko","O-ren","Haruka","Nanami"])}
+function sysSpeak(lang,text,rate,tok){return new Promise((ok,no)=>{
+  if(!window.speechSynthesis){no(new Error("nosynth"));return}
+  const v=pickVoice(lang);if(!v&&voices.length){no(new Error("novoice"));return}
+  try{speechSynthesis.cancel()}catch(e){}
+  const u=new SpeechSynthesisUtterance(text);u.lang=lang==="ko"?"ko-KR":L().voice;if(v)u.voice=v;u.rate=rate;
+  let done=false;const fin=e=>{if(done)return;done=true;clearTimeout(wd);e?no(e):ok()};
+  /* 일부 휴대폰은 끝 신호가 오지 않아 멈추는 문제가 있어 시간으로 한 번 더 확인 */
+  const wd=setTimeout(()=>fin(),Math.max(3500,text.length*(lang==="ko"?260:330)/rate)+2500);
+  u.onend=()=>fin();u.onerror=e=>fin(e&&e.error==="interrupted"||e&&e.error==="canceled"?null:new Error(e&&e.error||"err"));
+  speechSynthesis.speak(u);
+  if(tok!==gen){fin()}
+})}
+let au=null;
+function netSpeak(lang,text,rate){return new Promise((ok,no)=>{
+  const tl=lang==="ko"?"ko":L().tl;if(!au){au=new Audio();au.setAttribute("playsinline","")}
+  au.onended=()=>ok();au.onerror=()=>no(new Error("net"));au.playbackRate=rate;
+  au.src=`https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=${tl}&q=${encodeURIComponent(text)}`;
+  au.play().catch(no)})}
+async function speak(lang,text,tok){
+  try{await sysSpeak(lang,text,cfg.rate,tok)}
+  catch(e){if(tok!==gen)return;if(!cfg.online)throw e;await netSpeak(lang,text,cfg.rate)}}
+
+/* ── 화면 꺼짐 방지: Wake Lock + (안 되면) 무음 영상 재생 ── */
+let wl=null,awakeMode="";
+async function keepAwake(){
+  if(!playing)return;
+  if("wakeLock" in navigator){try{if(!wl){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",()=>{wl=null;if(playing&&document.visibilityState==="visible")setTimeout(keepAwake,300);showAwake()})}awakeMode="wl"}catch(e){wl=null}}
+  const v=$("ksv");try{v.muted=true;await v.play();if(!wl)awakeMode="video"}catch(e){if(!wl)awakeMode="none"}
+  showAwake()}
+function releaseAwake(){try{if(wl)wl.release()}catch(e){}wl=null;try{$("ksv").pause()}catch(e){}awakeMode="";showAwake()}
+function awakeTxt(){return !playing?"재생하면 화면이 켜진 채로 유지됩니다":awakeMode==="wl"?"화면 켜짐 유지 중":awakeMode==="video"?"화면 켜짐 유지 중 (보조 방식)":awakeMode==="none"?"이 화면에서는 화면 유지가 안 됩니다 · 설정 탭 안내 참고":"화면 켜짐 준비 중"}
+function showAwake(){const e=$("awake");if(e){e.className="awake"+(playing&&awakeMode&&awakeMode!=="none"?" on":"");e.textContent=awakeTxt()}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&playing){wl=null;keepAwake()}});
+setInterval(()=>{if(playing&&awakeMode!=="wl")keepAwake()},15000);
+
+/* ── 재생 ── */
+let playing=false,gen=0,phase="";
+function setPhase(p,msg){phase=p;document.querySelectorAll("[data-ln]").forEach(e=>e.classList.toggle("speak",e.dataset.ln===(p.startsWith("t")?"t":p)));
+  document.querySelectorAll(".reps i").forEach((e,i)=>e.classList.toggle("on",p==="t"+(i+1)));
+  const st=$("stTxt");if(st&&msg!=null)st.textContent=msg;const d=$("stDot");if(d)d.classList.toggle("on",playing)}
+function media(x){try{if(!("mediaSession" in navigator)||!x)return;navigator.mediaSession.metadata=new MediaMetadata({title:x.t,artist:x.ko,album:`MY 회화 · ${L().name} · ${catLabel()}`});navigator.mediaSession.playbackState=playing?"playing":"paused"}catch(e){}}
+async function loop(){
+  const tok=++gen;
+  while(playing&&tok===gen){
+    const l=curList(),x=cur();if(!x){stop();toast("재생할 문장이 없습니다");return}
+    media(x);
+    try{
+      if(cfg.order==="kt"||cfg.order==="k"){setPhase("k",`한국어: ${x.ko}`);await speak("ko",x.ko,tok);if(tok!==gen)return;if(cfg.order==="kt"){setPhase("",null);await sleep(600)}}
+      if(cfg.order!=="k"){for(let i=1;i<=2;i++){if(tok!==gen)return;setPhase("t"+i,`${L().name} ${i}/2: ${x.t}`);await speak("t",x.t,tok);if(tok!==gen)return;if(i===1){setPhase("",null);await sleep(500)}}}
+    }catch(e){if(tok!==gen)return;stop();setPhase("","소리를 내지 못했습니다 · 설정 탭에서 음성을 확인해 주세요");return}
+    if(tok!==gen)return;setPhase("",`다음 문장까지 ${cfg.gap}초`);
+    await sleep(cfg.gap*1000);if(tok!==gen||!playing)return;
+    if(cfg.repeat==="all")cfg.idx=(cfg.idx+1)%l.length;else if(cfg.repeat==="shuffle"&&l.length>1){let n;do{n=Math.floor(Math.random()*l.length)}while(n===cfg.idx);cfg.idx=n}
+    saveCfg();renderCard();
+  }}
+function start(){if(playing)return;playing=true;keepAwake();try{if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.resume()}}catch(e){}renderCard();loop()}
+function stop(){playing=false;gen++;try{speechSynthesis.cancel()}catch(e){}try{if(au)au.pause()}catch(e){}releaseAwake();setPhase("","멈춤");renderCard();try{navigator.mediaSession.playbackState="paused"}catch(e){}}
+function jump(d){const l=curList();if(!l.length)return;cfg.idx=(cfg.idx+d+l.length)%l.length;saveCfg();restart()}
+function restart(){if(playing){gen++;try{speechSynthesis.cancel()}catch(e){}try{if(au)au.pause()}catch(e){}renderCard();loop()}else render()}
+try{if("mediaSession" in navigator){navigator.mediaSession.setActionHandler("play",start);navigator.mediaSession.setActionHandler("pause",stop);navigator.mediaSession.setActionHandler("nexttrack",()=>jump(1));navigator.mediaSession.setActionHandler("previoustrack",()=>jump(-1))}}catch(e){}
+
+/* ── 화면 ── */
+function render(){
+  document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===cfg.view)));
+  ["play","list","set"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=cfg.view!==v});
+  $("tbPill").textContent=L().name;$("tList").textContent=`즐겨찾기 ${fav.ids.length}`;
+  ({play:renderPlay,list:renderList,set:renderSet})[cfg.view]();
+}
+function langChips(){return `<div class="langs" role="group" aria-label="언어">${Object.entries(LANGS).map(([k,v])=>`<button class="chip" type="button" ${v.soon?"disabled":""} data-lang="${k}" aria-pressed="${cfg.lang===k}">${v.name}${v.soon?"<small>준비 중</small>":""}</button>`).join("")}</div>`}
+function catChips(){const lg=L();return `<div class="chips" role="group" aria-label="상황">${lg.cats.map(c=>`<button class="chip" type="button" data-cat="${c.id}" aria-pressed="${cfg.cat===c.id}">${esc(c.label)}</button>`).join("")}<button class="chip" type="button" data-cat="fav" aria-pressed="${cfg.cat==="fav"}">즐겨찾기 ${fav.ids.length}</button></div>`}
+function seg(name,arr,val){return `<div class="seg full" role="group">${arr.map(a=>{const [k,l,s]=Array.isArray(a)?a:[a,a];return `<button type="button" data-${name}="${k}" aria-pressed="${String(k)===String(val)}">${esc(l)}${s?`<br><small style="font-size:12px;opacity:.75">${esc(s)}</small>`:""}</button>`}).join("")}</div>`}
+function renderPlay(){
+  const lg=L();let h="";
+  h+=langChips()+catChips();
+  h+=`<section class="player" id="card"></section>`;
+  h+=`<section class="box"><div class="opt" style="margin-top:0"><h4>재생 순서</h4>${seg("order",ORDERS,cfg.order)}</div>
+    <div class="opt"><h4>반복</h4>${seg("repeat",REPEATS,cfg.repeat)}</div>
+    <div class="opt"><h4>말 빠르기</h4>${seg("rate",RATES.map(r=>[r,r.toFixed(1)+"배"]),cfg.rate)}</div>
+    <div class="opt"><h4>다음 문장까지</h4>${seg("gap",GAPS.map(g=>[g,g+"초"]),cfg.gap)}</div></section>`;
+  const l=curList();
+  h+=`<div class="tl-h"><h3>${esc(catLabel())} ${l.length}문장</h3><span>누르면 그 문장부터</span></div>`;
+  h+=l.length?`<ul class="slist">${l.map((x,i)=>sRow(x,i)).join("")}</ul>`:`<div class="empty">즐겨찾기한 문장이 없습니다.<br>문장 옆 ★을 누르면 여기에 모입니다.</div>`;
+  $("vPlay").innerHTML=h;renderCard();
+}
+function sRow(x,i,go){return `<li class="srow ${!go&&i===cfg.idx?"on":""}"><span class="no">${i+1}</span><button class="bd" type="button" ${go?`data-go="${x.id}"`:`data-idx="${i}"`}><b>${esc(x.ko)}</b><span lang="${cfg.lang}">${esc(x.t)} · ${esc(x.r)}</span></button><button class="star" type="button" data-fav="${x.id}" aria-pressed="${isFav(x.id)}" aria-label="즐겨찾기">${isFav(x.id)?"★":"☆"}</button></li>`}
+function renderCard(){
+  const c=$("card");if(!c)return;const l=curList(),x=cur();
+  if(!x){c.innerHTML=`<p class="meta2">재생할 문장이 없습니다.</p>`;return}
+  const n=l.length,prog=n<=30?`<div class="prog">${l.map((_,i)=>`<i class="${i===cfg.idx?"on":i<cfg.idx?"done":""}"></i>`).join("")}</div>`:"";
+  c.innerHTML=`${prog}<div class="pmeta"><span>${esc(catLabel())} · ${cfg.idx+1} / ${n}</span><button class="star" type="button" data-fav="${x.id}" aria-pressed="${isFav(x.id)}" aria-label="즐겨찾기">${isFav(x.id)?"★":"☆"}</button></div>
+    <div class="ln ko" data-ln="k"><div class="lb"><span>한국어</span></div><div class="tx">${esc(x.ko)}</div></div>
+    <div class="ln tg" data-ln="t"><div class="lb"><span>${L().name} · 2번</span></div><div class="tx" lang="${cfg.lang}">${esc(x.t)}</div><div class="rd">${esc(x.r)}</div><div class="reps"><i></i><i></i></div></div>
+    <div class="status"><span class="dot ${playing?"on":""}" id="stDot"></span><span id="stTxt">${playing?"재생 중":"재생을 누르면 시작합니다"}</span></div>
+    <div class="ctl"><button class="btn" type="button" data-step="-1">이전</button><button class="btn play ${playing?"stop":""}" type="button" id="playBtn">${playing?"■ 정지":"▶ 재생"}</button><button class="btn" type="button" data-step="1">다음</button></div>
+    <div style="margin-top:10px;text-align:center"><span id="awake" class="awake"></span></div>`;
+  showAwake();
+  document.querySelectorAll("#vPlay .srow").forEach((r,i)=>r.classList.toggle("on",i===cfg.idx));
+}
+function renderList(){
+  const lg=L();const all=lg.cats.flatMap(c=>c.s.map(x=>({...x,cat:c})));const fs=all.filter(x=>isFav(x.id));
+  let h=`<div class="dayhead"><h2>문장 모아 보기</h2><div class="meta">${lg.name} ${all.length}문장 · 즐겨찾기 ${fs.length}</div></div>`;
+  h+=`<section class="box"><h3>즐겨찾기 (${fs.length})</h3>${fs.length?`<ul class="slist">${fs.map((x,i)=>sRow(x,i,1)).join("")}</ul><button class="btn pri" type="button" data-cat="fav" data-goplay="1" style="width:100%;min-height:46px;margin-top:10px">즐겨찾기만 반복 듣기</button>`:`<p class="meta2">자주 쓸 문장의 ☆을 누르면 여기에 모입니다.</p>`}</section>`;
+  lg.cats.forEach(c=>{h+=`<details class="box" style="padding:0 14px"><summary style="min-height:48px;display:flex;align-items:center;justify-content:space-between;font-weight:600;cursor:pointer">${esc(c.label)} <span class="meta2">${c.s.length}문장</span></summary><ul class="slist" style="margin-bottom:12px">${c.s.map((x,i)=>sRow(x,i,1)).join("")}</ul></details>`});
+  $("vList").innerHTML=h;
+}
+function vOpts(lang){const code=lang==="ko"?"ko":L().voice.slice(0,2);const list=voices.filter(v=>(v.lang||"").toLowerCase().replace("_","-").startsWith(code));const p=pickVoice(lang);
+  return list.length?`<select data-voice="${lang}">${list.map(v=>`<option value="${esc(v.name)}" ${p&&p.name===v.name?"selected":""}>${esc(v.name)}</option>`).join("")}</select>`:`<p class="meta2">이 기기에 ${lang==="ko"?"한국어":L().name} 음성이 없습니다.${cfg.online?" 온라인 음성으로 재생합니다.":""}</p>`}
+function renderSet(){
+  let h=`<div class="dayhead"><h2>설정</h2><div class="meta">음성 · 화면 유지 · 백업</div></div>`;
+  h+=`<section class="box"><h3>음성</h3><div class="vstack"><label class="fld">${L().name} 음성${vOpts("t")}</label><label class="fld">한국어 음성${vOpts("ko")}</label>
+    <div class="frow"><button class="btn line" type="button" data-test="t">${L().name} 들어 보기</button><button class="btn line" type="button" data-test="ko">한국어 들어 보기</button></div>
+    <label class="ck" style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="onlineCk" ${cfg.online?"checked":""} style="width:22px;height:22px">기기 음성이 안 나오면 온라인 음성 사용</label></div></section>`;
+  h+=`<section class="box"><h3>화면 꺼짐 방지</h3><p>재생 중에는 화면이 자동으로 꺼지지 않게 붙잡아 둡니다. 정지하면 원래대로 돌아갑니다.</p>
+    <ol class="ol" style="margin-top:8px"><li><b>홈 화면에 설치한 앱(설치판)</b>에서 가장 잘 됩니다. MY 미니앱 허브의 'MY 회화'를 홈 화면에 추가해 쓰세요.</li>
+    <li>그래도 꺼지면 휴대폰 <b>설정 → 디스플레이 → 화면 자동 꺼짐</b>을 10분으로 늘려 주세요.</li>
+    <li>절전 모드에서는 화면 유지가 막힐 수 있습니다.</li></ol>
+    <p class="meta2" style="margin-top:8px">지금 이 화면: ${"wakeLock" in navigator?"화면 유지 기능 지원":"보조 방식으로 화면 유지"}</p></section>`;
+  h+=`<section class="box"><h3>저장·백업</h3><div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
+    <div class="row"><span class="l">즐겨찾기</span><span class="r">${fav.ids.length}문장</span></div>
+    <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><label class="btn pick" style="flex:1">파일에서 복원<input type="file" id="bkFile" accept="application/json,.json"></label></div></section>`;
+  h+=`<p class="meta2" style="margin-top:12px">영어·중국어·베트남어는 같은 방식으로 준비 중입니다.</p>`;
+  $("vSet").innerHTML=h;
+}
+function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.hidden=true},2400)}
+
+/* ── 백업 ── */
+async function saveFile(){const data=JSON.stringify({app:"MY 회화",v:1,exportedAt:new Date().toISOString(),fav},null,1);const d=new Date();const name=`MY미니앱_회화_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+  let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
+  try{if(dl){await dl.save({filename:name,data:new Blob([data],{type:"application/json"})})}else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),3000)}toast("백업 파일을 저장했습니다")}catch(e){if(!e||e.code!=="declined")toast("저장하지 못했습니다")}}
+function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 파일을 읽지 못했습니다");return}if(!o||o.app!=="MY 회화"||!o.fav){toast("MY 회화 백업이 아닙니다");return}
+  const before=fav.ids.length;fav.ids=[...new Set([...fav.ids,...(o.fav.ids||[])])];saveFav();render();toast(`즐겨찾기 ${fav.ids.length-before}개를 더했습니다`)}
+
+/* ── 이벤트 ── */
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.view){cfg.view=d.view;saveCfg();render();window.scrollTo({top:0});return}
+  if(t.id==="playBtn"){playing?stop():start();return}
+  if(d.step){jump(+d.step);return}
+  if(d.fav){toggleFav(d.fav);return}
+  if(d.cat){if(cfg.cat!==d.cat){cfg.cat=d.cat;cfg.idx=0}if(d.goplay)cfg.view="play";saveCfg();if(playing){render();restart()}else render();return}
+  if(d.idx!=null){cfg.idx=+d.idx;saveCfg();if(playing){renderCard();restart()}else{renderCard();start()}return}
+  if(d.go){const lg=L();for(const c of lg.cats){const i=c.s.findIndex(x=>x.id===d.go);if(i>=0){cfg.cat=c.id;cfg.idx=i;break}}cfg.view="play";saveCfg();stop();render();window.scrollTo({top:0});start();return}
+  if(d.lang){if(LANGS[d.lang].soon)return;cfg.lang=d.lang;cfg.cat=L().cats[0].id;cfg.idx=0;saveCfg();stop();render();return}
+  if(d.order){cfg.order=d.order;saveCfg();render();if(playing)restart();return}
+  if(d.repeat){cfg.repeat=d.repeat;saveCfg();render();return}
+  if(d.rate){cfg.rate=+d.rate;saveCfg();render();return}
+  if(d.gap){cfg.gap=+d.gap;saveCfg();render();return}
+  if(d.test){const x=cur();if(x){const was=playing;if(was)stop();gen++;const tk=gen;speak(d.test==="ko"?"ko":"t",d.test==="ko"?x.ko:x.t,tk).catch(()=>toast("소리를 내지 못했습니다"))}return}
+  if(t.id==="bkSave"){saveFile();return}
+});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.dataset.voice){if(t.dataset.voice==="ko")cfg.vKo=t.value;else{cfg.vT={...(cfg.vT||{}),[cfg.lang]:t.value}}saveCfg();toast("음성을 바꿨습니다");return}
+  if(t.id==="onlineCk"){cfg.online=t.checked;saveCfg();return}
+  if(t.id==="bkFile"&&t.files[0]){t.files[0].text().then(restore);t.value="";return}
+});
+$("sheetBg").addEventListener("click",e=>{if(e.target===$("sheetBg"))$("sheetBg").hidden=true});
+const PWA=/github\.io$/.test(location.hostname);if(PWA)$("homeBtn").hidden=false;
+
+/* ── 글자 크기 (기기 + 내 설정) ── */
+const FS=["s","m","l","xl"];let fs="m",prefRef=null;
+try{const v=localStorage.getItem("myapps-fs");if(FS.includes(v))fs=v}catch(e){}
+function applyFs(){document.documentElement.dataset.fs=fs;document.querySelectorAll("#fontPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fs)));try{localStorage.setItem("myapps-fs",fs)}catch(e){}}
+async function loadPref(){try{if(!uid||!db)return;prefRef=db.doc("data/users/"+uid+"/prefs");const s=await prefRef.get();const v=s.exists&&s.data().fs;if(v&&FS.includes(v)&&v!==fs){fs=v;applyFs()}}catch(e){}}
+$("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop");p.hidden=!p.hidden;$("fontBtn").setAttribute("aria-expanded",String(!p.hidden))});
+$("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
+document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
+
+if(!["play","list","set"].includes(cfg.view))cfg.view="play";
+applyFs();render();connect();
+window.__talk={state:()=>({playing,phase,awakeMode,idx:cfg.idx,gen})};
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
