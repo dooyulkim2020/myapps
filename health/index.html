@@ -254,6 +254,7 @@ fieldset.grp legend{font-size:14px;font-weight:600;color:var(--accent);padding:0
       <button type="button" role="menuitemradio" data-fs="l"><span style="font-size:17px">크게</span><small>114%</small></button>
       <button type="button" role="menuitemradio" data-fs="xl"><span style="font-size:19px">아주 크게</span><small>128%</small></button></div>
   </div>
+  <div id="syncBar" hidden style="margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft);display:flex;gap:10px;align-items:center"></div>
   <main id="vHome"></main>
   <main id="vExam" hidden></main>
   <main id="vTrend" hidden></main>
@@ -397,6 +398,7 @@ function cancerList(m){const a=age(m.birth),s=m.sex;if(a==null)return [];const y
 
 /* ── 화면 ── */
 function render(){
+  syncBarUpd();
   document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===state.view)));
   ["home","exam","trend","fam"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=state.view!==v});
   const n=exams().length;$("tbPill").textContent=`검진 ${n}건`;$("tExam").textContent=`${n}건`;
@@ -749,7 +751,11 @@ let tt;function toast(m,undoId){const t=$("toast");t.textContent=m;if(undoId){co
 /* Claude판 ↔ 휴대폰판(GitHub) 동기화: 기록을 복사해 옮기고, 받는 쪽에서 더 나중에 고친 것만 합침 */
 const SYNC_K=LSK+"-sync";
 function syncLast(){try{return localStorage.getItem(SYNC_K)||""}catch(e){return ""}}
-function syncMark(){const d=new Date();try{localStorage.setItem(SYNC_K,`${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`)}catch(e){}}
+function syncMark(){const d=new Date();try{localStorage.setItem(SYNC_K+"-t",String(Date.now()));localStorage.setItem(SYNC_K,`${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`)}catch(e){}}
+/* 휴대폰판: 받은 지 7일이 지났거나 한 번도 안 받았으면 화면 위에 '받기' 띠 */
+function syncBarUpd(){const b=$("syncBar");if(!b)return;let t=0;try{t=+localStorage.getItem(SYNC_K+"-t")||0}catch(e){}
+  const show=PWA&&state.view!=="fam"&&Date.now()-t>7*864e5;b.hidden=!show;b.style.display=show?"flex":"none";
+  if(show)b.innerHTML=`<span style="flex:1;font-size:14px">${t?"Claude판 기록을 받은 지 7일이 지났습니다.":"Claude판에서 고친 기록은 '받기'를 해야 여기에 보입니다."}</span><button class="btn sm pri" type="button" id="syncIn" style="white-space:nowrap">Claude판에서 받기</button>`}
 function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판":"휴대폰판",last=syncLast();
   return `<section class="box" id="syncBox"><h3>${me} ↔ ${other} 동기화</h3>
     <p class="meta2">① 고친 쪽에서 <b>보내기</b> → ② 다른 쪽에서 <b>받기</b>. 같은 기록은 더 나중에 고친 것이 남고, 지운 기록도 함께 옮겨집니다.</p>
@@ -764,7 +770,8 @@ async function syncApplyTxt(t){const txt=(t||"").trim();if(!txt.startsWith("{"))
   await restore(txt);syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
 async function syncIn(){let t="";try{t=navigator.clipboard&&navigator.clipboard.readText?await navigator.clipboard.readText():""}catch(e){}
   if(t&&t.trim().startsWith("{")){await syncApplyTxt(t);return}
-  syncShow("in","");toast("복사한 코드를 칸에 붙여넣고 '합치기'를 누르세요")}
+  if(!$("syncPaste")){state.view="fam";render();window.scrollTo({top:0})}
+  syncShow("in","");$("syncBox").scrollIntoView({block:"start"});toast("복사한 코드를 칸에 붙여넣고 '합치기'를 누르세요")}
 async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
 const APPN="우리 가족 건강관리";
 const backup=()=>JSON.stringify({app:APPN,v:1,exportedAt:new Date().toISOString(),recs:state.recs},null,1);
