@@ -755,7 +755,7 @@ function syncMark(){const d=new Date();try{localStorage.setItem(SYNC_K+"-t",Stri
 /* 휴대폰판: 받은 지 7일이 지났거나 한 번도 안 받았으면 화면 위에 '받기' 띠 */
 function syncBarUpd(){const b=$("syncBar");if(!b)return;let t=0;try{t=+localStorage.getItem(SYNC_K+"-t")||0}catch(e){}
   const show=PWA&&state.view!=="fam"&&Date.now()-t>7*864e5;b.hidden=!show;b.style.display=show?"flex":"none";
-  if(show)b.innerHTML=`<span style="flex:1;font-size:14px">${t?"Claude판 기록을 받은 지 7일이 지났습니다.":"Claude판에서 고친 기록은 '받기'를 해야 여기에 보입니다."}</span><button class="btn sm pri" type="button" id="syncIn" style="white-space:nowrap">Claude판에서 받기</button>`}
+  if(show)b.innerHTML=`<span style="flex:1;font-size:14px">${t?"Claude판 기록을 받은 지 7일이 지났습니다.":"Claude판에서 고친 기록은 '받기'를 해야 여기에 보입니다."}</span><button class="btn sm pri" type="button" id="syncIn" style="white-space:nowrap">Claude판에서 받기</button>`;else b.innerHTML=""}
 function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판":"휴대폰판",last=syncLast();
   return `<section class="box" id="syncBox"><h3>${me} ↔ ${other} 동기화</h3>
     <p class="meta2">① 고친 쪽에서 <b>보내기</b> → ② 다른 쪽에서 <b>받기</b>. 같은 기록은 더 나중에 고친 것이 남고, 지운 기록도 함께 옮겨집니다.</p>
