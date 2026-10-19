@@ -357,16 +357,16 @@ function startAgeOf(p,m){
   const a=num(p.startAge);return a||(p.type==="house"?55:p.type==="gov"?65:60);
 }
 /* 한 연금의 월 수령액(예상): 입력한 예상액이 있으면 그 값, 없으면 적립금을 기대수익률로 불려 수령 기간에 나눔 */
-function project(p,m){
-  const sa=startAgeOf(p,m),cur=age(m&&m.birth);const r=rate()/100/12;
+function project(p,m,o){
+  const sa=startAgeOf(p,m),cur=age(m&&m.birth);const rr=o&&o.rate!=null?o.rate:rate();const r=rr/100/12;
   let monthly=0,basis="",fv=0;
   if(num(p.expected)>0){monthly=num(p.expected)*(p.type==="nps"?npsFactor(num(p.npsAdj||0)):1);basis=p.type==="nps"?"공단 예상액 기준":"입력한 예상액"}
   else if(num(p.balance)>0||num(p.monthly)>0){
     const n=cur==null?0:Math.max(0,(sa-cur)*12);const payN=p.status==="pay"?Math.max(0,Math.min(n,((num(p.payEndAge)||sa)-(cur||0))*12)):0;
     fv=num(p.balance)*Math.pow(1+r,n);
     if(payN>0){const c=num(p.monthly);fv+=r?c*((Math.pow(1+r,payN)-1)/r)*Math.pow(1+r,n-payN):c*payN}
-    const yrs=num(p.payYears)||Math.max(10,90-sa);const m2=yrs*12;
-    monthly=r?fv*r/(1-Math.pow(1+r,-m2)):fv/m2;basis=`적립금·납입액 기준 계산 (연 ${rate()}%${num(p.payYears)?"":", 90세까지 가정"})`;
+    const yrs=(o&&o.years&&!num(p.payYears)?o.years:0)||num(p.payYears)||Math.max(10,90-sa);const m2=yrs*12;
+    monthly=r?fv*r/(1-Math.pow(1+r,-m2)):fv/m2;basis=`적립금·납입액 기준 계산 (연 ${rr}%${num(p.payYears)?"":", 90세까지 가정"})`;
       }
   const yrs=num(p.payYears);const end=yrs?sa+yrs:200;
   return {start:sa,end,monthly,basis,lifelong:!yrs,fv};
@@ -406,6 +406,7 @@ function renderHome(){
   h+=`<div class="kpi"><div class="sub">현재 적립금 합계 (국민연금 제외)</div><div class="big">${man(bal)}</div><div class="sub">매달 납입 ${won(mon)} · 1년 ${man(mon*12)}</div>`;
   if(peak&&peak.sum>0)h+=`<p class="note tip">가족 월 수령액이 가장 많은 해: <b>${peak.y}년</b> 월 ${won(peak.sum)} (${yt.ms.map((m,i)=>`${esc(m.name)} ${peak.ages[i]}세`).join(" · ")})</p>`;
   h+=`</div>`;
+  h+=goalBox(false).replace('</section>',`<button class="btn sm line" type="button" data-view="sim" style="margin-top:8px">자세히 보기</button></section>`);
   // 가족별
   h+=`<section class="box"><h3>가족별 연금</h3>${ms.map(m=>{const s=streams(m);const a=age(m.birth);const np=s.find(x=>x.p.type==="nps");
     const at65=s.filter(x=>65>=x.start&&65<x.end).reduce((t,x)=>t+x.monthly,0);
@@ -512,6 +513,45 @@ function ycPick(e){const pl=e.target.closest("#ycPlot");if(!pl)return;const yt=y
   const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);$("ycDet").innerHTML=ycDet(yt,yt.rows.find(r=>r.y===y),peak)}
 document.addEventListener("pointerdown",ycPick);
 document.addEventListener("pointermove",e=>{if(e.buttons&&e.pointerType==="mouse")ycPick(e)});
+/* ── 목표: 몇 세부터 월 얼마 받기 ── */
+function goalGet(){const g=getSet().goal||{};return {monthly:num(g.monthly)||0,age:num(g.age)||65}}
+function goalAt(o){const g=goalGet();const me=rpMe();if(!me)return null;let pub=0,priv=0;const rows=[];
+  plans().filter(active).forEach(p=>{const m=mById(p.owner);if(!m||!pd(m.birth))return;const a=g.age+(pd(m.birth).getFullYear()-pd(me.birth).getFullYear())*0;const pr=project(p,m,o);
+    const ageThen=g.age-(age(me.birth)-age(m.birth));if(ageThen>=pr.start&&ageThen<pr.end){if(p.type==="nps"||p.type==="gov")pub+=pr.monthly;else priv+=pr.monthly;rows.push({p,pr})}});
+  return {g,me,pub,priv,sum:pub+priv,rows}}
+function goalSolveRate(){const g=goalGet();let lo=0,hi=15;if(goalAt({rate:hi}).sum*1<g.monthly*1e4)return null;for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(goalAt({rate:mid}).sum>=g.monthly*1e4)hi=mid;else lo=mid}return hi}
+function goalBox(full){
+  const c=goalAt();if(!c)return "";const {g,me}=c;
+  if(!g.monthly)return full?`<section class="box"><h3>나의 연금 목표</h3><p>몇 세부터 매달 얼마를 받고 싶은지 정하면, 지금 연금으로 얼마나 채워지는지와 모자란 만큼 무엇을 하면 되는지 계산해 드립니다.</p><button class="btn pri" type="button" data-goaledit="1" style="width:100%;min-height:46px;margin-top:10px">목표 정하기</button></section>`:"";
+  const tgt=g.monthly*1e4,gap=tgt-c.sum,pct=Math.min(100,Math.round(c.sum/tgt*100));const y=pd(me.birth).getFullYear()+g.age;
+  let h=`<section class="box"><h3>나의 연금 목표</h3><div class="row" style="border-top:0"><span class="l"><b style="font-weight:600">${g.age}세(${y}년)부터 월 ${manW(tgt)}</b><small>지금 연금으로 ${g.age}세에 받는 돈 (그해 금액)</small></span><span class="r nw" style="font-size:20px;color:${gap>0?"var(--bad)":"var(--ok)"}">${manW(c.sum)}</span></div>
+    <div class="gauge" style="height:12px"><span style="width:${pct}%;${gap>0?"":"background:var(--ok)"}"></span></div>
+    <p class="meta2" style="margin-top:6px">달성률 ${pct}% · 국민연금 ${manW(c.pub)} + 퇴직·개인연금 ${manW(c.priv)}${gap>0?` · <b style="color:var(--bad)">월 ${manW(gap)} 부족</b>`:` · 목표보다 월 ${manW(-gap)} 많음`}</p>`;
+  if(full&&gap>0){
+    const cur=age(me.birth),n=Math.max(1,(g.age-cur)*12),r=rate()/100/12,payM=Math.max(10,90-g.age)*12;
+    const fund=r?gap*(1-Math.pow(1+r,-payM))/r:gap*payM;const save=r?fund*r/(Math.pow(1+r,n)-1):fund/n;
+    const rq=goalSolveRate();const y20=goalAt({years:20}).sum;const npsP=c.rows.filter(x=>x.p.type==="nps");const nps=npsP.reduce((a,x)=>a+x.pr.monthly,0);
+    const L=[["지금부터 더 모으기",`${g.age}세까지 매달 <b>${manW(save)}</b>씩 연금저축·IRP에 더 넣으면(연 ${rate()}% 가정) 목표에 닿습니다. 세액공제는 연 900만원(월 75만원)까지입니다.`],
+      ["운용 수익률 높이기",rq!=null?`지금 적립금만으로 채우려면 연 <b>${rq.toFixed(1)}%</b>로 불려야 합니다(현재 가정 ${rate()}%).${rq>6?" 현실적으로 쉽지 않은 수준이라 다른 방법과 함께 보세요.":""}`:"수익률만으로는 채우기 어렵습니다."],
+      ["받는 기간 줄이기",`퇴직·개인연금을 90세까지가 아니라 20년(${g.age}~${g.age+19}세)에 나눠 받으면 월 <b>${manW(y20)}</b>${y20>=tgt?" — 목표 달성":` (부족 ${manW(tgt-y20)})`}. 대신 ${g.age+20}세부터는 국민연금만 남습니다.`]];
+    if(nps)L.push(["국민연금 늦춰 받기",`국민연금을 1년 늦출 때마다 7.2% 늘어 5년 늦추면(70세) 월 ${manW(nps*1.36)}입니다. 65~69세는 다른 연금으로 버텨야 합니다.`]);
+    h+=`<div class="sec" style="margin-top:12px"><h3>목표까지 채우는 방법</h3><ol class="gl" style="list-style:decimal;padding-left:20px;display:flex;flex-direction:column;gap:10px;margin:0">${L.map(x=>`<li><b style="display:block;font-weight:600">${x[0]}</b>${x[1]}</li>`).join("")}</ol></div>`;
+    h+=`<div class="sec" style="margin-top:12px"><h3>${g.age}세에 받는 연금 내역</h3>${c.rows.sort((a,b)=>b.pr.monthly-a.pr.monthly).map(x=>`<div class="row"><span class="l">${esc(planName(x.p))}<small>${x.pr.start}세부터${x.pr.lifelong?(x.p.type==="nps"?" 평생":" 90세까지 가정"):` ${num(x.p.payYears)}년`}</small></span><span class="r nw">${manW(x.pr.monthly)}</span></div>`).join("")}</div>`;
+  }
+  h+=`<p class="meta2" style="margin-top:8px">국민연금은 공단 예상액(지금 돈 가치), 퇴직·개인연금은 기대수익률 ${rate()}%로 불린 그해 금액입니다.</p>`;
+  h+=full?`<button class="btn line" type="button" data-goaledit="1" style="width:100%;min-height:44px;margin-top:10px">목표 고치기</button>`:"";
+  return h+`</section>`}
+function openGoal(){const g=goalGet();sheet("나의 연금 목표",`<form class="vstack" style="margin-top:12px"><div class="frow"><label class="fld">받기 시작할 나이<input id="gAge" inputmode="numeric" maxlength="2" value="${g.age}"></label><label class="fld">목표 월 수령액 (만원)<input id="gMon" inputmode="numeric" value="${g.monthly||""}" placeholder="예: 500"></label></div>
+  <label class="ck" style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="gApply" style="width:22px;height:22px">퇴직·개인연금의 수령 시작 나이를 모두 이 나이로 맞추기</label>
+  <p class="meta2">맞추기를 고르면 '나이 고정'이 걸린 연금(자료로 갱신해도 시작 나이 유지)과 이미 받는 연금은 그대로 둡니다. 연금마다 수정 화면에서 따로 바꿀 수도 있습니다.</p></form>`,`<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="gSave">저장</button>`)}
+function saveGoal(){const a=Math.max(50,Math.min(75,num($("gAge").value)||65)),mo=num($("gMon").value);put({...getSet(),id:"settings",kind:"settings",goal:{age:a,monthly:mo},deleted:false});
+  let n=0;if($("gApply").checked)plans().filter(p=>active(p)&&p.type!=="nps"&&p.type!=="gov"&&p.type!=="house"&&p.status!=="recv"&&!p.keepPlan&&num(p.startAge)!==a).forEach(p=>{put({...p,startAge:a,keepPlan:true});n++});
+  closeSheet();toast(n?`목표 저장 · 연금 ${n}건을 ${a}세 시작으로 맞췄습니다`:"목표를 저장했습니다")}
+/* 적립금 기록: 금액이 바뀔 때마다 날짜와 함께 쌓음 */
+function withHist(r,prev){const b=num(r.balance);if(!b)return r;const h=Array.isArray(prev&&prev.hist)?prev.hist.slice():[];const d=r.balanceDate||ymd(today0());
+  if(!h.length&&prev&&num(prev.balance)&&num(prev.balance)!==b)h.push({d:prev.balanceDate||"",b:num(prev.balance)});
+  const last=h[h.length-1];if(!last||last.b!==b||last.d!==d){if(last&&last.d===d)h[h.length-1]={d,b};else h.push({d,b})}
+  return {...r,hist:h.slice(-40)}}
 /* ── 은퇴 생활비 설계: 모든 금액을 '지금 돈 가치(현재가치)'로 환산해 비교 ── */
 const RP_ITEMS=[["basic","기본 생활 (식비·통신·생필품)"],["house","주거 (관리비·공과금·세금)"],["health","의료·건강"],["car","자동차·교통"],["leisure","여가·여행·경조사"],["etc","기타 (용돈·자녀 지원 등)"]];
 /* 국민연금연구원 국민노후보장패널 2024년 조사(50세 이상): 부부 적정 298.1만·최소 216.6만, 개인 적정 197.6만·최소 139.2만 */
@@ -597,7 +637,7 @@ function renderSim(){
   if(!ms.length){$("vSim").innerHTML=h+noMembers();return}
   const yt=yearTable();
   if(!yt){$("vSim").innerHTML=h+`<div class="empty">가족의 생년월일을 입력하면 연도별 수령액을 계산합니다.</div>`;return}
-  h+=rpSection();
+  h+=goalBox(true)+rpSection();
   const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);
   const shown=yt.rows.filter((r,i)=>i===0||r.y%5===0||r===peak||r.cells.some((c,j)=>c!==yt.rows[i-1].cells[j]));
   h+=`<section class="box yc" id="ycBox"><h3>연도별 가족 월 수령액 (예상)</h3>${ycInner(yt,peak)}
@@ -696,6 +736,7 @@ function viewPlan(id){
       ["국민연금 조정",p.type==="nps"&&num(p.npsAdj)?`${num(p.npsAdj)<0?`${-num(p.npsAdj)}년 앞당김`:`${num(p.npsAdj)}년 늦춤`} (정상 ${npsAge(m&&m.birth)}세)`:""]])
    +sec("자료",[["출처",`${SRC[p.source]||"직접 입력"}${p.sourceDate?` (${p.sourceDate} 기준)`:""}${stale(p)?` <span class="tagx warn">갱신 필요</span>`:""}`,1],["담당·연락처",p.contact]]);
   if((p.files||[]).length)h+=`<section class="box"><h3>첨부 자료</h3><div class="files">${p.files.map(f=>`<div class="file"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name||"자료")}</span><button class="btn sm line" type="button" data-openfile="${esc(f.id)}" data-pid="${id}">보기</button></div>`).join("")}</div></section>`;
+  const hs=(p.hist||[]).slice(-8).reverse();if(hs.length>1)h+=`<section class="box"><h3>적립금 기록</h3>${hs.map((x,i)=>{const nx=hs[i+1];const d=nx?x.b-nx.b:0;return `<div class="row"><span class="l">${esc(x.d||"-")}</span><span class="r nw">${man(x.b)}${nx?` <span class="meta2" style="color:${d>=0?"var(--ok)":"var(--bad)"}">${d>=0?"+":""}${man(d)}</span>`:""}</span></div>`}).join("")}</section>`;
   if(p.memo)h+=`<section class="box"><h3>메모</h3><p style="white-space:pre-wrap">${esc(p.memo)}</p></section>`;
   sheet(esc(planName(p)),h,`<button class="btn danger" type="button" data-delplan="${id}">지우기</button><button class="btn" type="button" data-close="1">닫기</button><button class="btn pri" type="button" data-editplan="${id}">수정</button>`);
 }
@@ -713,6 +754,7 @@ function openPlan(id){
     <p class="meta2" id="expHelp"></p>
     <div class="frow" id="ageRow"><label class="fld">수령 시작 나이<input id="pSA" inputmode="numeric" maxlength="3" value="${esc(p.startAge)}" placeholder="예: 60"></label><label class="fld">수령 기간 (년, 비우면 평생/90세까지)<input id="pPY" inputmode="numeric" maxlength="3" value="${esc(p.payYears)}" placeholder="예: 10, 20"></label></div>
     <label class="fld" id="payEndRow">납입 종료 나이 (비우면 수령 시작까지 납입)<input id="pPE" inputmode="numeric" maxlength="3" value="${esc(p.payEndAge)}"></label>
+    <label class="ck" id="keepRow" style="display:flex;gap:8px;align-items:center;min-height:44px;font-size:15px"><input type="checkbox" id="pKeep" ${p.keepPlan?"checked":""} style="width:22px;height:22px">수령 시작 나이·기간을 내가 정함 (자료로 갱신해도 유지)</label>
     <div class="fld" id="taxRow">세액공제<label class="ck"><input type="checkbox" id="pTax" ${p.taxOn!==false?"checked":""}>본인이 넣는 돈이라 세액공제 대상</label></div>
     <details ${p.principal||p.rateInfo||p.payMethod||p.npsMonths||p.contact||p.company||p.surrender||p.lastPaid?"open":""}><summary style="min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--accent);cursor:pointer">자세한 정보 (선택)</summary><div class="vstack">
       <div class="frow"><label class="fld">지금까지 낸 돈·원금 (원)<input id="pPrin" inputmode="numeric" value="${p.principal?num(p.principal).toLocaleString("ko-KR"):""}"></label><label class="fld">최근 납입일<input id="pLast" type="date" value="${esc(p.lastPaid||"")}"></label></div>
@@ -728,7 +770,7 @@ function openPlan(id){
 }
 function typeUi(){const t=$("pType");if(!t)return;const v=t.value;const m=mById($("pOwner").value);
   const nps=v==="nps",pub=v==="nps"||v==="gov"||v==="house";
-  $("ageRow").hidden=nps;if($("npsMRow"))$("npsMRow").hidden=!nps;$("taxRow").hidden=!TAXCREDIT.includes(v);$("payEndRow").hidden=pub;$("balRow").hidden=pub;
+  $("ageRow").hidden=nps;if($("keepRow"))$("keepRow").hidden=pub;if($("npsMRow"))$("npsMRow").hidden=!nps;$("taxRow").hidden=!TAXCREDIT.includes(v);$("payEndRow").hidden=pub;$("balRow").hidden=pub;
   $("expLbl").textContent=nps?"예상 월 연금액 (원, 공단 조회값)":v==="house"?"월 지급금 (원)":"예상 월 수령액 (원, 선택)";
   $("expHelp").textContent=nps?`국민연금공단 '내 연금 알아보기'의 예상 연금월액(현재가치)을 넣어 주세요. 수령 시작: ${m&&m.birth?npsAge(m.birth)+"세 (출생연도 기준)":"생년월일을 입력하면 자동 계산"}. 조기·연기는 '수령 계획'에서 비교합니다.`:pub?"":"비워 두면 적립금·월 납입액·기대수익률로 계산합니다.";
   if(state.edit&&!state.edit.id&&$("pTax"))$("pTax").checked=v!=="dc";
@@ -738,13 +780,13 @@ function savePlan(){
   const v=$("pType").value;
   const r={...e,id:e.id||newId("p"),kind:"plan",owner:$("pOwner").value,type:v,provider:$("pProv").value.trim(),product:$("pProd").value.trim(),status:$("pSt").value,no4:$("pNo").value.replace(/\D/g,"").slice(-4),
     monthly:num($("pMon").value)||"",start:$("pStart").value,balance:num($("pBal").value)||"",balanceDate:$("pBalD").value,expected:num($("pExp").value)||"",
-    startAge:v==="nps"?"":num($("pSA").value)||"",payYears:v==="nps"?"":num($("pPY").value)||"",payEndAge:num($("pPE").value)||"",taxOn:$("pTax").checked,memo:$("pMemo").value.trim(),
+    startAge:v==="nps"?"":num($("pSA").value)||"",payYears:v==="nps"?"":num($("pPY").value)||"",payEndAge:num($("pPE").value)||"",taxOn:$("pTax").checked,keepPlan:$("pKeep").checked,memo:$("pMemo").value.trim(),
     principal:num($("pPrin").value)||"",lastPaid:$("pLast").value,payMethod:$("pPM").value,npsMonths:num($("pNM").value)||"",rateInfo:$("pRate").value.trim(),surrender:num($("pSur").value)||"",company:$("pComp").value.trim(),contact:$("pCont").value.trim(),
     files:e.files||[],deleted:false};
   if(e._read){r.source=e._read.source;r.sourceDate=e._read.date}
   delete r._read;delete r._new;
   if(!e.id){r.source="manual";r.sourceDate=ymd(today0())}
-  delete r._fv;put(r);closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
+  delete r._fv;put(withHist(r,e.id?state.recs[e.id]:null));closeSheet();toast(e.id?"수정했습니다":"등록했습니다");
 }
 
 /* ── 첨부 자료 (Claude 자료 저장소) ── */
@@ -784,7 +826,7 @@ async function readAttach(){
     if(!pick){attMsg("자료에서 이 연금의 값을 찾지 못했습니다.");return}
     const set=(id,v,fmt)=>{const el=$(id);if(el&&v!==""&&v!=null&&v!==0){el.value=fmt?num(v).toLocaleString("ko-KR"):v}};
     set("pBal",num(pick.balance),1);set("pMon",num(pick.monthly)||(num(pick.annualPaid)?Math.round(num(pick.annualPaid)/12):""),1);set("pExp",num(pick.expected),1);set("pPrin",num(pick.principal),1);set("pSur",num(pick.surrender),1);
-    if(want!=="nps"){set("pSA",num(pick.startAge));set("pPY",num(pick.payYears))}set("pNM",num(pick.npsMonths));
+    if(want!=="nps"&&!$("pKeep").checked){set("pSA",num(pick.startAge));set("pPY",num(pick.payYears))}set("pNM",num(pick.npsMonths));
     if(pick.provider&&!$("pProv").value)$("pProv").value=String(pick.provider).slice(0,30);if(pick.product&&!$("pProd").value)$("pProd").value=String(pick.product).slice(0,50);
     const n4=String(pick.no4||"").replace(/\D/g,"").slice(-4);if(n4&&!$("pNo").value)$("pNo").value=n4;
     if(pick.rateInfo)$("pRate").value=String(pick.rateInfo).slice(0,60);if(pick.company&&!$("pComp").value)$("pComp").value=String(pick.company).slice(0,30);
@@ -927,8 +969,8 @@ function applyImport(){
   imp.items.filter(x=>x.on).forEach(it=>{const mt=findMatch(it);
     const fields=["balance","monthly","annualPaid","paidYear","expected","startAge","payYears","status","principal","npsMonths","rateInfo","payMethod","surrender","company","lastPaid"];
     const addAtt=fs=>it.att&&!(fs||[]).some(f=>f.id===it.att.id)?[...(fs||[]),it.att]:(fs||[]);
-    if(mt){const r={...mt};fields.forEach(k=>{if(it[k]!==""&&it[k]!=null)r[k]=it[k]});["provider","product","no4","start"].forEach(k=>{if(!r[k]&&it[k])r[k]=it[k]});
-      if(it.balance)r.balanceDate=it.sourceDate;r.source=it.source;r.sourceDate=it.sourceDate;r.files=addAtt(r.files);if(r.type==="nps"){r.startAge="";r.payYears=""}put(r);nUp++}
+    if(mt){const r={...mt};fields.forEach(k=>{if(mt.keepPlan&&(k==="startAge"||k==="payYears"))return;if(it[k]!==""&&it[k]!=null)r[k]=it[k]});["provider","product","no4","start"].forEach(k=>{if(!r[k]&&it[k])r[k]=it[k]});
+      if(it.balance)r.balanceDate=it.sourceDate;r.source=it.source;r.sourceDate=it.sourceDate;r.files=addAtt(r.files);if(r.type==="nps"){r.startAge="";r.payYears=""}put(withHist(r,mt));nUp++}
     else{const r={id:newId("p"),kind:"plan",owner:it.owner,type:it.type,provider:it.provider,product:it.product,no4:it.no4,status:it.status||"pay",start:it.start,monthly:it.monthly,balance:it.balance,balanceDate:it.balance?it.sourceDate:"",
       expected:it.expected,annualPaid:it.annualPaid,paidYear:it.paidYear,startAge:it.type==="nps"?"":it.startAge,payYears:it.type==="nps"?"":it.payYears,payEndAge:"",npsAdj:0,taxOn:it.type!=="dc",memo:"",source:it.source,sourceDate:it.sourceDate,principal:it.principal,npsMonths:it.npsMonths,rateInfo:it.rateInfo,payMethod:it.payMethod,surrender:it.surrender,company:it.company,lastPaid:it.lastPaid,files:addAtt([]),deleted:false};put(r);nNew++}});
   closeSheet();state.view="plan";render();toast(`새로 ${nNew}건 등록 · ${nUp}건 갱신했습니다`);
@@ -988,6 +1030,7 @@ document.addEventListener("click",e=>{
   if("mem" in d){state.mem=d.mem||null;render();return}
   if(d.ycby){state.ycBy=d.ycby;render();return}
   if(d.rpedit){openRp();return}
+  if(d.goaledit){openGoal();return}
   if(d.rpfill){const couple=$("rHh").value!=="single";const tot=(couple?RP_STD.couple:RP_STD.single)[d.rpfill];document.querySelectorAll("#sheet [data-rpi]").forEach(i=>{i.value=Math.round(tot*RP_SPLIT[i.dataset.rpi])});rpSum();return}
   if(d.close){closeSheet();return}
   if(d.addmem){openMember(null);return}
@@ -1011,6 +1054,7 @@ document.addEventListener("click",e=>{
   if(t.id==="mSave"){saveMember();return}
   if(t.id==="pSave"){savePlan();return}
   if(t.id==="rSave"){saveRp();return}
+  if(t.id==="gSave"){saveGoal();return}
   if(t.id==="bkSave"){saveFile();return}
   if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
   if(t.id==="bkRestore"){restore($("bkText").value);return}
