@@ -530,10 +530,10 @@ function goalBox(full){
   if(full&&gap>0){
     const cur=age(me.birth),n=Math.max(1,(g.age-cur)*12),r=rate()/100/12,payM=Math.max(10,90-g.age)*12;
     const fund=r?gap*(1-Math.pow(1+r,-payM))/r:gap*payM;const save=r?fund*r/(Math.pow(1+r,n)-1):fund/n;
-    const rq=goalSolveRate();const y20=goalAt({years:20}).sum;const npsP=c.rows.filter(x=>x.p.type==="nps");const nps=npsP.reduce((a,x)=>a+x.pr.monthly,0);
-    const L=[["지금부터 더 모으기",`${g.age}세까지 매달 <b>${manW(save)}</b>씩 연금저축·IRP에 더 넣으면(연 ${rate()}% 가정) 목표에 닿습니다. 세액공제는 연 900만원(월 75만원)까지입니다.`],
-      ["운용 수익률 높이기",rq!=null?`지금 적립금만으로 채우려면 연 <b>${rq.toFixed(1)}%</b>로 불려야 합니다(현재 가정 ${rate()}%).${rq>6?" 현실적으로 쉽지 않은 수준이라 다른 방법과 함께 보세요.":""}`:"수익률만으로는 채우기 어렵습니다."],
-      ["받는 기간 줄이기",`퇴직·개인연금을 90세까지가 아니라 20년(${g.age}~${g.age+19}세)에 나눠 받으면 월 <b>${manW(y20)}</b>${y20>=tgt?" — 목표 달성":` (부족 ${manW(tgt-y20)})`}. 대신 ${g.age+20}세부터는 국민연금만 남습니다.`]];
+    const gs=goalScen(rate(),0);const rq=goalSolveRate();const y20=goalAt({years:20}).sum;const npsP=c.rows.filter(x=>x.p.type==="nps");const nps=npsP.reduce((a,x)=>a+x.pr.monthly,0);
+    const L=[["지금부터 더 모으기",`${gs.payEnd}세까지 매달 <strong>${manW(gs.X)}</strong>씩 연금저축·IRP에 더 넣으면(연 ${rate()}% 가정) 목표에 닿습니다. 세액공제는 연 900만원(월 75만원)까지입니다.`],
+      ["운용 수익률 높이기",rq!=null?`지금 적립금만으로 채우려면 연 <strong>${rq.toFixed(1)}%</strong>로 불려야 합니다(현재 가정 ${rate()}%).${rq>6?" 현실적으로 쉽지 않은 수준이라 다른 방법과 함께 보세요.":""}`:"수익률만으로는 채우기 어렵습니다."],
+      ["받는 기간 줄이기",`퇴직·개인연금을 90세까지가 아니라 20년(${g.age}~${g.age+19}세)에 나눠 받으면 월 <strong>${manW(y20)}</strong>${y20>=tgt?" — 목표 달성":` (부족 ${manW(tgt-y20)})`}. 대신 ${g.age+20}세부터는 국민연금만 남습니다.`]];
     if(nps)L.push(["국민연금 늦춰 받기",`국민연금을 1년 늦출 때마다 7.2% 늘어 5년 늦추면(70세) 월 ${manW(nps*1.36)}입니다. 65~69세는 다른 연금으로 버텨야 합니다.`]);
     h+=`<div class="sec" style="margin-top:12px"><h3>목표까지 채우는 방법</h3><ol class="gl" style="list-style:decimal;padding-left:20px;display:flex;flex-direction:column;gap:10px;margin:0">${L.map(x=>`<li><b style="display:block;font-weight:600">${x[0]}</b>${x[1]}</li>`).join("")}</ol></div>`;
     h+=`<div class="sec" style="margin-top:12px"><h3>${g.age}세에 받는 연금 내역</h3>${c.rows.sort((a,b)=>b.pr.monthly-a.pr.monthly).map(x=>`<div class="row"><span class="l">${esc(planName(x.p))}<small>${x.pr.start}세부터${x.pr.lifelong?(x.p.type==="nps"?" 평생":" 90세까지 가정"):` ${num(x.p.payYears)}년`}</small></span><span class="r nw">${manW(x.pr.monthly)}</span></div>`).join("")}</div>`;
@@ -541,6 +541,40 @@ function goalBox(full){
   h+=`<p class="meta2" style="margin-top:8px">국민연금은 공단 예상액(지금 돈 가치), 퇴직·개인연금은 기대수익률 ${rate()}%로 불린 그해 금액입니다.</p>`;
   h+=full?`<button class="btn line" type="button" data-goaledit="1" style="width:100%;min-height:44px;margin-top:10px">목표 고치기</button>`:"";
   return h+`</section>`}
+/* ── 목표 달성 전략: 수익률·수령기간·추가 납입을 묶어 목표에 닿는 조합을 계산 ── */
+function goalExtra(X,rr,yrs,cur,payEnd,ga){const r=rr/100/12,nC=Math.max(0,(payEnd-cur)*12),nG=Math.max(0,(ga-Math.max(cur,payEnd))*12);
+  let fv=r?X*((Math.pow(1+r,nC)-1)/r):X*nC;fv*=Math.pow(1+r,nG);const m2=(yrs||Math.max(10,90-ga))*12;return r?fv*r/(1-Math.pow(1+r,-m2)):fv/m2}
+function goalScen(rr,yrs){const g=goalGet();const c=goalAt({rate:rr,years:yrs});const me=c.me,cur=age(me.birth),rp=rpGet();
+  const payEnd=Math.max(cur+1,Math.min(g.age,rp.retireAge||g.age));const unit=goalExtra(1,rr,yrs,cur,payEnd,g.age);const need=Math.max(0,g.monthly*1e4-c.sum);
+  return {rr,yrs,base:c.sum,X:unit?Math.ceil(need/unit/1e4)*1e4:0,payEnd,c}}
+function goalStrategy(){
+  const c=goalAt();if(!c)return "";const {g,me}=c;const tgt=g.monthly*1e4;if(!g.monthly)return "";
+  const cur=age(me.birth),rp=rpGet(),R=rate(),hi=R+1,ys=Math.max(10,90-g.age);
+  const S=[goalScen(R,0),goalScen(hi,0),goalScen(R,20),goalScen(hi,20)];const CAP=75e4;
+  const pick=S.find(x=>x.X<=CAP&&!x.yrs)||S.find(x=>x.X<=CAP)||S.slice().sort((a,b)=>a.X-b.X)[0];
+  const lbl=x=>`연 ${x.rr}% · ${x.yrs?`${x.yrs}년간`:"90세까지"}`;
+  const inf=rp.inf/100,real=tgt/Math.pow(1+inf,Math.max(0,g.age-cur));
+  let h=`<section class="box"><h3>${g.age}세 월 ${manW(tgt)} 달성 전략</h3>`;
+  if(c.sum>=tgt){h+=`<p>지금 연금으로 목표를 넘습니다(월 ${manW(c.sum)}). 아래 실행 점검만 꾸준히 하시면 됩니다.</p>`}
+  else{h+=`<p class="meta2">퇴직·개인연금의 운용 수익률과 받는 기간을 바꿀 때, ${pick.payEnd}세까지 연금저축·IRP에 매달 더 넣어야 하는 돈입니다.</p>
+    <div style="margin-top:6px">${S.map(x=>`<div class="row"><span class="l"${x===pick?' style="color:var(--accent);font-weight:700"':""}>${x===pick?"★ ":""}${lbl(x)}<small>지금 연금으로 월 ${manW(x.base)}</small></span><span class="r nw"${x===pick?' style="color:var(--accent);font-weight:700"':""}>${x.X?`+${manW(x.X)}/월${x.X>CAP?" ⚠":""}`:"추가 없이 달성"}</span></div>`).join("")}</div>
+    <p class="meta2" style="margin-top:6px">★ 추천 조합 · ⚠ 세액공제 한도(월 75만원)를 넘는 금액. 20년 수령은 ${g.age+20}세부터 국민연금만 남습니다.</p>`}
+  // 단계별 실행
+  const tax=Math.min(pick.X*12,900e4);const npsYr=c.rows.filter(x=>x.p.type==="nps"||x.p.type==="gov").reduce((a,x)=>a+x.pr.monthly,0)*12;
+  const priv=pick.c.rows.filter(x=>["irp","psf","psi"].includes(x.p.type)).reduce((a,x)=>a+x.pr.monthly,0)+(pick.X?goalExtra(pick.X,pick.rr,pick.yrs,cur,pick.payEnd,g.age):0);
+  const up=goalAt({rate:R+1}).sum-c.sum;const dc=plans().filter(p=>active(p)&&(p.type==="dc"||p.type==="db"));
+  const rc=rpCalc();const br=rc&&rp.set?rc.rows.filter(r=>r.age<g.age&&r.gap<0):[];
+  const A=[];
+  if(pick.X)A.push([`지금~${pick.payEnd}세 · 추가 납입`,`연금저축·IRP에 매달 <strong>${manW(pick.X)}</strong>(${pick.payEnd-cur}년) 넣습니다. 세액공제 대상 연 ${man(tax)} → 환급 연 약 ${man(tax*.132)}(총급여 5,500만원 초과 13.2%, 이하면 ${man(tax*.165)}). 환급금도 다시 넣으면 더 빨리 닿습니다.${pick.X>CAP?" 75만원을 넘는 부분은 공제는 없지만 과세이연 효과는 있습니다.":""}`]);
+  A.push([`운용 · 연 ${pick.rr}% 목표`,`퇴직·개인연금 수익률을 1%p 올리면 ${g.age}세 월 수령액이 <strong>${manW(up)}</strong> 늘어납니다. ${dc.length?"DC·IRP 적립금이 원리금보장형(예금·보험)에 머물러 있는지 확인하고, ":""}TDF·지수 ETF 등으로 나눠 담으세요(퇴직연금은 위험자산 70%까지).`]);
+  if(dc.length)A.push([`${rp.retireAge||60}세 퇴직 · 퇴직금은 IRP로`,`퇴직금을 일시금으로 찾지 말고 IRP로 옮겨 연금으로 받으면 퇴직소득세가 30% 줄고, 11년째부터는 40% 줄어듭니다.`]);
+  if(br.length)A.push([`${br[0].age}~${br[br.length-1].age}세 · 연금 꺼내지 않기`,`이 기간 생활비가 매달 평균 ${manW(br.reduce((a,r)=>a-r.gap,0)/br.length)} 모자랍니다(합계 ${man(br.reduce((a,r)=>a-r.gap*12,0))}, 지금 돈 가치). 여기서 연금을 미리 꺼내면 ${g.age}세 목표가 줄어드니 재취업·별도 자금으로 버티는 계획이 필요합니다.`]);
+  A.push(["국민연금 · 당겨 받지 않기",`조기수령은 1년에 6%씩 평생 깎입니다. 60세 이후에도 임의계속가입으로 가입 기간을 늘리면 연금액을 키울 수 있으니 공단 예상액을 다시 조회해 보세요.`]);
+  A.push([`${g.age}세 · 받기 시작`,`IRP·연금저축에서 받는 돈이 연 약 ${man(priv*12)}입니다.${priv*12>1500e4?" 연 1,500만원을 넘으면 16.5% 분리과세와 종합과세 중 고를 수 있고, IRP 안의 퇴직금 이전분은 이 한도에 넣지 않습니다.":" 연 1,500만원 이하라 연금소득세(5.5~3.3%)만 냅니다."}${npsYr>2e7?` 국민연금이 연 ${man(npsYr)}이라 건강보험 피부양자 기준(연 2,000만원)을 넘어 지역 보험료가 나옵니다.`:""}`]);
+  A.push(["해마다 점검",`연금마다 적립금 화면을 캡처해 '첨부 자료로 고치기'로 갱신하면 달성률과 이 전략이 바로 다시 계산됩니다.`]);
+  h+=`<div class="sec" style="margin-top:12px"><h3>단계별 실행</h3><ol class="gl" style="list-style:decimal;padding-left:20px;display:flex;flex-direction:column;gap:10px;margin:0">${A.map(x=>`<li><b style="display:block;font-weight:600">${x[0]}</b>${x[1]}</li>`).join("")}</ol></div>
+    <p class="meta2" style="margin-top:8px">참고: 물가 연 ${rp.inf}%면 ${g.age}세의 월 ${manW(tgt)}은 지금 돈으로 약 ${manW(real)}입니다. 세금·건강보험료 빼기 전 금액입니다.</p></section>`;
+  return h}
 function openGoal(){const g=goalGet();sheet("나의 연금 목표",`<form class="vstack" style="margin-top:12px"><div class="frow"><label class="fld">받기 시작할 나이<input id="gAge" inputmode="numeric" maxlength="2" value="${g.age}"></label><label class="fld">목표 월 수령액 (만원)<input id="gMon" inputmode="numeric" value="${g.monthly||""}" placeholder="예: 500"></label></div>
   <label class="ck" style="display:flex;gap:8px;align-items:center;min-height:44px"><input type="checkbox" id="gApply" style="width:22px;height:22px">퇴직·개인연금의 수령 시작 나이를 모두 이 나이로 맞추기</label>
   <p class="meta2">맞추기를 고르면 '나이 고정'이 걸린 연금(자료로 갱신해도 시작 나이 유지)과 이미 받는 연금은 그대로 둡니다. 연금마다 수정 화면에서 따로 바꿀 수도 있습니다.</p></form>`,`<button class="btn" type="button" data-close="1">취소</button><button class="btn pri" type="button" id="gSave">저장</button>`)}
@@ -637,7 +671,7 @@ function renderSim(){
   if(!ms.length){$("vSim").innerHTML=h+noMembers();return}
   const yt=yearTable();
   if(!yt){$("vSim").innerHTML=h+`<div class="empty">가족의 생년월일을 입력하면 연도별 수령액을 계산합니다.</div>`;return}
-  h+=goalBox(true)+rpSection();
+  h+=goalBox(true)+goalStrategy()+rpSection();
   const peak=yt.rows.reduce((a,b)=>b.sum>a.sum?b:a,yt.rows[0]);
   const shown=yt.rows.filter((r,i)=>i===0||r.y%5===0||r===peak||r.cells.some((c,j)=>c!==yt.rows[i-1].cells[j]));
   h+=`<section class="box yc" id="ycBox"><h3>연도별 가족 월 수령액 (예상)</h3>${ycInner(yt,peak)}
