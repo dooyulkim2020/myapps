@@ -704,6 +704,7 @@ function renderFam(){
   h+=`<section class="box"><h3>가족 구성원</h3>${ms.length?ms.map(m=>{const a=age(m.birth);return `<div class="row" style="align-items:center"><span class="l" style="display:flex;gap:10px;align-items:center"><span class="mono sm" style="background:${esc(m.color||COLORS[0])}">${esc(m.name.slice(0,1))}</span><span><b style="font-weight:600">${esc(m.name)}</b> <span class="meta2">${esc(m.rel||"")}</span><small>${a!=null?`만 ${a}세 · 국민연금 ${npsAge(m.birth)}세부터 · `:""}연금 ${ps.filter(p=>p.owner===m.id&&active(p)).length}건</small></span></span><span class="r"><button class="btn sm" type="button" data-editmem="${m.id}">수정</button></span></div>`}).join(""):`<p class="meta2">등록된 가족이 없습니다.</p>`}
     <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" data-addmem="1" style="flex:1">＋ 가족 등록</button></div></section>`;
   h+=`<section class="box"><h3>계산 기준</h3><label class="fld">기대수익률 (연 %, 적립금을 불리는 계산에 사용)<input id="rateIn" inputmode="decimal" value="${esc(s.rate===""||s.rate==null?"3":s.rate)}"></label><p class="meta2" style="margin-top:6px">예상 월 수령액을 직접 입력한 연금은 이 값과 상관없이 입력값을 씁니다.</p></section>`;
+  h+=syncBox();
   h+=`<section class="box"><h3>백업</h3>
       <div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
       <div class="row"><span class="l">기록 건수</span><span class="r">가족 ${ms.length} · 연금 ${ps.length}</span></div>
@@ -1012,6 +1013,25 @@ function applyImport(){
 
 /* ── 이벤트 ── */
 let tt;function toast(m,undoId){const t=$("toast");t.textContent=m;if(undoId){const b=document.createElement("button");b.type="button";b.className="undo";b.dataset.undo=undoId;b.textContent="되돌리기";t.appendChild(b)}t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true},undoId?7000:2600)}
+/* Claude판 ↔ 휴대폰판(GitHub) 동기화: 기록을 복사해 옮기고, 받는 쪽에서 더 나중에 고친 것만 합침 */
+const SYNC_K=LSK+"-sync";
+function syncLast(){try{return localStorage.getItem(SYNC_K)||""}catch(e){return ""}}
+function syncMark(){const d=new Date();try{localStorage.setItem(SYNC_K,`${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`)}catch(e){}}
+function syncBox(){const me=PWA?"휴대폰판":"Claude판",other=PWA?"Claude판":"휴대폰판",last=syncLast();
+  return `<section class="box" id="syncBox"><h3>${me} ↔ ${other} 동기화</h3>
+    <p class="meta2">① 고친 쪽에서 <b>보내기</b> → ② 다른 쪽에서 <b>받기</b>. 같은 기록은 더 나중에 고친 것이 남고, 지운 기록도 함께 옮겨집니다.</p>
+    <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="syncOut" style="flex:1">${other}으로 보내기</button><button class="btn line" type="button" id="syncIn" style="flex:1">${other}에서 받기</button></div>
+    <div class="vstack" id="syncPaste" hidden style="margin-top:10px"><label class="fld" id="syncLbl">동기화 코드<textarea id="syncText"></textarea></label><button class="btn pri" type="button" id="syncApply" hidden>붙여넣은 코드 합치기</button></div>
+    <p class="meta2" style="margin-top:6px">${last?`마지막 동기화 ${last} · `:""}첨부 파일은 옮겨지지 않습니다. 첨부까지 옮기려면 아래 백업 파일을 쓰세요.</p></section>`}
+function syncShow(mode,txt){const w=$("syncPaste");if(!w)return;w.hidden=false;$("syncApply").hidden=mode!=="in";const ta=$("syncText");
+  $("syncLbl").firstChild.textContent=mode==="in"?"여기에 길게 눌러 붙여넣기":"아래 코드를 모두 복사하세요";ta.value=txt||"";if(mode==="out"){ta.focus();ta.select()}else ta.focus()}
+async function syncOut(){const j=backup();const other=PWA?"Claude판":"휴대폰판";
+  if(await copyText(j)){syncMark();toast(`복사했습니다. ${other}을 열어 '받기'를 누르세요`);render()}else{syncShow("out",j);toast("자동 복사가 막혀 있어 코드를 보여 드립니다. 모두 선택해 복사하세요")}}
+async function syncApplyTxt(t){const txt=(t||"").trim();if(!txt.startsWith("{")){toast("동기화 코드가 아닙니다. 다른 쪽에서 '보내기'를 먼저 누르세요");return}
+  await restore(txt);syncMark();const w=$("syncPaste");if(w)w.hidden=true;render()}
+async function syncIn(){let t="";try{t=navigator.clipboard&&navigator.clipboard.readText?await navigator.clipboard.readText():""}catch(e){}
+  if(t&&t.trim().startsWith("{")){await syncApplyTxt(t);return}
+  syncShow("in","");toast("복사한 코드를 칸에 붙여넣고 '합치기'를 누르세요")}
 async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){return false}}
 const backup=()=>JSON.stringify({app:"우리 가족 연금관리",v:1,exportedAt:new Date().toISOString(),recs:state.recs},null,1);
 /* 백업 v2: 기록 + 첨부 파일 내용(base64). 지운 연금의 파일도 포함(되살릴 수 있으므로) */
@@ -1089,6 +1109,9 @@ document.addEventListener("click",e=>{
   if(t.id==="pSave"){savePlan();return}
   if(t.id==="rSave"){saveRp();return}
   if(t.id==="gSave"){saveGoal();return}
+  if(t.id==="syncOut"){syncOut();return}
+  if(t.id==="syncIn"){syncIn();return}
+  if(t.id==="syncApply"){syncApplyTxt($("syncText").value);return}
   if(t.id==="bkSave"){saveFile();return}
   if(t.id==="bkCopy"){(async()=>{const j=backup();if(await copyText(j))toast("백업 코드를 복사했습니다");else{$("bkText").value=j;$("bkText").select();toast("아래 칸의 코드를 직접 복사해 주세요")}})();return}
   if(t.id==="bkRestore"){restore($("bkText").value);return}
