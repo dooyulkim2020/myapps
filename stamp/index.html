@@ -220,7 +220,7 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
         <button class="btn pri" type="submit">추가하기</button>
       </form>
     </details>
-    <p class="foot">출처: 문화체육관광부·한국관광공사 「한국관광 100선」, 산림청 「걷기 좋은 명품숲길 50선」<br>서울 근교는 언론·공식 안내를 바탕으로 고른 묵동 기준 1시간 안팎의 나들이 장소이며, 이동 시간은 막히지 않을 때 대략값입니다.<br>운영 시간·요금·통제 여부는 출발 전에 확인하세요.</p>
+    <p class="foot">출처: 문화체육관광부·한국관광공사 「한국관광 100선」, 산림청 「걷기 좋은 명품숲길 50선」<br>서울 근교는 언론·공식 안내를 바탕으로 고른 서울 동북부 기준 1시간 안팎의 나들이 장소이며, 이동 시간은 막히지 않을 때 대략값입니다.<br>운영 시간·요금·통제 여부는 출발 전에 확인하세요.</p>
   </main>
 
   <main id="viewRec" hidden>
@@ -457,7 +457,7 @@ function render(){
   if(rec)return;
   const f=state.f;
   $("headTitle").textContent={tour:"한국관광 100선",walk:"걷기·산책",near:"서울 근교 나들이"}[tab];
-  $("headMeta").textContent={tour:"문화체육관광부·한국관광공사 선정",walk:"산림청 명품숲길 50선 + 부부 추천 산책로 13곳",near:"묵동에서 1시간 안팎 · 뷰 카페·정원·호수·산책"}[tab];
+  $("headMeta").textContent={tour:"문화체육관광부·한국관광공사 선정",walk:"산림청 명품숲길 50선 + 부부 추천 산책로 13곳",near:"서울 동북부에서 1시간 안팎 · 뷰 카페·정원·호수·산책"}[tab];
   if($("addRegion").dataset.t!==tab){$("addRegion").innerHTML=regionsOf(tab).map(([r])=>`<option>${r}</option>`).join("");$("addRegion").dataset.t=tab}
   const pct=places.length?done.length/places.length*100:0;
   let sub="";
@@ -586,7 +586,7 @@ function openInfo(id,toForm,picked){
   ${picked?`<div class="now" style="flex-direction:row;justify-content:space-between;align-items:center"><span class="now-k">추천으로 뽑은 곳</span><button class="now-b" type="button" id="repick">다른 곳 뽑기</button></div>`:""}
   ${p.custom?`<p class="intro">직접 추가한 장소입니다. 다녀오면 도장과 추억을 남겨 보세요.</p>`:`
   <p class="intro">${esc(p.intro)}</p>
-  ${box("한눈에",`${p.far?`<div class="row"><span class="l">우리집(묵동)에서</span><span class="r">${esc(p.far)}</span></div>`:""}<div class="row"><span class="l">추천 시기</span><span class="r">${esc(p.when)}</span></div><div class="row"><span class="l">예상 소요</span><span class="r">${esc(shortDur(p.dur))}</span></div>${p.lv?`<div class="row"><span class="l">난이도 · 노면</span><span class="r">${esc(p.lv)} · ${esc(p.sf)}</span></div>`:""}${/·/.test(p.dur)?`<p class="meta2" style="margin-top:4px">${esc(p.dur)}</p>`:""}`)}
+  ${box("한눈에",`${p.far?`<div class="row"><span class="l">우리집에서</span><span class="r">${esc(p.far)}</span></div>`:""}<div class="row"><span class="l">추천 시기</span><span class="r">${esc(p.when)}</span></div><div class="row"><span class="l">예상 소요</span><span class="r">${esc(shortDur(p.dur))}</span></div>${p.lv?`<div class="row"><span class="l">난이도 · 노면</span><span class="r">${esc(p.lv)} · ${esc(p.sf)}</span></div>`:""}${/·/.test(p.dur)?`<p class="meta2" style="margin-top:4px">${esc(p.dur)}</p>`:""}`)}
   ${box("좋은 점",`<ul class="ul">${p.pros.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}
   ${box("미리 알아둘 점",`<ul class="ul">${p.cons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}
   <div class="note tip" style="margin-top:12px"><b>팁</b> ${esc(p.tip)}</div>`}
