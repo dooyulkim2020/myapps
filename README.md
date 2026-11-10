@@ -2,6 +2,7 @@
 
 - 허브: https://dooyulkim2020.github.io/myapps/
 - 여행 도장: https://dooyulkim2020.github.io/myapps/stamp/
+- 전국 맛집·카페: https://dooyulkim2020.github.io/myapps/kfood/
 - 보험관리: https://dooyulkim2020.github.io/myapps/insurance/
 - 연금관리: https://dooyulkim2020.github.io/myapps/pension/
 - 건강관리: https://dooyulkim2020.github.io/myapps/health/
