@@ -179,7 +179,7 @@ section.box h3{margin:0 0 8px;font-size:15px;letter-spacing:.04em;color:var(--mu
 
 /* 하단 탭 */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
-nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 nav.tabs button{border:0;background:transparent;border-radius:10px;min-height:50px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);cursor:pointer}
 nav.tabs button b{font-size:16px;font-weight:600;color:var(--ink)}
 nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
@@ -240,6 +240,22 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
 .srow .bd{min-width:0;text-align:left;border:0;background:none;padding:4px 0;cursor:pointer;font:inherit;color:inherit}
 .srow .bd b{display:block;font-weight:600;font-size:16px}
 .srow .bd span{display:block;font-size:14px;color:var(--muted)}
+/* 글자 공부 */
+.tg5{display:grid;gap:6px;margin-top:10px}
+.tl{position:relative;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;min-height:64px;font:inherit;color:inherit}
+.tl.em{border:0;background:transparent;cursor:default}
+.tl .c{font-size:24px;font-weight:600;line-height:1.25}.tl .c.md{font-size:18px}.tl .c.sm{font-size:15px;word-break:keep-all;text-align:center}
+.tl .r{font-size:12px;color:var(--muted);line-height:1.2}.tl .k{font-size:12.5px;color:var(--accent);font-weight:600;line-height:1.25;text-align:center;word-break:keep-all}
+.tl.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.tl.lw{border-color:var(--ok)}.tl .ck{position:absolute;top:2px;right:3px;font-style:normal;font-size:10px;color:var(--ok);font-weight:700}
+.bigc{text-align:center;font:600 64px/1.2 var(--body);margin:8px 0 2px;word-break:keep-all;overflow-wrap:anywhere}
+.bigr{text-align:center;font-size:20px;font-weight:600}.bigr span{color:var(--accent)}
+.bigm{text-align:center;font-size:16px;color:var(--muted);margin-top:2px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.op{min-height:64px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px}
+.op b{font-size:18px;font-weight:600}.op span{font-size:14px;color:var(--accent)}.op .oc{font-size:26px}
+.op.ok{border-color:var(--ok);border-width:2px;color:var(--ok);font-weight:700}.op.no{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.op:disabled{cursor:default}
 .ksv{position:absolute;left:0;bottom:0;width:4px;height:4px;opacity:.01;pointer-events:none}
 </style>
 
@@ -258,12 +274,14 @@ nav.tabs button[aria-selected="true"] b{color:var(--accent)}
   </div>
   <main id="vPlay"></main>
   <main id="vList" hidden></main>
+  <main id="vSp" hidden></main>
   <main id="vSet" hidden></main>
 </div>
 
 <nav class="tabs" aria-label="화면 전환"><div class="in" role="tablist">
   <button type="button" role="tab" data-view="play" aria-selected="true"><b>듣기</b><span>반복 재생</span></button>
   <button type="button" role="tab" data-view="list" aria-selected="false"><b>문장</b><span id="tList">즐겨찾기</span></button>
+  <button type="button" role="tab" data-view="sp" aria-selected="false"><b>글자</b><span>철자 공부</span></button>
   <button type="button" role="tab" data-view="set" aria-selected="false"><b>설정</b><span>음성·백업</span></button>
 </div></nav>
 
@@ -1024,6 +1042,8 @@ const JA_WORD=[
  {id:"jw20",label:"소통·디지털",sub:"通信とデジタル",grp:"word",s:[S("메시지","メッセージ","めっせーじ · 멧세-지 · メッセージを送りました。메시지를 보냈어요"),S("이메일","メール","めーる · 메-루 · メールを確認します。메일을 확인해요"),S("앱","アプリ","あぷり · 아푸리 · このアプリは便利です。이 앱은 편리해요"),S("인터넷","インターネット","いんたーねっと · 인타-넷토 · インターネットで予約します。인터넷으로 예약해요"),S("다시 전화하다","かけ直す","かけなおす · 카케나오스 · 後でかけ直します。나중에 다시 걸게요"),S("전화번호","電話番号","でんわばんごう · 뎅와방고- · 電話番号を教えてください。전화번호를 알려 주세요"),S("화면","画面","がめん · 가멘 · 画面が暗いです。화면이 어두워요"),S("카메라","カメラ","かめら · 카메라 · カメラで写真を撮ります。카메라로 사진을 찍어요"),S("영상 통화","ビデオ通話","びでおつうわ · 비데오츠-와 · 孫とビデオ通話をします。손주와 영상 통화를 해요"),S("음성 사서함, 자동 응답","留守番電話","るすばんでんわ · 루스방뎅와 · 留守番電話に入れてください。음성 사서함에 남겨 주세요"),S("스마트폰","スマホ","すまほ · 스마호 · 新しいスマホを買いました。새 스마트폰을 샀어요"),S("컴퓨터","パソコン","ぱそこん · 파소콩 · パソコンで仕事をします。컴퓨터로 일해요"),S("태블릿","タブレット","たぶれっと · 타부렛토 · タブレットで新聞を読みます。태블릿으로 신문을 읽어요"),S("홈페이지, 웹사이트","ホームページ","ほーむぺーじ · 호-무페-지 · ホームページを見てください。홈페이지를 보세요"),S("링크","リンク","りんく · 링쿠 · リンクを送ります。링크를 보낼게요"),S("내려받다","ダウンロードする","だうんろーどする · 다운로-도스루 · アプリをダウンロードします。앱을 내려받아요"),S("업데이트","アップデート","あっぷでーと · 압푸데-토 · アップデートが必要です。업데이트가 필요해요"),S("로그인","ログイン","ろぐいん · 로구인 · ログインできません。로그인이 안 돼요"),S("비밀번호","パスワード","ぱすわーど · 파스와-도 · パスワードを忘れました。비밀번호를 잊어버렸어요"),S("가입하다, 등록하다","登録する","とうろくする · 토-로쿠스루 · 会員に登録します。회원으로 가입해요"),S("버튼","ボタン","ぼたん · 보탕 · このボタンを押してください。이 버튼을 누르세요"),S("설정","設定","せってい · 셋테- · 設定を変えます。설정을 바꿔요"),S("알림","通知","つうち · 츠-치 · 通知が来ました。알림이 왔어요"),S("파일","ファイル","ふぁいる · 화이루 · ファイルを開きます。파일을 열어요"),S("검색하다","検索する","けんさくする · 켄사쿠스루 · ネットで検索します。인터넷으로 검색해요"),S("온라인","オンライン","おんらいん · 온라잉 · オンラインで会議をします。온라인으로 회의해요"),S("연락하다","連絡する","れんらくする · 렌라쿠스루 · 着いたら連絡します。도착하면 연락할게요"),S("(전화를) 끊다","切る","きる · 키루 · 電話を切ります。전화를 끊어요"),S("(전화를) 받다","出る","でる · 데루 · 電話に出てください。전화 좀 받아 주세요"),S("전파, 신호","電波","でんぱ · 뎀파 · ここは電波が弱いです。여기는 신호가 약해요"),S("데이터","データ","でーた · 데-타 · データを保存します。데이터를 저장해요"),S("충전하다","充電する","じゅうでんする · 쥬-덴스루 · スマホを充電します。스마트폰을 충전해요"),S("지우다, 삭제하다","消す","けす · 케스 · 写真を消しました。사진을 지웠어요"),S("답장하다","返信する","へんしんする · 헨신스루 · すぐに返信します。바로 답장할게요"),S("이어폰","イヤホン","いやほん · 이야홍 · イヤホンで音楽を聞きます。이어폰으로 음악을 들어요"),S("음량, 볼륨","音量","おんりょう · 온료- · 音量を上げてください。소리를 키워 주세요"),S("QR코드","QRコード","きゅーあーるこーど · 큐-아-루코-도 · QRコードを読み取ります。QR코드를 찍어요"),S("동영상","動画","どうが · 도-가 · 動画を見ます。동영상을 봐요"),S("인쇄하다","印刷する","いんさつする · 인사츠스루 · 書類を印刷します。서류를 인쇄해요"),S("(사진을) 올리다","アップする","あっぷする · 압푸스루 · 写真をアップします。사진을 올려요"),S("설치하다","インストールする","いんすとーるする · 인스토-루스루 · アプリをインストールします。앱을 설치해요"),S("첨부하다","添付する","てんぷする · 템푸스루 · 写真を添付します。사진을 첨부해요"),S("그룹, 단체 대화방","グループ","ぐるーぷ · 구루-푸 · 家族のグループを作りました。가족 단톡방을 만들었어요"),S("이모티콘","スタンプ","すたんぷ · 스탐푸 · スタンプを送ります。이모티콘을 보내요"),S("댓글","コメント","こめんと · 코멘토 · コメントを書きます。댓글을 달아요"),S("게시하다","投稿する","とうこうする · 토-코-스루 · ブログに投稿します。블로그에 글을 올려요"),S("구독하다","チャンネル登録する","ちゃんねるとうろくする · 챤네루토-로쿠스루 · チャンネル登録をお願いします。구독 부탁드려요"),S("화면 캡처","スクショ","すくしょ · 스쿠쇼 · 画面をスクショしました。화면을 캡처했어요"),S("휴대폰","携帯","けいたい · 케-타이 · 携帯を忘れました。휴대폰을 두고 왔어요"),S("편지","手紙","てがみ · 테가미 · 孫から手紙が来ました。손주에게서 편지가 왔어요")]}];
 LANGS.ja.cats.push(...JA_PAT,...JA_WORD);
 Object.entries(LANGS).forEach(([lk,L])=>(L.cats||[]).forEach(c=>c.s.forEach((x,i)=>{x.id=`${lk}-${c.id}-${String(i+1).padStart(2,"0")}`})));
+/* 글자 공부 자료 (id = 언어:묶음:글자, 진도 저장에 쓰므로 글자를 바꾸지 말 것) */
+const SP={"ja":{"tips":["일본어는 히라가나(일본 고유어·조사), 가타카나(외래어·간판), 한자(뜻글자)를 섞어 씁니다.","히라가나 46자를 먼저 익히고, 같은 소리의 가타카나를 짝으로 외우면 빠릅니다.","작은 っ(촉음)는 다음 소리를 한 박자 멈추고(きって 킷테), ー(장음)는 앞 모음을 길게 늘입니다(コーヒー 코-히-).","゛(탁점)을 붙이면 탁한 소리(か→が), ゜(반탁점)을 붙이면 ㅍ 소리(は→ぱ)가 됩니다.","한글 읽기는 비슷한 소리로 적은 것입니다. 꼭 소리를 듣고 따라 해 보세요."],"sets":[{"id":"hira","label":"히라가나","sub":"기본 46자","cols":5,"rows":[[["あ","a","아"],["い","i","이"],["う","u","우"],["え","e","에"],["お","o","오"]],[["か","ka","카"],["き","ki","키"],["く","ku","쿠"],["け","ke","케"],["こ","ko","코"]],[["さ","sa","사"],["し","shi","시"],["す","su","스"],["せ","se","세"],["そ","so","소"]],[["た","ta","타"],["ち","chi","치"],["つ","tsu","츠"],["て","te","테"],["と","to","토"]],[["な","na","나"],["に","ni","니"],["ぬ","nu","누"],["ね","ne","네"],["の","no","노"]],[["は","ha","하"],["ひ","hi","히"],["ふ","fu","후"],["へ","he","헤"],["ほ","ho","호"]],[["ま","ma","마"],["み","mi","미"],["む","mu","무"],["め","me","메"],["も","mo","모"]],[["や","ya","야"],null,["ゆ","yu","유"],null,["よ","yo","요"]],[["ら","ra","라"],["り","ri","리"],["る","ru","루"],["れ","re","레"],["ろ","ro","로"]],[["わ","wa","와"],null,null,null,["を","wo","오"]],[["ん","n","응"],null,null,null,null]]},{"id":"kata","label":"가타카나","sub":"기본 46자","cols":5,"rows":[[["ア","a","아"],["イ","i","이"],["ウ","u","우"],["エ","e","에"],["オ","o","오"]],[["カ","ka","카"],["キ","ki","키"],["ク","ku","쿠"],["ケ","ke","케"],["コ","ko","코"]],[["サ","sa","사"],["シ","shi","시"],["ス","su","스"],["セ","se","세"],["ソ","so","소"]],[["タ","ta","타"],["チ","chi","치"],["ツ","tsu","츠"],["テ","te","테"],["ト","to","토"]],[["ナ","na","나"],["ニ","ni","니"],["ヌ","nu","누"],["ネ","ne","네"],["ノ","no","노"]],[["ハ","ha","하"],["ヒ","hi","히"],["フ","fu","후"],["ヘ","he","헤"],["ホ","ho","호"]],[["マ","ma","마"],["ミ","mi","미"],["ム","mu","무"],["メ","me","메"],["モ","mo","모"]],[["ヤ","ya","야"],null,["ユ","yu","유"],null,["ヨ","yo","요"]],[["ラ","ra","라"],["リ","ri","리"],["ル","ru","루"],["レ","re","레"],["ロ","ro","로"]],[["ワ","wa","와"],null,null,null,["ヲ","wo","오"]],[["ン","n","응"],null,null,null,null]]},{"id":"daku","label":"탁음·반탁음","sub":"が·ぱ 25자","cols":5,"rows":[[["が","ga","가"],["ぎ","gi","기"],["ぐ","gu","구"],["げ","ge","게"],["ご","go","고"]],[["ざ","za","자"],["じ","ji","지"],["ず","zu","즈"],["ぜ","ze","제"],["ぞ","zo","조"]],[["だ","da","다"],["ぢ","ji","지"],["づ","zu","즈"],["で","de","데"],["ど","do","도"]],[["ば","ba","바"],["び","bi","비"],["ぶ","bu","부"],["べ","be","베"],["ぼ","bo","보"]],[["ぱ","pa","파"],["ぴ","pi","피"],["ぷ","pu","푸"],["ぺ","pe","페"],["ぽ","po","포"]]]},{"id":"kdaku","label":"가타카나 탁음","sub":"ガ·パ 25자","cols":5,"rows":[[["ガ","ga","가"],["ギ","gi","기"],["グ","gu","구"],["ゲ","ge","게"],["ゴ","go","고"]],[["ザ","za","자"],["ジ","ji","지"],["ズ","zu","즈"],["ゼ","ze","제"],["ゾ","zo","조"]],[["ダ","da","다"],["ヂ","ji","지"],["ヅ","zu","즈"],["デ","de","데"],["ド","do","도"]],[["バ","ba","바"],["ビ","bi","비"],["ブ","bu","부"],["ベ","be","베"],["ボ","bo","보"]],[["パ","pa","파"],["ピ","pi","피"],["プ","pu","푸"],["ペ","pe","페"],["ポ","po","포"]]]},{"id":"yoon","label":"요음","sub":"きゃ 33개","cols":3,"rows":[[["きゃ","kya","캬"],["きゅ","kyu","큐"],["きょ","kyo","쿄"]],[["しゃ","sha","샤"],["しゅ","shu","슈"],["しょ","sho","쇼"]],[["ちゃ","cha","챠"],["ちゅ","chu","츄"],["ちょ","cho","쵸"]],[["にゃ","nya","냐"],["にゅ","nyu","뉴"],["にょ","nyo","뇨"]],[["ひゃ","hya","햐"],["ひゅ","hyu","휴"],["ひょ","hyo","효"]],[["みゃ","mya","먀"],["みゅ","myu","뮤"],["みょ","myo","묘"]],[["りゃ","rya","랴"],["りゅ","ryu","류"],["りょ","ryo","료"]],[["ぎゃ","gya","갸"],["ぎゅ","gyu","규"],["ぎょ","gyo","교"]],[["じゃ","ja","쟈"],["じゅ","ju","쥬"],["じょ","jo","죠"]],[["びゃ","bya","뱌"],["びゅ","byu","뷰"],["びょ","byo","뵤"]],[["ぴゃ","pya","퍄"],["ぴゅ","pyu","퓨"],["ぴょ","pyo","표"]]]},{"id":"gairai","label":"외래어 읽기","sub":"가타카나 단어 20","cols":2,"items":[["コーヒー","kōhī","코-히-","커피"],["ビール","bīru","비-루","맥주"],["ホテル","hoteru","호테루","호텔"],["タクシー","takushī","타쿠시-","택시"],["カメラ","kamera","카메라","카메라"],["テレビ","terebi","테레비","텔레비전"],["パン","pan","팡","빵"],["コンビニ","konbini","콤비니","편의점"],["レストラン","resutoran","레스토랑","식당"],["メニュー","menyū","메뉴-","메뉴"],["トイレ","toire","토이레","화장실"],["エレベーター","erebētā","에레베-타-","엘리베이터"],["チケット","chiketto","치켓토","표·티켓"],["バス","basu","바스","버스"],["カード","kādo","카-도","카드"],["スマホ","sumaho","스마호","스마트폰"],["アイス","aisu","아이스","아이스크림"],["ラーメン","rāmen","라-멘","라멘"],["ファミリー","famirī","화미리-","가족(패밀리)"],["パスポート","pasupōto","파스포-토","여권"]]},{"id":"kanji","label":"기초 한자","sub":"숫자·요일·간판 40","cols":4,"items":[["一","ichi","이치","하나","いち"],["二","ni","니","둘","に"],["三","san","산","셋","さん"],["四","yon","욘","넷","よん"],["五","go","고","다섯","ご"],["六","roku","로쿠","여섯","ろく"],["七","nana","나나","일곱","なな"],["八","hachi","하치","여덟","はち"],["九","kyū","큐-","아홉","きゅう"],["十","jū","쥬-","열","じゅう"],["百","hyaku","햐쿠","백","ひゃく"],["千","sen","센","천","せん"],["万","man","만","만","まん"],["円","en","엔","엔(돈)","えん"],["日","nichi / hi","니치·히","날·해","にち"],["月","tsuki / gatsu","츠키·가츠","달·월","つき"],["火","hi / ka","히·카","불·화요일","ひ"],["水","mizu / sui","미즈·스이","물·수요일","みず"],["木","ki / moku","키·모쿠","나무·목요일","き"],["金","kane / kin","카네·킨","돈·금요일","かね"],["土","tsuchi / do","츠치·도","흙·토요일","つち"],["人","hito","히토","사람","ひと"],["大","ō(kii)","오-(키-)","크다","おおきい"],["小","chii(sai)","치-(사이)","작다","ちいさい"],["上","ue","우에","위","うえ"],["下","shita","시타","아래","した"],["中","naka","나카","가운데·안","なか"],["山","yama","야마","산","やま"],["川","kawa","카와","강","かわ"],["入口","iriguchi","이리구치","입구","いりぐち"],["出口","deguchi","데구치","출구","でぐち"],["駅","eki","에키","역","えき"],["東","higashi","히가시","동쪽","ひがし"],["西","nishi","니시","서쪽","にし"],["南","minami","미나미","남쪽","みなみ"],["北","kita","키타","북쪽","きた"],["男","otoko","오토코","남자","おとこ"],["女","onna","온나","여자","おんな"],["店","mise","미세","가게","みせ"],["営業中","eigyōchū","에-교-츄-","영업 중","えいぎょうちゅう"]]}]},"zh":{"tips":["중국어 발음은 병음(로마자)으로 적습니다. 한 글자 = 성모(첫소리) + 운모(나머지 소리) + 성조입니다.","성조는 4개 + 가벼운 소리(경성)입니다. 같은 'ma'도 성조에 따라 엄마·삼·말·욕하다로 뜻이 바뀝니다.","3성이 두 번 이어지면 앞 글자를 2성처럼 읽습니다(你好 nǐ hǎo → ní hǎo).","不(bù)는 4성 앞에서 2성 bú로(不是 bú shì), 一(yī)도 뒤 성조에 따라 yí·yì로 바뀝니다.","zh·ch·sh·r은 혀끝을 말아 올리고, z·c·s는 혀끝을 윗니 뒤에 붙여 냅니다.","한자는 중국 본토에서 쓰는 간체자로 적었습니다(예: 门 문, 车 차)."],"sets":[{"id":"tone","label":"성조","sub":"4성+경성 13","cols":4,"items":[["mā","mā","마-(높고 평평)","엄마 妈","妈"],["má","má","마↗(올라감)","삼(마) 麻","麻"],["mǎ","mǎ","마↘↗(내렸다 올림)","말 马","马"],["mà","mà","마↘(뚝 떨어짐)","욕하다 骂","骂"],["ma","ma","마(가볍게)","~까? 吗","吗"],["tāng","tāng","탕(1성)","국 汤","汤"],["táng","táng","탕(2성)","사탕 糖","糖"],["tǎng","tǎng","탕(3성)","눕다 躺","躺"],["tàng","tàng","탕(4성)","뜨겁다 烫","烫"],["yī","yī","이(1성)","하나 一","衣"],["yí","yí","이(2성)","이모 姨","姨"],["yǐ","yǐ","이(3성)","의자 椅","椅"],["yì","yì","이(4성)","뜻 意","意"]]},{"id":"init","label":"성모(첫소리)","sub":"21개","cols":4,"items":[["b","bō","뽀(어)","玻 유리","玻"],["p","pō","포(어)","坡 비탈","坡"],["m","mō","모(어)","摸 만지다","摸"],["f","fó","포(f)","佛 부처","佛"],["d","dé","뜨어","得 얻다","得"],["t","tè","트어","特 특별","特"],["n","nè","느어","讷 어눌","讷"],["l","lè","르어","乐 즐겁다","乐"],["g","gē","끄어","哥 형","哥"],["k","kē","크어","科 과목","科"],["h","hē","흐어","喝 마시다","喝"],["j","jī","지","鸡 닭","鸡"],["q","qī","치","七 일곱","七"],["x","xī","시","西 서쪽","西"],["zh","zhī","즈(혀 말아)","知 알다","知"],["ch","chī","츠(혀 말아)","吃 먹다","吃"],["sh","shī","스(혀 말아)","诗 시","诗"],["r","rì","르(혀 말아)","日 해","日"],["z","zī","쯔","资 자원","资"],["c","cí","츠","词 단어","词"],["s","sī","쓰","思 생각","思"]]},{"id":"fin","label":"운모(나머지 소리)","sub":"27개","cols":4,"items":[["a","ā","아","啊","啊"],["o","ō","오어","喔","喔"],["e","é","으어","鹅 거위","鹅"],["i","yī","이","衣 옷","衣"],["u","wū","우","乌 까마귀","乌"],["ü","yū","위(입술 둥글게)","迂","迂"],["ai","ài","아이","爱 사랑","爱"],["ei","èi","에이","诶","诶"],["ao","āo","아오","熬","熬"],["ou","ōu","어우","欧 유럽","欧"],["ia","yā","이아","鸭 오리","鸭"],["ie","yē","이에","椰 야자","椰"],["ua","wā","우아","蛙 개구리","蛙"],["uo","wǒ","우어","我 나","我"],["üe","yuè","위에","月 달","月"],["iu","yōu","이오우(여우)","优 우수","优"],["ui","wēi","우에이(웨이)","威","威"],["er","ér","얼","儿 아이","儿"],["an","ān","안","安 편안","安"],["en","ēn","언","恩 은혜","恩"],["in","yīn","인","音 소리","音"],["un","wēn","우언(원)","温 따뜻","温"],["ün","yūn","윈","晕 어지럽다","晕"],["ang","áng","앙","昂","昂"],["eng","hēng","엉","哼","哼"],["ing","yīng","잉","英 영국","英"],["ong","hōng","옹(웅)","轰","轰"]]},{"id":"hanzi","label":"기초 한자","sub":"숫자·생활 40","cols":4,"items":[["一","yī","이","하나"],["二","èr","얼","둘"],["三","sān","싼","셋"],["四","sì","쓰","넷"],["五","wǔ","우","다섯"],["六","liù","리우","여섯"],["七","qī","치","일곱"],["八","bā","빠","여덟"],["九","jiǔ","지우","아홉"],["十","shí","스","열"],["百","bǎi","바이","백"],["千","qiān","치엔","천"],["万","wàn","완","만"],["块","kuài","콰이","원(돈 단위)"],["人","rén","런","사람"],["大","dà","따","크다"],["小","xiǎo","샤오","작다"],["中国","zhōngguó","중궈","중국"],["韩国","hánguó","한궈","한국"],["我","wǒ","워","나"],["你","nǐ","니","너"],["他","tā","타","그"],["好","hǎo","하오","좋다"],["是","shì","스","~이다"],["不","bù","뿌","아니다"],["有","yǒu","여우","있다"],["吃","chī","츠","먹다"],["喝","hē","허","마시다"],["水","shuǐ","쉐이","물"],["茶","chá","차","차"],["饭","fàn","판","밥"],["钱","qián","치엔","돈"],["多少","duōshao","뚜어샤오","얼마"],["买","mǎi","마이","사다"],["出口","chūkǒu","추커우","출구"],["入口","rùkǒu","루커우","입구"],["厕所","cèsuǒ","처쑤어","화장실"],["东","dōng","똥","동쪽"],["北","běi","베이","북쪽"],["谢谢","xièxie","씨에시에","고맙습니다"]]}]},"vi":{"tips":["베트남어는 로마자 29자에 성조 기호를 붙여 씁니다. F·J·W·Z는 쓰지 않습니다.","성조는 6개입니다. 같은 'ma'도 기호에 따라 유령·그런데·엄마·무덤·말·모로 뜻이 바뀝니다.","Đ đ(가로줄)는 우리말 'ㄷ', D d는 북부에서 'ㅈ(z)', 남부에서 '이(y)'처럼 소리 냅니다.","Ă·Â·Ê·Ô·Ơ·Ư처럼 모자·고리가 붙은 모음은 다른 글자입니다(ô 오 / ơ 어 / ư 으).","받침 c·t·p는 소리를 막듯 짧게 끊습니다(các 깍, một 못).","한글 읽기는 하노이(북부) 발음에 가깝게 적었습니다."],"sets":[{"id":"alpha","label":"알파벳","sub":"29자","cols":3,"items":[["A a","a","아","ba (3·셋)","ba"],["Ă ă","ă","아(짧게)","ăn (먹다)","ăn"],["Â â","â","어(짧게)","cân (저울)","cân"],["B b","bê","베","bà (할머니)","bà"],["C c","xê","께","cá (물고기)","cá"],["D d","dê","제(북부 z·남부 y)","da (피부)","da"],["Đ đ","đê","데","đi (가다)","đi"],["E e","e","애","em (동생)","em"],["Ê ê","ê","에","đêm (밤)","đêm"],["G g","giê","게","gà (닭)","gà"],["H h","hát","하","hai (2·둘)","hai"],["I i","i ngắn","이","in (인쇄)","in"],["K k","ca","까","kem (아이스크림)","kem"],["L l","e-lờ","래","làm (하다)","làm"],["M m","em-mờ","매","mẹ (엄마)","mẹ"],["N n","en-nờ","내","năm (5·해)","năm"],["O o","o","오(입 크게)","to (크다)","to"],["Ô ô","ô","오","ô (우산)","ô"],["Ơ ơ","ơ","어","ơn (은혜·cảm ơn)","ơn"],["P p","pê","뻬","pin (배터리)","pin"],["Q q","quy","꾸이","quà (선물)","quà"],["R r","e-rờ","재(북부 z·남부 r)","rau (채소)","rau"],["S s","ét-sì","쌔","sáu (6·여섯)","sáu"],["T t","tê","떼","tôi (나)","tôi"],["U u","u","우","đu đủ (파파야)","đu đủ"],["Ư ư","ư","으","thư (편지)","thư"],["V v","vê","베(v)","về (돌아가다)","về"],["X x","ích-xì","쌔","xe (차)","xe"],["Y y","i dài","이","y tá (간호사)","y tá"]]},{"id":"vtone","label":"성조","sub":"6개 (ma)","cols":3,"items":[["ma","không dấu (평성)","마(평평하게)","유령","ma"],["mà","dấu huyền (↘)","마↘(낮게 내림)","그런데","mà"],["má","dấu sắc (↗)","마↗(높이 올림)","엄마(남부)·뺨","má"],["mả","dấu hỏi (↘↗)","마↘↗(내렸다 올림)","무덤","mả"],["mã","dấu ngã (꺾임)","마~(목을 꺾듯 올림)","말(한자어)·코드","mã"],["mạ","dấu nặng (·)","마.(짧고 무겁게)","모(벼 모종)","mạ"]]},{"id":"di","label":"겹자음","sub":"ch·nh 등 11","cols":3,"items":[["ch","ch","짜(ㅉ)","cho (주다)","cho"],["gh","gh","가(e·ê·i 앞)","ghế (의자)","ghế"],["gi","gi","지(북부 z)","gì (무엇)","gì"],["kh","kh","카(목에서 긁듯)","không (아니다·0)","không"],["ng","ng","응","ngon (맛있다)","ngon"],["ngh","ngh","응(e·ê·i 앞)","nghe (듣다)","nghe"],["nh","nh","냐","nhà (집)","nhà"],["ph","ph","파(f)","phở (쌀국수)","phở"],["qu","qu","꽈","quá (매우)","quá"],["th","th","타(바람 섞어)","thích (좋아하다)","thích"],["tr","tr","짜(혀 말아)","trà (차)","trà"]]},{"id":"vow","label":"모음 조합","sub":"19개","cols":3,"items":[["ai","ai","아이","hai (2)","hai"],["ao","ao","아오","cao (높다)","cao"],["au","au","아우","sau (뒤·후)","sau"],["ay","ay","아이(짧게)","tay (손)","tay"],["âu","âu","어우","đâu (어디)","đâu"],["ây","ây","어이","đây (여기)","đây"],["eo","eo","애오","mèo (고양이)","mèo"],["ia","ia","이어","bia (맥주)","bia"],["iê","iê","이에","tiền (돈)","tiền"],["oa","oa","와","hoa (꽃)","hoa"],["oi","oi","오이","nói (말하다)","nói"],["ôi","ôi","오이","tôi (나)","tôi"],["ơi","ơi","어이","em ơi (저기요)","em ơi"],["ua","ua","우어","mua (사다)","mua"],["uô","uô","우오","muốn (원하다)","muốn"],["ưa","ưa","으어","mưa (비)","mưa"],["ươ","ươ","으어","nước (물)","nước"],["ui","ui","우이","vui (즐겁다)","vui"],["ưi","ưi","으이","gửi (보내다)","gửi"]]},{"id":"sign","label":"간판 읽기","sub":"자주 보는 말 20","cols":2,"items":[["Phở","phở","퍼","쌀국수"],["Bánh mì","bánh mì","바잉 미","반미(빵)"],["Cà phê","cà phê","까 페","커피"],["Nhà vệ sinh","nhà vệ sinh","냐 베 씽","화장실"],["Lối ra","lối ra","로이 자","출구"],["Lối vào","lối vào","로이 바오","입구"],["Mở cửa","mở cửa","머 끄어","영업 중·문 열림"],["Đóng cửa","đóng cửa","동 끄어","영업 끝·문 닫음"],["Giảm giá","giảm giá","잠 자","할인"],["Cấm","cấm","껌","금지"],["Nhà hàng","nhà hàng","냐 항","식당"],["Khách sạn","khách sạn","카익 산","호텔"],["Chợ","chợ","쩌","시장"],["Sân bay","sân bay","썬 바이","공항"],["Nam","nam","남","남자"],["Nữ","nữ","느","여자"],["Tính tiền","tính tiền","띵 띠엔","계산"],["Đẩy","đẩy","더이","미세요"],["Kéo","kéo","깨오","당기세요"],["Nước","nước","느억","물"]]}]}};
 const ORDERS=[["kt","한 1 → 외 2","기본"],["tt","외국어 2","듣기만"],["k","한국어 1","뜻 확인"]];
 const REPEATS=[["all","전체 반복"],["one","한 문장"],["shuffle","섞어서"]];
 const RATES=[0.7,0.8,0.9,1,1.1];
@@ -1048,7 +1068,7 @@ async function connect(){
   if(!db||!uid){setSave("local");return}
   favRef=db.doc("data/users/"+uid+"/talkFav");setSave("ok");
   try{const s=await favRef.get();const r=s.exists&&s.data();if(r&&Array.isArray(r.ids)){if((r.updatedAt||0)>(fav.updatedAt||0)){fav=r;try{localStorage.setItem(LSK+"-fav",JSON.stringify(fav))}catch(e){}render()}else if((fav.updatedAt||0)>(r.updatedAt||0))saveFav()}else if(fav.ids.length)saveFav()}catch(e){setSave("local","불러오지 못했습니다 · 이 기기 기록으로 표시")}
-  loadPref();
+  loadPref();connectSp();
 }
 const isFav=id=>fav.ids.includes(id);
 function toggleFav(id){fav.ids=isFav(id)?fav.ids.filter(x=>x!==id):[...fav.ids,id];saveFav();render();toast(isFav(id)?"즐겨찾기에 넣었습니다":"즐겨찾기에서 뺐습니다")}
@@ -1132,9 +1152,9 @@ try{if("mediaSession" in navigator){navigator.mediaSession.setActionHandler("pla
 /* ── 화면 ── */
 function render(){
   document.querySelectorAll("nav.tabs [data-view]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.view===cfg.view)));
-  ["play","list","set"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=cfg.view!==v});
+  ["play","list","sp","set"].forEach(v=>{$("v"+v[0].toUpperCase()+v.slice(1)).hidden=cfg.view!==v});
   $("tbPill").textContent=L().name;$("tList").textContent=`즐겨찾기 ${fav.ids.length}`;
-  ({play:renderPlay,list:renderList,set:renderSet})[cfg.view]();
+  ({play:renderPlay,list:renderList,sp:renderSp,set:renderSet})[cfg.view]();
 }
 function langChips(){return `<div class="langs" role="group" aria-label="언어">${Object.entries(LANGS).map(([k,v])=>`<button class="chip" type="button" ${v.soon?"disabled":""} data-lang="${k}" aria-pressed="${cfg.lang===k}">${v.name}${v.soon?"<small>준비 중</small>":""}</button>`).join("")}</div>`}
 /* 상황·패턴·단어 묶음: 영어처럼 상황이 많을 때 위에서 먼저 고름 */
@@ -1191,23 +1211,97 @@ function renderSet(){
     <li>절전 모드에서는 화면 유지가 막힐 수 있습니다.</li></ol>
     <p class="meta2" style="margin-top:8px">지금 이 화면: ${"wakeLock" in navigator?"화면 유지 기능 지원":"보조 방식으로 화면 유지"}</p></section>`;
   h+=`<section class="box"><h3>저장·백업</h3><div class="row"><span class="l">저장 상태</span><span class="r" id="saveTxt" style="white-space:normal">${esc(saveMsg)}</span></div>
-    <div class="row"><span class="l">즐겨찾기</span><span class="r">${fav.ids.length}문장</span></div>
+    <div class="row"><span class="l">즐겨찾기</span><span class="r">${fav.ids.length}문장</span></div><div class="row"><span class="l">글자 공부 기록</span><span class="r">${Object.keys(sp.items).length}글자</span></div>
     <div class="frow" style="margin-top:10px"><button class="btn pri" type="button" id="bkSave" style="flex:1">백업 파일 저장</button><label class="btn pick" style="flex:1">파일에서 복원<input type="file" id="bkFile" accept="application/json,.json"></label></div></section>`;
   h+=`<p class="meta2" style="margin-top:12px">영어·중국어·베트남어는 같은 방식으로 준비 중입니다.</p>`;
   $("vSet").innerHTML=h;
 }
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.hidden=true},2400)}
 
+/* ── 글자(철자) 공부: 일본어·중국어·베트남어 ── */
+const SPL=["ja","zh","vi"];
+let sp={items:{},updatedAt:0};try{const o=JSON.parse(localStorage.getItem(LSK+"-sp")||"null");if(o&&o.items)sp=o}catch(e){}
+let spRef=null,spT=null;
+function saveSp(){sp.updatedAt=Date.now();try{localStorage.setItem(LSK+"-sp",JSON.stringify(sp))}catch(e){}clearTimeout(spT);spT=setTimeout(()=>{if(spRef)spRef.set(JSON.parse(JSON.stringify(sp))).then(()=>setSave("ok")).catch(()=>setSave("local","저장소에 쓰지 못해 이 기기에만 저장됨"))},800)}
+function mergeSp(r){if(!r||!r.items)return 0;let n=0;Object.entries(r.items).forEach(([k,v])=>{const c=sp.items[k];if(!c||(v.t||0)>(c.t||0)){sp.items[k]=v;n++}});return n}
+async function connectSp(){if(!db||!uid)return;spRef=db.doc("data/users/"+uid+"/talkSpell");
+  try{const s=await spRef.get();const r=s.exists&&s.data();const n=r?mergeSp(r):0;const mine=Object.keys(sp.items).some(k=>!r||!r.items||!r.items[k]||(sp.items[k].t||0)>(r.items[k].t||0));
+    if(n){try{localStorage.setItem(LSK+"-sp",JSON.stringify(sp))}catch(e){}if(cfg.view==="sp")render()}if(mine)saveSp()}catch(e){}}
+const spSets=()=>(SP[cfg.lang]||SP.ja).sets;
+const spSet=()=>{const ss=spSets();return ss.find(s=>s.id===(cfg.spSet||{})[cfg.lang])||ss[0]};
+const flat=s=>(s.items||s.rows.flat().filter(Boolean));
+const iid=(s,x)=>`${cfg.lang}:${s.id}:${x[0]}`;
+const learned=id=>{const v=sp.items[id];return !!v&&v.c>=2&&v.c>v.w};
+const sayOf=x=>x[4]||x[0].split(" ")[0];
+let spSel=0,spAutoOn=false,qz=null;
+function spSpeak(x){if(playing)stop();gen++;const tk=gen;speak("t",sayOf(x),tk).catch(()=>toast("소리를 내지 못했습니다. 설정에서 음성을 확인하세요"))}
+async function spAuto(){if(playing)stop();const s=spSet(),L2=flat(s);const my=++gen;spAutoOn=true;renderSp();
+  for(let i=spSel;i<L2.length;i++){if(my!==gen)break;spSel=i;renderSp();try{await speak("t",sayOf(L2[i]),my)}catch(e){}if(my!==gen)break;await sleep(900)}
+  if(my===gen){spAutoOn=false;renderSp()}}
+function spStop(){gen++;spAutoOn=false;try{speechSynthesis.cancel()}catch(e){}try{if(au)au.pause()}catch(e){}renderSp()}
+function tile(s,x,i){const id=iid(s,x),on=i===spSel,lw=learned(id);const big=x[0].length>4?"sm":x[0].length>2?"md":"";
+  return `<button class="tl${on?" on":""}${lw?" lw":""}" type="button" data-spi="${i}" lang="${cfg.lang}"><span class="c ${big}">${esc(x[0])}</span><span class="r">${esc(x[1])}</span><span class="k">${esc(x[2])}</span>${lw?'<i class="ck">익힘</i>':""}</button>`}
+function spGrid(s){let i=0;if(s.rows){return `<div class="tg5" style="grid-template-columns:repeat(${s.cols},1fr)">${s.rows.map(r=>r.map(x=>x?tile(s,x,i++):'<span class="tl em"></span>').join("")).join("")}</div>`}
+  return `<div class="tg5" style="grid-template-columns:repeat(${s.cols},1fr)">${s.items.map((x,j)=>tile(s,x,j)).join("")}</div>`}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newQuiz(kind){const s=spSet(),L2=flat(s);const n=Math.min(10,L2.length);const pick=shuffle(L2.map((_,i)=>i)).slice(0,n);qz={kind,set:s.id,lang:cfg.lang,list:pick,i:0,score:0,ans:null,wrong:[]};mkQ();renderSp();if(kind==="listen")setTimeout(()=>spSpeak(L2[qz.list[0]]),300)}
+function mkQ(){const s=spSet(),L2=flat(s),k=qz.list[qz.i];const others=shuffle(L2.map((_,i)=>i).filter(i=>i!==k&&L2[i][1]!==L2[k][1]&&L2[i][0]!==L2[k][0])).slice(0,3);qz.opts=shuffle([k,...others]);qz.ans=null}
+function answer(j){if(!qz||qz.ans!=null)return;const s=spSet(),L2=flat(s),k=qz.list[qz.i],x=L2[k],id=iid(s,x);const ok=j===k;qz.ans=j;
+  const v=sp.items[id]||{c:0,w:0};sp.items[id]={c:v.c+(ok?1:0),w:v.w+(ok?0:1),t:Date.now()};saveSp();if(ok)qz.score++;else qz.wrong.push(k);
+  renderSp();if(qz.kind==="see")spSpeak(x)}
+function nextQ(){if(!qz)return;qz.i++;if(qz.i>=qz.list.length){qz.done=true;renderSp();return}mkQ();renderSp();if(qz.kind==="listen"){const L2=flat(spSet());setTimeout(()=>spSpeak(L2[qz.list[qz.i]]),250)}}
+function renderSp(){const el=$("vSp");if(!el||cfg.view!=="sp")return;
+  if(!SPL.includes(cfg.lang)){el.innerHTML=`<div class="dayhead"><h2>글자 공부</h2><div class="meta">일본어·중국어·베트남어 글자와 발음</div></div><div class="langs" role="group">${SPL.map(k=>`<button class="chip" type="button" data-splang="${k}">${LANGS[k].name}</button>`).join("")}</div><div class="empty">공부할 언어를 고르세요. 영어는 알파벳이라 따로 넣지 않았습니다.</div>`;return}
+  const D=SP[cfg.lang],s=spSet(),L2=flat(s);if(spSel>=L2.length)spSel=0;const x=L2[spSel];const mode=cfg.spMode||"table";
+  const setStat=t=>{const a=flat(t);return [a.filter(y=>learned(`${cfg.lang}:${t.id}:${y[0]}`)).length,a.length]};
+  const tot=D.sets.reduce((a,t)=>{const [l,n]=setStat(t);return [a[0]+l,a[1]+n]},[0,0]);const [sl,sn]=setStat(s);
+  let h=`<div class="dayhead"><h2>${LANGS[cfg.lang].name} 글자 공부</h2><div class="meta">익힌 글자 ${tot[0]} / ${tot[1]} · 퀴즈에서 2번 이상 맞히면 '익힘'</div></div>
+  <div class="langs" role="group" aria-label="언어">${SPL.map(k=>`<button class="chip" type="button" data-splang="${k}" aria-pressed="${cfg.lang===k}">${LANGS[k].name}</button>`).join("")}</div>
+  <div class="chips" role="group" aria-label="글자 묶음">${D.sets.map(t=>{const [l,n]=setStat(t);return `<button class="chip" type="button" data-spset="${t.id}" aria-pressed="${t.id===s.id}">${esc(t.label)} <small>${l}/${n}</small></button>`}).join("")}</div>
+  <div class="grp" role="group" aria-label="방법" style="margin-top:10px">${[["table","글자표","보고 듣기"],["see","보고 맞히기","읽기 고르기"],["listen","듣고 맞히기","글자 고르기"]].map(([k,l,sub])=>`<button type="button" data-spmode="${k}" aria-pressed="${mode===k}">${l}<small>${sub}</small></button>`).join("")}</div>`;
+  if(mode==="table"){
+    h+=`<section class="player spc"><div class="pmeta"><span>${esc(s.label)} · ${spSel+1} / ${L2.length}</span><span>${learned(iid(s,x))?'<b style="color:var(--ok)">익힘</b>':""}</span></div>
+      <div class="bigc" lang="${cfg.lang}">${esc(x[0])}</div><div class="bigr">${esc(x[1])} <span>· ${esc(x[2])}</span></div>${x[3]?`<div class="bigm">${esc(x[3])}</div>`:""}
+      <div class="ctl"><button class="btn" type="button" data-spstep="-1">이전</button><button class="btn play" type="button" id="spSay">▶ 소리 듣기</button><button class="btn" type="button" data-spstep="1">다음</button></div>
+      <button class="btn line" type="button" id="spAuto" style="width:100%;min-height:46px;margin-top:8px">${spAutoOn?"■ 연속 듣기 멈춤":"이 묶음 처음부터 연속 듣기"}</button></section>
+    <div class="tl-h"><h3>${esc(s.label)} ${esc(s.sub)}</h3><span>익힘 ${sl}/${sn} · 누르면 소리</span></div>${spGrid(s)}`;
+  }else{
+    if(!qz||qz.set!==s.id||qz.lang!==cfg.lang||qz.kind!==mode){h+=`<section class="box"><h3>${mode==="see"?"글자 보고 읽기 고르기":"소리 듣고 글자 고르기"}</h3><p>${esc(s.label)}에서 ${Math.min(10,L2.length)}문제를 무작위로 냅니다. 맞힌 글자는 '익힘'으로 기록됩니다.</p><button class="btn pri" type="button" id="qzStart" style="width:100%;min-height:50px;margin-top:10px;font-size:16px">퀴즈 시작</button></section>`}
+    else if(qz.done){const pct=Math.round(qz.score/qz.list.length*100);h+=`<section class="box" style="text-align:center"><h3>결과</h3><div class="score" style="justify-content:center"><span class="big">${qz.score}<small> / ${qz.list.length}</small></span></div><p class="meta2">${pct>=90?"아주 잘했어요!":pct>=60?"좋아요. 틀린 글자만 한 번 더 보세요.":"글자표에서 소리를 들으며 한 번 더 익혀 보세요."}</p>
+      ${qz.wrong.length?`<div class="tg5" style="grid-template-columns:repeat(${Math.min(5,s.cols+1)},1fr);margin-top:10px">${qz.wrong.map(k=>tile(s,L2[k],k)).join("")}</div>`:""}
+      <div class="frow" style="margin-top:12px"><button class="btn pri" type="button" id="qzStart" style="flex:1;min-height:46px">다시 풀기</button><button class="btn line" type="button" data-spmode="table" style="flex:1;min-height:46px">글자표로</button></div></section>`}
+    else{const k=qz.list[qz.i],q=L2[k];const lab=y=>mode==="see"?`<b>${esc(y[1])}</b><span>${esc(y[2])}</span>`:`<b class="oc" lang="${cfg.lang}">${esc(y[0])}</b>`;
+      h+=`<section class="player"><div class="prog">${qz.list.map((_,i)=>`<i class="${i===qz.i?"on":i<qz.i?"done":""}"></i>`).join("")}</div><div class="pmeta"><span>${qz.i+1} / ${qz.list.length} 문제</span><span>맞힘 ${qz.score}</span></div>
+        ${mode==="see"?`<div class="bigc" lang="${cfg.lang}">${esc(q[0])}</div>${q[3]?`<div class="bigm">${esc(q[3])}</div>`:""}<p class="meta2" style="text-align:center">어떻게 읽을까요?</p>`:`<div style="text-align:center;margin:14px 0 6px"><button class="btn play" type="button" id="qzSay" style="min-height:64px;min-width:200px;border-radius:999px;background:var(--accent);color:#fff;font-size:18px;font-weight:700">▶ 소리 다시 듣기</button></div><p class="meta2" style="text-align:center">들린 글자를 고르세요</p>`}
+        <div class="opts">${qz.opts.map(j=>{const st=qz.ans==null?"":j===k?" ok":j===qz.ans?" no":"";return `<button class="op${st}" type="button" data-op="${j}" ${qz.ans!=null?"disabled":""}>${lab(L2[j])}</button>`}).join("")}</div>
+        ${qz.ans!=null?`<div class="note ${qz.ans===k?"tip":"warn"}" style="margin-top:10px">${qz.ans===k?"정답입니다!":"아쉬워요."} <b lang="${cfg.lang}">${esc(q[0])}</b> = ${esc(q[1])} · ${esc(q[2])}${q[3]?` (${esc(q[3])})`:""}</div><button class="btn pri" type="button" id="qzNext" style="width:100%;min-height:50px;margin-top:10px;font-size:16px">${qz.i+1<qz.list.length?"다음 문제":"결과 보기"}</button>`:""}</section>`}
+  }
+  h+=`<section class="box"><h3>알아 두기</h3><ul class="ul">${D.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></section>
+  <section class="box"><h3>묶음별 진도</h3><div class="bars">${D.sets.map(t=>{const [l,n]=setStat(t);return `<div class="bar" style="grid-template-columns:96px 1fr auto"><span>${esc(t.label)}</span><span class="trk"><span class="fil" style="display:block;width:${n?l/n*100:0}%"></span></span><b>${l}/${n}</b></div>`}).join("")}</div></section>`;
+  el.innerHTML=h;
+  const on=el.querySelector(".tl.on");if(on&&spAutoOn)on.scrollIntoView({block:"nearest",behavior:"smooth"})}
+
 /* ── 백업 ── */
-async function saveFile(){const data=JSON.stringify({app:"MY 회화",v:1,exportedAt:new Date().toISOString(),fav},null,1);const d=new Date();const name=`MY미니앱_회화_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
+async function saveFile(){const data=JSON.stringify({app:"MY 회화",v:1,exportedAt:new Date().toISOString(),fav,sp},null,1);const d=new Date();const name=`MY미니앱_회화_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;
   let dl=null;try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){}
   try{if(dl){await dl.save({filename:name,data:new Blob([data],{type:"application/json"})})}else{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),3000)}toast("백업 파일을 저장했습니다")}catch(e){if(!e||e.code!=="declined")toast("저장하지 못했습니다")}}
 function restore(txt){let o;try{o=JSON.parse(txt)}catch(e){toast("백업 파일을 읽지 못했습니다");return}if(!o||o.app!=="MY 회화"||!o.fav){toast("MY 회화 백업이 아닙니다");return}
-  const before=fav.ids.length;fav.ids=[...new Set([...fav.ids,...(o.fav.ids||[])])];saveFav();render();toast(`즐겨찾기 ${fav.ids.length-before}개를 더했습니다`)}
+  const before=fav.ids.length;fav.ids=[...new Set([...fav.ids,...(o.fav.ids||[])])];saveFav();const ns=o.sp?mergeSp(o.sp):0;if(ns)saveSp();render();toast(`즐겨찾기 ${fav.ids.length-before}개, 글자 기록 ${ns}개를 더했습니다`)}
 
 /* ── 이벤트 ── */
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;const d=t.dataset;
-  if(d.view){cfg.view=d.view;saveCfg();render();window.scrollTo({top:0});return}
+  if(d.view){if(cfg.view==="sp"&&d.view!=="sp"&&spAutoOn)spStop();cfg.view=d.view;saveCfg();render();window.scrollTo({top:0});return}
+  if(d.splang){if(playing)stop();spStop();cfg.lang=d.splang;cfg.cat=L().cats[0].id;cfg.idx=0;spSel=0;qz=null;saveCfg();render();return}
+  if(d.spset){spStop();cfg.spSet={...(cfg.spSet||{}),[cfg.lang]:d.spset};spSel=0;qz=null;saveCfg();render();return}
+  if(d.spmode){spStop();cfg.spMode=d.spmode;qz=null;saveCfg();render();return}
+  if(d.spi!=null){if(qz&&qz.done&&(cfg.spMode||"table")!=="table"){const x=flat(spSet())[+d.spi];if(x)spSpeak(x);return}spAutoOn&&spStop();spSel=+d.spi;renderSp();spSpeak(flat(spSet())[spSel]);return}
+  if(d.spstep){spAutoOn&&spStop();const n=flat(spSet()).length;spSel=(spSel+(+d.spstep)+n)%n;renderSp();spSpeak(flat(spSet())[spSel]);return}
+  if(t.id==="spSay"){spSpeak(flat(spSet())[spSel]);return}
+  if(t.id==="spAuto"){spAutoOn?spStop():spAuto();return}
+  if(t.id==="qzStart"){newQuiz(cfg.spMode);return}
+  if(t.id==="qzSay"){if(qz)spSpeak(flat(spSet())[qz.list[qz.i]]);return}
+  if(d.op!=null){answer(+d.op);return}
+  if(t.id==="qzNext"){nextQ();return}
   if(t.id==="playBtn"){playing?stop():start();return}
   if(d.step){jump(+d.step);return}
   if(d.fav){toggleFav(d.fav);return}
@@ -1240,9 +1334,11 @@ $("fontBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("fontPop
 $("fontPop").addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b)return;e.stopPropagation();fs=b.dataset.fs;applyFs();if(prefRef)prefRef.set({fs,updatedAt:Date.now()}).catch(()=>{});$("fontPop").hidden=true;toast("글자 크기: "+b.querySelector("span").textContent)});
 document.addEventListener("click",e=>{if(!$("fontPop").hidden&&!e.target.closest("#fontPop"))$("fontPop").hidden=true});
 
-if(!["play","list","set"].includes(cfg.view))cfg.view="play";
+if(!["play","list","sp","set"].includes(cfg.view))cfg.view="play";
 applyFs();render();connect();
 window.__talk={state:()=>({playing,phase,awakeMode,idx:cfg.idx,gen})};
 })();
 </script>
-<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script></body></html>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"&&/github\.io$/.test(location.hostname))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
+
+</body></html>
