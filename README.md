@@ -7,5 +7,6 @@
 - 연금관리: https://dooyulkim2020.github.io/myapps/pension/
 - 건강관리: https://dooyulkim2020.github.io/myapps/health/
 - MY 회화: https://dooyulkim2020.github.io/myapps/talk/
+- 관심종목 아침 보고: https://dooyulkim2020.github.io/myapps/stock/
 
 기록은 각 휴대폰 브라우저 저장소에 보관되며, 이 저장소에는 개인 기록이 올라가지 않습니다.
